@@ -17,6 +17,12 @@ layout: main
         </h1>
     </div>
 
+  <div class="logo-header" id="github-activity">
+    <br />
+    <h2>Recent Github Activity</h2>
+  </div>
+
+  <h2>Posts</h2>
   <ul class="post-list">
     {% for post in site.posts %}
     <li>
@@ -31,3 +37,32 @@ layout: main
     {% endfor %}
   </ul>
 </div>
+
+<script>
+
+const HEADERS = {
+  "headers": {
+    "user-agent": "quinnftw.com activity feed",
+  }
+};
+
+fetch("https://api.github.com/users/quinny/events", HEADERS)
+      .then(response => response.json())
+      .then(response => [...new Set(response.map(e => e.repo.url))])
+      .then(uniqueRepoUrls => Promise.all(
+          uniqueRepoUrls.map(url => fetch(url, HEADERS).then(response => response.json()))
+        )
+      )
+    .then(repos => {
+      const p = document.getElementById("github-activity");
+      repos.forEach(repo => {
+        const node = document.createElement("p");
+        const link = document.createElement("a");
+        link.setAttribute('href', repo.html_url);
+        link.textContent = repo.full_name;
+        node.appendChild(link);
+        node.appendChild(document.createTextNode(" - " + repo.description));
+        p.appendChild(node);
+    });
+  });
+</script>
