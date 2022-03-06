@@ -1,0 +1,1808 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>K nearest neighbours</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      Our friend William from last year has moved away to Seattle!  As a result, he is in the market for a new lady friend.  William is a very busy man, and would prefer to find a partner who lives close to him.  As we all know Seattle is a strange place where it rains a lot and everything is two dimensional.<br /><br />
+
+Given a set of points representing the locations of the women in Seattle, as well as a point representing William's location, find the K nearest women to William.<br /><br />
+
+<h3>Input Format:</h3>
+<ul>
+<li>Two space separated integers <code>X<sub>w</sub> Y<sub>w</sub></code> representing William's location.</li>
+<li>An integer <code>K</code> representing the number of women William would like to find.
+<li>An integer <code>N, >= K</code> representing the number of women in Seattle</li>
+<li><code>N</code> space separated integers <code>X Y</code> representing the location of each woman</li>
+</ul>
+
+<h3>Output Format:</h3>
+<ul>
+<li><code>K</code> space separated <code>X Y</code> integer pairs representing the K women closest to William, ordered by distance from William.
+</ul>
+
+<div class="row">
+<div class="col-md-6">
+<h2>Sample Input</h2>
+<pre>
+9804 1230
+10
+20
+5648 6808
+7164 7852
+8417 2139
+7604 5570
+3516 8871
+9397 4049
+2533 9878
+2384 4836
+3545 7067
+443 8124
+2474 298
+1678 1914
+1788 1313
+3961 532
+3477 1327
+233 4187
+6756 4266
+2327 4066
+8120 736
+2168 2605
+</pre>
+</div>
+<div class="col-md-6">
+<h2>Sample Output</h2>
+<pre>
+8417 2139
+8120 736
+9397 4049
+6756 4266
+7604 5570
+3961 532
+3477 1327
+5648 6808
+7164 7852
+2474 298
+</pre>
+</div>
+</div>
+
+<br />
+
+<div style="background-color: rgba(0, 255, 0, 0.5); padding:10px;">
+3rd and 4th year student solutions must determine the K points in <b>average linear time</b> <small><a href="https://en.wikipedia.org/wiki/Quickselect">spoiler.</a></small> Sorting the points for the output format doesn't count towards the complexity constraint.</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#2" data-toggle="collapse">
+            benne112 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="2">
+        <pre><code>#include&lt;iostream&gt;
+#include&lt;vector&gt;
+#include&lt;functional&gt;
+#include&lt;algorithm&gt;
+
+using namespace std;
+
+struct point{
+        int x,y;
+        point(){}
+        point(int const _x, int const _y) : x(_x), y (_y){}
+};
+double delta(point const&amp; p1, point const&amp; p2)
+{
+        return (p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y) * (p1.y-p2.y);
+}
+int main()
+{
+        vector&lt;point&gt; chicks;
+        int willsDream,womenInSeattle;
+        point willsLocation;
+        cin &gt;&gt; willsLocation.x &gt;&gt; willsLocation.y;
+        cin &gt;&gt; willsDream;
+        cin &gt;&gt; womenInSeattle;
+
+        while(womenInSeattle--&gt;0)
+        {
+                int x,y;
+                cin &gt;&gt; x &gt;&gt; y;
+                chicks.emplace_back(x,y);
+        }
+
+        auto comp =     [&amp;willsLocation](point&amp; p1, point&amp; p2){
+                        return delta(p1, willsLocation) &lt; delta(p2, willsLocation);
+                };
+
+        nth_element(
+                chicks.begin(),
+                chicks.begin() + willsDream,
+                chicks.end(), comp);
+
+sort(chicks.begin(), chicks.begin()+willsDream, comp);
+for(int i=0; i &lt; willsDream; ++i)
+                cout &lt;&lt; chicks[i].x &lt;&lt; &#34; &#34; &lt;&lt; chicks[i].y &lt;&lt; endl;
+
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code># I&#39;m a first-year, so complexity rules don&#39;t apply to me
+# To run: Enter the input file (e.g. input.txt)
+
+import math
+
+filename = input(&#34;Input file name:\n&#34;)
+
+# Simple distance using pythagorean theorem
+# Takes input as two lists
+def distancefrom(a, b):
+    x1 = a[0]
+    y1 = a[1]
+    x2 = b[0]
+    y2 = b[1]
+    distx = abs(x1 - x2)
+    disty = abs(y1 - y2)
+    dist = math.sqrt((distx * distx) + (disty * disty))
+    return dist
+
+# Returns space-seperated numbers as a list
+def spaceSepProcess(numbers):
+    space = numbers.find(&#34; &#34;)
+    x = int(numbers[:space])
+    space += 1
+    y = int(numbers[space:])
+    return [x,y]
+
+# Turns the list created above back into space-seperated numbers
+def deProcess(l):
+    return str(l[0]) + &#34; &#34; + str(l[1])
+
+values = open(filename, &#34;r&#34;)
+# Initial location
+initial = spaceSepProcess(values.readline())
+# Number desired
+desired = int(values.readline())
+# Number total
+total = int(values.readline())
+
+
+
+# Creates and sorts a list of locations, then outputs it
+locations = {}
+for i in range(total):
+    currentloc = spaceSepProcess(values.readline())
+    distance = distancefrom(initial, currentloc)
+    locations[distance] = currentloc
+x = sorted(locations)
+for i in range(desired):
+    print(deProcess(locations[x[i]]))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::io;
+
+/// A 2D point.
+#[derive(Debug, Copy, Clone)]
+struct Point(i32, i32);
+
+impl Point {
+	/// Returns the distance between two points squared.
+	fn distance_sq(&amp;self, pos: Point) -&gt; i32 {
+		(self.0 - pos.0).pow(2) + (self.1 - pos.1).pow(2)
+	}
+}
+
+/// Get input from stdin and parse an i32.
+/// Returns Some(i32) if the i32 is parsed successfully or None.
+fn get_i32(buf: &amp;mut String) -&gt; Option&lt;i32&gt; {
+	io::stdin().read_line(buf).unwrap();
+
+	let res = {
+		let mut input = buf.split_whitespace();
+		input.next().and_then(|i| i.parse::&lt;i32&gt;().ok())
+	};
+
+	buf.clear(); // Clear the buffer.
+
+	res
+}
+
+/// Get input from stdin and parse a point.
+/// Returns Some(Point) if the point is parsed successfully or None.
+fn get_point(buf: &amp;mut String) -&gt; Option&lt;Point&gt; {
+	io::stdin().read_line(buf).unwrap();
+
+	let res = {
+		let mut input = buf.split_whitespace();
+		let x = input.next().and_then(|x| x.parse::&lt;i32&gt;().ok());
+		let y = input.next().and_then(|y| y.parse::&lt;i32&gt;().ok());
+
+		if let (Some(x), Some(y)) = (x, y) {
+			Some(Point(x, y))
+		} else {
+			None
+		}
+	};
+
+	buf.clear(); // Clear the buffer.
+
+	res
+}
+
+fn main() {
+	let mut buf = String::new();
+
+	// Get the users input from stdin.
+	let loc = get_point(&amp;mut buf).expect(&#34;Invalid location for william.&#34;);
+	let desired = get_i32(&amp;mut buf).expect(&#34;Invalid K.&#34;);
+	let total = get_i32(&amp;mut buf).expect(&#34;Invalid N.&#34;);
+
+	if total &lt; desired {
+		panic!(&#34;N must be &gt;= K&#34;);
+	}
+    
+	let mut women = Vec::with_capacity(total as usize);
+
+	// Read total number of points from stdin.
+	for _ in 0..total {
+		women.push(get_point(&amp;mut buf).expect(&#34;Invalid location for woman.&#34;));
+	}
+
+    women.sort_by(|a, b| a.distance_sq(loc).cmp(&amp;b.distance_sq(loc)));
+
+    println!(&#34;-&#34;);
+
+    // Display the first desired points to stdout.
+    for &amp;Point(x, y) in women.iter().take(desired as usize) {
+    	println!(&#34;{} {}&#34;, x, y);
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#25" data-toggle="collapse">
+            brisco - Haskell
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="25">
+        <pre><code>{-# LANGUAGE TypeApplications, FlexibleContexts #-}
+module Main where
+
+import qualified Data.Heap as H
+import Linear.V2 (V2(V2))
+import Linear.Affine (Affine, qdA, Diff)
+import Control.Arrow ((&amp;&amp;&amp;))
+import Control.Applicative (many)
+import Control.Monad (sequence_)
+import Data.Foldable (Foldable)
+import Data.Attoparsec.Text (Parser, skipSpace, decimal, parseOnly)
+import Data.List (intersperse)
+import qualified Data.Text.IO as T
+
+data AST =
+  AST
+  { astOrigin :: V2 Integer
+  , astK      :: Integer
+  , astLen    :: Integer
+  , astPoints :: [V2 Integer]
+  }
+--
+
+kNearest :: (Affine p, Foldable (Diff p), Ord a, Num a) =&gt;
+            [p a] -&gt; p a -&gt; Int -&gt; [p a]
+kNearest points origin k =
+  fmap snd
+  . H.take k
+  . H.fromList @H.FstMinPolicy
+  . fmap (qdA origin &amp;&amp;&amp; id)
+  $ points
+--
+
+parser :: Parser AST
+parser =
+  AST &lt;$&gt;
+    point &lt;* skipSpace
+    &lt;*&gt; decimal &lt;* skipSpace
+    &lt;*&gt; decimal &lt;* skipSpace
+    &lt;*&gt; many (point &lt;* skipSpace)
+  where
+  point = V2 &lt;$&gt; decimal &lt;*&gt; (skipSpace *&gt; decimal)
+--
+
+output :: [V2 Integer] -&gt; IO ()
+output = sequence_ . intersperse (putStr &#34;\n&#34;) . fmap pp
+  where
+  pp (V2 x y) = putStr (show x) &gt;&gt; putStr &#34; &#34; &gt;&gt; putStr (show y)
+--
+
+main :: IO ()
+main = do
+  input &lt;- T.getContents
+  case parseOnly parser input of
+    Left e -&gt; putStr &#34;Malformed input!&#34;
+    Right (AST o k _ ps) -&gt; output (kNearest ps o (fromIntegral k))
+--
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>import sys, math, random 
+# Program ran with Python 2.7.10
+
+def partition(liste, left, right, pivotIndex):
+    pivotValue = liste[pivotIndex][2] # third is the distance
+    liste[pivotIndex], liste[right] = liste[right], liste[pivotIndex]
+    storeIndex = left
+
+    for i in range(left, right):
+        if liste[i][2] &lt; pivotValue:
+            liste[storeIndex], liste[i] = liste[i], liste[storeIndex]
+            storeIndex += 1 
+    
+    liste[right], liste[storeIndex] = liste[storeIndex], liste[right]
+    return storeIndex
+
+def select(liste, left, right, n):
+    while True:
+        pivotIndex = random.randint(left, right)
+        pivotNewIndex = partition(liste, left, right, pivotIndex)
+        pivotDist = pivotNewIndex - left
+
+        if pivotDist == n:
+            return liste[pivotNewIndex]
+        elif n &lt; pivotDist:
+            right = pivotNewIndex - 1
+        else:
+            n -= pivotDist + 1;
+            left = pivotNewIndex + 1
+def main(): 
+    will_x, will_y = map(int,sys.stdin.readline().split())
+
+    K = input()
+    N = input()
+
+    babes = []
+    for i in range(N):
+        x, y = map(int,sys.stdin.readline().split())
+        
+        # Use pyth theorem to compute distance 
+        z = math.sqrt( math.pow(abs(x - will_x), 2 ) + math.pow(abs(y - will_y), 2))
+        
+        babes.append((x,y,z))
+
+    for i in range(K):
+        printVal = select(babes, 0, N-1, i)
+        print printVal[0], printVal[1] 
+main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#24" data-toggle="collapse">
+            chanad - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="24">
+        <pre><code>#include &lt;cstdio&gt;
+#include &lt;cstdlib&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+struct Point {
+	int x, y;
+	int d;
+};
+
+int getDistance(Point p1, Point p2) {
+	return abs(hypot(abs(int(p1.x) - int(p2.x)), abs(int(p1.y) - int(p2.y))));
+}
+
+void sortAndWrite(Point A[], int n, int toFind) {
+	int k = 0;
+	// Set to max value in array
+	for (int i = 0; i &lt; n; i++) {
+		if (A[i].d &gt; k) {
+			k = A[i].d;
+		}
+	}
+
+	Point count[k + 1];
+	Point output[k + 1];
+
+	for (int i = 0; i &lt; k + 1; i++) {
+		count[i].d = 0;
+	}
+
+	// Histogram for each key
+	for (int i = 0; i &lt; n; i++) {
+		count[A[i].d].d += 1;
+	}
+
+	int total = 0;
+	for (int i = 0; i &lt; k + 1; i++) {
+		int oldCount = count[i].d;
+		count[i].d = total;
+		total += oldCount;
+	}
+
+	for (int i = 0; i &lt; n; i++) {
+		output[count[A[i].d].d] = A[i];
+		count[A[i].d].d += 1;
+	}
+
+	for (int i = 0; i &lt; toFind; i++) {
+		printf(&#34;%d %d\n&#34;, output[i].x, output[i].y);
+	}
+}
+
+int main() {
+	Point will_loc;
+	int K, N;  // K-num of gurls to find; N-num of gurls
+
+	scanf(&#34;%d %d&#34;, &amp;will_loc.x, &amp;will_loc.y);
+	scanf(&#34;%d&#34;, &amp;K);
+	scanf(&#34;%d&#34;, &amp;N);
+
+	// Populate dem_gurlz
+	Point dem_gurlz[N];
+	for (int i = 0; i &lt; N; i++) {
+		scanf(&#34;%d %d&#34;, &amp;dem_gurlz[i].x, &amp;dem_gurlz[i].y);
+		dem_gurlz[i].d = getDistance(will_loc, dem_gurlz[i]);  // Get distance from william
+	}
+
+	sortAndWrite(dem_gurlz, N, K);
+
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#28" data-toggle="collapse">
+            culmonen - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="28">
+        <pre><code>import java.util.*;
+import java.awt.*;
+
+public class potw{
+
+	public static void main(String[]args){
+		int girlFind;
+		int girlTot;
+		Point willPos;
+		ArrayList&lt;Girl&gt;girlPos = new ArrayList&lt;Girl&gt;();
+
+		Scanner kb = new Scanner(System.in);
+
+		String will = kb.nextLine();
+
+		String[]values = will.split(&#34; &#34;);
+		willPos = new Point(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
+
+		girlFind = kb.nextInt();
+		girlTot = kb.nextInt();
+		kb.nextLine();
+
+
+		for(int i=0;i&lt;girlTot;i++){
+			String girl = kb.nextLine();
+
+			String[]values2 = girl.split(&#34; &#34;);
+			int girlX = Integer.parseInt(values2[0]);
+			int girlY = Integer.parseInt(values2[1]);
+
+			girlPos.add(new Girl(girlX, girlY, dist(girlX,girlY,willPos.x,willPos.y)));
+		}
+
+		Collections.sort(girlPos);
+		Girl g;
+
+		System.out.println(&#34;&#34;);
+
+		for(int i=0;i&lt;girlFind;i++){
+			g = girlPos.get(i);
+			System.out.println(g.getPos().x + &#34; &#34; +g.getPos().y);
+		}
+
+
+
+	}
+
+	public static float dist(int x1, int y1, int x2, int y2){
+		float d = (float)(Math.sqrt(Math.pow(y2-y1,2) + Math.pow(x2-x1,2)));
+		return d;
+	}
+}
+
+class Girl implements Comparable&lt;Girl&gt;{
+	private Point pos;
+	private float dist;
+
+	public Girl(int x,int y,float d){
+		pos = new Point(x,y);
+		dist = d;
+	}
+
+	public float getDist(){
+		return dist;
+	}
+	public Point getPos(){
+		return pos;
+	}
+
+	@Override
+		public int compareTo(Girl other){
+			return (int)(dist - other.getDist());
+		}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#17" data-toggle="collapse">
+            mccarth7 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="17">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+#include &lt;time.h&gt;
+
+int getDistance(int*, int*);
+int partition(int**, int, int, int);
+void quickSelect(int**, int, int, int);
+void swap(const void*, const void*);
+int compare(const void*, const void*);
+void printArray(int**, int);
+void fillArray(int**, int*, int);
+int randomInInterval(int, int);
+
+int main() {
+
+	srand(time(NULL));
+
+	int *willCoords, **womenCoords, k, n;
+
+	willCoords = (int*)malloc(sizeof(int)*2);
+
+	std::cin &gt;&gt; *(willCoords)
+						&gt;&gt; *(willCoords+1)
+						&gt;&gt; k
+						&gt;&gt; n;
+
+	womenCoords = (int**)malloc(sizeof(int*)*n);
+
+	for (int i = 0; i &lt; n; ++i)
+		*(womenCoords+i) = (int*)malloc(sizeof(int)*3);
+
+	fillArray(womenCoords, willCoords, n);
+	quickSelect(womenCoords, 0, n-1, k-1);
+	qsort(womenCoords, k, sizeof(womenCoords[0]), compare);
+	printArray(womenCoords, k);
+
+	free(willCoords);
+	free(womenCoords);
+}
+
+int compare(const void* a, const void* b) {
+	int left =  *((*(int**)a)+2);
+	int right = *((*(int**)b)+2);
+
+	return left &gt; right;
+}
+
+int getDistance(int* willCoords, int* womanCoords) {
+	int xDist = (*(willCoords) - *(womanCoords));
+	int yDist = (*(willCoords+1) - *(womanCoords+1));
+
+	return xDist*xDist + yDist*yDist;
+}
+
+int partition(int** array, int left, int right, int pivotIndex) {
+	int pivotValue = *(*(array+pivotIndex)+2);
+
+	swap(array+pivotIndex, array+right);
+
+	int storeIndex = left;
+
+	for (int i = left; i &lt; right; ++i)
+		if (*(*(array+i)+2) &lt; pivotValue)
+			swap(array+(left++), array+i);
+
+	swap(array+left, array+right);
+
+	return left;
+}
+
+void swap(const void* a, const void* b) {
+	int** left = (int**)a;
+	int** right = (int**)b;
+
+	int* temp = *left;
+	*left = *right;
+	*right = temp;
+}
+
+void quickSelect(int** array, int left, int right, int k) {
+	while(true) {
+		if (left==right)
+			return;
+
+		int pivotIndex = partition(
+							array,
+							left,
+							right,
+							randomInInterval(left, right)
+							);
+
+		if (k==pivotIndex)
+			return;
+		else if (k&lt;pivotIndex) 
+			right=pivotIndex-1;
+		else
+			left=pivotIndex+1;
+	}
+}
+
+int randomInInterval(int min, int max) {
+	int r;
+	int range = 1+max-min;
+	int buckets = RAND_MAX/range;
+	int limit = buckets*range;
+
+	do
+	{
+		r = rand();
+	} while (r&gt;=limit);
+
+	return min+(r/buckets);
+}
+
+void printArray(int** womenCoords, int k) {
+	for (int i = 0; i &lt; k; ++i)
+			std::cout &lt;&lt; *(*(womenCoords+i)+0)
+								&lt;&lt; &#34; &#34;
+								&lt;&lt; *(*(womenCoords+i)+1)
+								&lt;&lt; std::endl;
+}
+
+void fillArray(int** womenCoords, int* willCoords, int n) {
+	for (int i = 0; i &lt; n; ++i) {
+		std::cin &gt;&gt; *(*(womenCoords+i)+0)
+							&gt;&gt;*(*(womenCoords+i)+1);
+		*(*(womenCoords+i)+2) = getDistance(willCoords, *(womenCoords+i));
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#29" data-toggle="collapse">
+            webst11a - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="29">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+
+int main() {
+  int willLoc[2], k, n, i, f, j, x, y, p, q, tmpDist, tmpfLoc1, tmpfLoc2;
+
+  scanf(&#34;%d %d&#34;, &amp;willLoc[0], &amp;willLoc[1]); // Check William&#39;s location
+  scanf(&#34;%d&#34;, &amp;k); // Desired number of women
+  scanf(&#34;%d&#34;, &amp;n); // Total number of women
+
+  // errorcheck
+  if (n &lt; k) {
+    printf(&#34;ERR: Total must be greater or equal to desired. Resubmit both\n&#34;);
+    scanf(&#34;%d&#34;, &amp;k); scanf(&#34;%d&#34;, &amp;n);
+  }
+
+  int fLoc1[n], fLoc2[n], dist[n];
+
+  // Find locations of n number of women
+  for (i=0; i&lt;=n-1; i++) {
+    scanf(&#34; %d %d&#34;, &amp;fLoc1[i], &amp;fLoc2[i]); }
+
+  // find distance between william and each woman (pyth. theorem)
+  for (j=0; j&lt;=n-1; j++) {
+    x = fLoc1[j] - willLoc[0];
+    y = fLoc2[j] - willLoc[1];
+    dist[j] = sqrt((x*x) + (y*y));
+  }
+
+  // sort dist, fLoc1, fLoc2; ascending by dist
+  for (p=0; p&lt;n-1; p++) {
+    for (q=p+1; q&lt;n-1; q++) {
+      if (dist[p] &gt; dist[q]) {
+        tmpDist = dist[p]; tmpfLoc1 = fLoc1[p]; tmpfLoc2 = fLoc2[p];
+        dist[p] = dist[q]; fLoc1[p] = fLoc1[q]; fLoc2[p] = fLoc2[q];
+        dist[q] = tmpDist; fLoc1[q] = tmpfLoc1; fLoc2[q] = tmpfLoc2;
+      }
+    }
+  }
+
+  // print k locations
+  printf(&#34;\n&#34;);
+  for (f=0; f&lt;=k-1; f++) {
+    printf(&#34;%d %d\n&#34;, fLoc1[f], fLoc2[f]); }
+  return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#!/usr/bin/env python3
+import random
+
+
+class Woman:
+	def __init__(self, coord, dist):
+		self.coord = coord
+		self.dist = dist  # (from Will)
+
+
+def quickselect(l, n):
+	left = 0
+	right = len(l) - 1
+	while True:
+		if left == right:
+			return l[left]
+
+		pivot_index = random.randint(left, right)
+		pivot_index = partition(l, left, right, pivot_index)
+
+		if n == pivot_index:
+			return l[n]
+		elif n &lt; pivot_index:
+			right = pivot_index - 1
+		else:
+			left = pivot_index + 1
+
+
+def partition(l, left, right, pivot_index):
+	&#39;&#39;&#39; Uses distance from Will as a comparator &#39;&#39;&#39;
+	pivot_value = l[pivot_index].dist
+	l[pivot_index], l[right] = l[right], l[pivot_index]
+	store_index = left
+
+	for i in range(left, right):
+		if l[i].dist &lt; pivot_value:
+			l[store_index], l[i] = l[i], l[store_index]
+			store_index += 1
+	l[store_index], l[right] = l[right], l[store_index]
+	return store_index
+
+
+def dist(p1, p2):
+	&#39;&#39;&#39; Returns (distance ** 2) between two points.
+	We use distance squared to avoid the costly sqrt().
+	This will work fine since we are only comparing the distances.
+	&#39;&#39;&#39;
+	return (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2
+
+
+def main():
+	# all coordinates are stored as a tuple of ints (x, y)
+	will = tuple(int(x) for x in input().split())  # (Xw, Yw)
+	wills_desire = int(input())  # K
+	num_women = int(input())  # N
+
+	women = []  # list of &#39;Women&#39; objects
+
+	for i in range(num_women):
+		coord = tuple(int(x) for x in input().split())
+		women.append(Woman(coord, dist(coord, will)))
+
+	quickselect(women, wills_desire)
+	del women[wills_desire:]
+	women.sort(key=lambda w: w.dist)
+
+	for x in women:
+		print(str(x.coord[0]) + &#39; &#39; + str(x.coord[1]))
+
+
+if __name__ == &#39;__main__&#39;:
+	main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.Scanner;
+import java.awt.Point;
+import java.util.Arrays;
+import java.util.Random;
+
+public class w2 {
+
+    private static Point startingLocation;
+
+    /**
+    * Implementation of QuickSelect algorithm.
+    *
+    * @params Point[] points, the array of points
+    * @param int l the left
+    * @param int r the right
+    * @param int k, the kth smallest element
+    * @return Point the point that is the kth smallest
+    */
+    private static Point select(Point[] points, int l, int r, int k) {
+        int p = partition(points, l, r);
+        if (p == k) {
+            return points[p];
+        } else if (p &gt; k) {
+            return select(points, l, p - 1, k);
+        } else {
+            return select(points, p + 1, r, k);
+        }
+    }
+
+    /**
+    * Partitions an array of points into 2 parts, those less
+    * than the distance between points[p] to startingLocation
+    * will be on the left and those greater than on the right
+    *
+    * @param point[] points, the array to be partitioned
+    * @param int l, repreesnting the left
+    * @param int r, representing the right
+    * @return int storeIndex. points[storeIndex] will be in the
+    * right position if sorted.
+    */
+    private static int partition(Point[] points, int l, int r) {
+        int p = l + new Random().nextInt(r - l + 1);
+        int storeIndex = l;
+        swap(points, r, p);
+        for (int i = l; i &lt; r; i++) {
+            if (calcDistance(points[i]) &lt; calcDistance(points[r])) {
+                swap(points, i, storeIndex);
+                storeIndex++;
+            }
+        }
+        swap(points, storeIndex, r);
+        return storeIndex;
+    }
+
+    /**
+    * Swaps points[i] with points[j]
+    *
+    * @param Point[] points, the array with variables to swap
+    * @param int i, value to be swapped with j
+    * @param int j, value to be swapped with i
+    */
+    private static void swap(Point[] points, int i, int j) {
+        Point temp = points[i];
+        points[i] = points[j];
+        points[j] = temp;
+    }
+
+    /**
+    * sorts an array of points using insertion sort
+    *
+    * @param Point[] points, array to be sorted
+    */
+    private static void sort(Point[] points) {
+        int i, j;
+        Point newValue;
+        for (i = 1; i &lt; points.length; i++) {
+            newValue = points[i];
+            j = i;
+            while (j &gt; 0 &amp;&amp; calcDistance(points[j - 1]) &gt; calcDistance(newValue)) {
+                points[j] = points[j - 1];
+                j--;
+            }
+            points[j] = newValue;
+        }
+    }
+
+    /**
+    * Returns a float of the distance between 2 points
+    *
+    * @param Point a, first point
+    * @param Point b, second point
+    */
+    private static float calcDistance(Point a) {
+        return (float) Math.sqrt(Math.pow(a.getX() - startingLocation.getX(), 2) + Math.pow(a.getY() - startingLocation.getY(), 2));
+    }
+
+    /**
+    * Runs the program
+    */
+    private static void run() {
+        Scanner kb =  new Scanner(System.in);
+        startingLocation = new Point(kb.nextInt(), kb.nextInt());
+        int k = kb.nextInt();
+        int n = kb.nextInt();
+        Point[] allPoints = new Point[n];
+        Point[] output = new Point[k];
+
+        for (int i = 0 ; i &lt; n ; i++) {
+            allPoints[i] = new Point(kb.nextInt(), kb.nextInt());
+        }
+
+        Point kthSmallest = select(allPoints, 0, allPoints.length - 1, k);
+        float kthDistance = calcDistance(kthSmallest);
+        int j = 0;
+
+        for (int i = 0 ; i &lt; n ; i++) {
+            if (calcDistance(allPoints[i]) &lt; kthDistance) {
+                output[j] = allPoints[i];
+                j++;
+            }
+        }
+
+        sort(output);
+        System.out.println();
+        for (int i = 0; i &lt; k; i++) {
+            System.out.println((int)output[i].getX() + &#34; &#34; + (int)output[i].getY());
+        }
+    }
+
+    public static void main(String[] args) {
+        run();
+    }
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>package week2;
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
+public class week2 {
+	int person[];
+	int womenInterestedIn, numberOfWomen;
+	int womenCoordinates[][];
+	
+// setting variables equal to each other
+	public week2(int[] personCoordinates, int womenInterestedIn, int numberOfWomen, int[][] womenCoordinates){
+		
+		this.person = personCoordinates;
+		this.womenInterestedIn = womenInterestedIn;
+		this.numberOfWomen = numberOfWomen;
+		this.womenCoordinates = womenCoordinates;
+
+		findKthLargest(womenCoordinates, womenInterestedIn);
+	}
+	
+// the formula to get the differnce between the coordinates
+	public int distanceFromPersonAndWomen(int person[], int womenCoordinates[]){
+		int x = person[0] - womenCoordinates[0];
+		int y = person[1] - womenCoordinates[1];
+		
+		return (int) Math.sqrt(((x * x) + (y * y)));
+	}
+	
+	public int[][] findKthLargest(int[][] nums, int k) {
+        int start = 0, end = this.numberOfWomen - 1, index = this.numberOfWomen - k;
+        while (start &lt; end) {
+            int pivot = partion(nums, start, end);
+            if (pivot &lt; index) start = pivot + 1; 
+            else if (pivot &gt; index) end = pivot - 1;
+            else return nums;
+        }
+        return nums;
+    }
+    
+    private int partion(int[][] nums, int start, int end) {
+        int pivot = start, temp1, temp2;
+        while (start &lt;= end) {
+            while (start &lt;= end &amp;&amp; distanceFromPersonAndWomen(person, womenCoordinates[start]) &lt;= distanceFromPersonAndWomen(person, womenCoordinates[pivot])) start++;
+            while (start &lt;= end &amp;&amp; distanceFromPersonAndWomen(person, womenCoordinates[end])  &gt; distanceFromPersonAndWomen(person, womenCoordinates[pivot])) end--;
+ 
+            if (start &gt; end) break;
+            
+            temp1 = womenCoordinates[start][0];
+            temp2 = womenCoordinates[start][1];
+            womenCoordinates[start][0] = womenCoordinates[end][0];
+            womenCoordinates[start][1] = womenCoordinates[end][1];
+            womenCoordinates[end][0] = temp1;
+            womenCoordinates[end][1] = temp2;
+            
+
+        }
+        temp1 = womenCoordinates[end][0];
+        temp2 = womenCoordinates[end][1];
+        womenCoordinates[end][0] = womenCoordinates[pivot][0];
+        womenCoordinates[end][1] = womenCoordinates[pivot][1];
+        womenCoordinates[pivot][0] = temp1;
+        womenCoordinates[pivot][1] = temp2;
+
+        return end;
+    }
+
+	public String toString(){
+		String closeWomen = &#34;&#34;;
+		for(int c = 0; c &lt; womenInterestedIn; c++){
+			closeWomen += womenCoordinates[c][0] + &#34; &#34; + womenCoordinates[c][1] + &#34;\n&#34;;
+		}
+		return closeWomen;
+	}
+	
+	public static void main(String... Args){
+		try{
+			Scanner input = new Scanner(new File(&#34;src/week2/input.txt&#34;));
+			PrintWriter output = new PrintWriter(&#34;src/week2/output.txt&#34;);
+			
+			String personCoordinates[] = input.nextLine().split(&#34; &#34;);
+			int[] willsCoordinates = new int[2];
+			
+			for(int counter = 0, coordinates = personCoordinates.length; counter &lt; coordinates; counter++){
+				willsCoordinates[counter] = Integer.parseInt(personCoordinates[counter]);
+			}			
+			
+			int numberOfInterestedWomen = Integer.parseInt(input.nextLine());
+			int numberOfWomen = Integer.parseInt(input.nextLine());
+			
+			String[][] womenCoordinates =  new String[numberOfWomen][2];
+			int[][] willWomenCoordinates = new int[numberOfWomen][2];
+			
+			for(int outerloop = 0; outerloop &lt; numberOfWomen; outerloop++){
+				womenCoordinates[outerloop] = input.nextLine().split(&#34; &#34;);
+				for(int innerloop = 0; innerloop &lt; 2; innerloop++)
+					willWomenCoordinates[outerloop][innerloop] = Integer.parseInt(womenCoordinates[outerloop][innerloop]);
+				
+			}
+		
+			week2 will = new week2(willsCoordinates, numberOfInterestedWomen, numberOfWomen, willWomenCoordinates);
+			output.println(will.toString());
+						
+			input.close();
+			output.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#30" data-toggle="collapse">
+            pickup - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="30">
+        <pre><code>package potw2;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Scanner;
+
+/*  
+ Author: Eric Pickup (first-year)
+ Date: Sep 25 2016
+ Program: POTW2
+ */
+
+public class POTW2 {
+
+    public static void main(String[] args) throws FileNotFoundException, IOException {
+
+        Scanner sc = new Scanner(System.in);
+        String textLine = sc.nextLine();
+
+        //Initializing variables 
+        int locOfSpace;
+        locOfSpace = textLine.indexOf(&#34; &#34;);
+        int willX = Integer.parseInt(textLine.substring(0, locOfSpace));
+        int willY = Integer.parseInt(textLine.substring(locOfSpace + 1, textLine.length()));
+        textLine = sc.nextLine();
+        int numWanted = Integer.parseInt(textLine);
+        textLine = sc.nextLine();
+        int numActual = Integer.parseInt(textLine);
+        int tempX, tempY;
+        String[] cordList = new String[numActual];
+        int distanceList[] = new int[numActual];
+
+        for (int i = 0; i &lt;= numActual - 1; i++) { //Assigning array variables
+            textLine = sc.nextLine();
+            locOfSpace = textLine.indexOf(&#34; &#34;);
+            tempX = Integer.parseInt(textLine.substring(0, locOfSpace));
+            tempY = Integer.parseInt(textLine.substring(locOfSpace + 1, textLine.length()));
+            cordList[i] = (tempX + &#34; &#34; + tempY);
+            distanceList[i] = (int) Math.sqrt((tempX - willX) * (tempX - willX) + (tempY - willY) * (tempY - willY)); //formula for calculating distance between two points
+        }
+        
+        sortDistance(cordList, distanceList);
+        
+        for (int i = 0; i &lt; numWanted; i++) {
+            System.out.println(cordList[i]);
+        }
+    }
+
+    //bubble sort, assigning the coordinates string along with the integer distances
+    public static String[] sortDistance(String[] cordList, int[] distanceList) {
+        for (int i = 0; i &lt; distanceList.length; i++) {
+            for (int j = i + 1; j &lt; distanceList.length; j++) {
+                int tmp;
+                String tmp2;
+                if (distanceList[i] &gt; distanceList[j]) {
+                    tmp = distanceList[i];
+                    tmp2 = cordList[i];
+                    distanceList[i] = distanceList[j];
+                    cordList[i] = cordList[j];
+                    distanceList[j] = tmp;
+                    cordList[j] = tmp2;
+                }
+            }
+        }
+        return cordList;
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;algorithm&gt;
+#include &lt;cmath&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+struct Position {
+  int x;
+  int y;
+  double distance;
+
+  Position(int x, int y, int a, int b) : x(x), y(y) {
+    distance = std::sqrt(((a - x) * (a - x)) + ((b - y) * (b - y)));
+  }
+};
+
+int partition(int lo, int hi, std::vector&lt;Position&gt;&amp; v);
+int k_largest(int lo, int hi, int k, std::vector&lt;Position&gt;&amp; v);
+double quick_select(std::vector&lt;double&gt;* v);
+
+bool operator&lt;(const Position&amp; a, const Position&amp; b) {
+  return a.distance &lt; b.distance;
+}
+
+bool operator&gt;(const Position&amp; a, const Position&amp; b) {
+  return a.distance &gt; b.distance;
+}
+
+bool operator==(const Position&amp; a, const Position&amp; b) {
+  return a.distance == b.distance;
+}
+
+int main() {
+  int x, y;
+  std::cin &gt;&gt; x &gt;&gt; y;
+
+  int k, n;
+  std::cin &gt;&gt; k &gt;&gt; n;
+
+  // Build a vector containing all of the distances from William.
+  std::vector&lt;Position&gt; ladies;
+  for (int i = 0; i &lt; n; ++i) {
+    int a, b;
+    std::cin &gt;&gt; a &gt;&gt; b;
+    ladies.emplace_back(a, b, x, y);
+  }
+
+  int k_idx = k_largest(0, ladies.size(), k, ladies);
+  std::vector&lt;Position&gt; closest;
+  for (int i = 0; i &lt;= k_idx; ++i) {
+    closest.push_back(ladies[i]);
+  }
+
+  std::sort(closest.begin(), closest.end());
+  for (auto lady : closest) {
+    std::cout &lt;&lt; lady.x &lt;&lt; &#34; &#34; &lt;&lt; lady.y &lt;&lt; std::endl;
+  }
+
+  return 0;
+}
+
+int partition(int lo, int hi, std::vector&lt;Position&gt;&amp; v) {
+  int i = lo, j = hi;
+  auto p = v[lo];
+
+  while (i &lt; j) {
+    while (v[i] &lt; p) ++i;
+    while (v[j] &gt; p) --j;
+    if (i &gt;= j) break;
+    std::swap(v[i], v[j]);
+    if (v[i] == v[j]) {
+      ++i;
+      --j;
+    }
+  }
+
+  return j;
+}
+
+int k_largest(int lo, int hi, int k, std::vector&lt;Position&gt;&amp; v) {
+  if (lo &gt;= hi) {
+    return lo;
+  }
+
+  int p = partition(lo, hi, v);
+  if (p == k) {
+    return p;
+  } else if (p &lt; k) {
+    return k_largest(p + 1, hi, k, v);
+  } else {
+    return k_largest(lo, p - 1, k, v);
+  }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#32" data-toggle="collapse">
+            gabriels - C#
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="32">
+        <pre><code>﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Drawing;
+using System.Threading.Tasks;
+/*
+ * Gabriele, Selina 
+ * October 2016
+ * Given an X and Y Coordinate, find K closest-coordinates out of N inputs
+ * Input: X and Y value, K number of points, N&gt;=K total points, N coordinates
+ * Output: List of K closest coordinates
+ */
+namespace POTW_2
+{
+
+    class Program
+    {
+        public static Point willLocation { get; set; }
+        static void Main(string[] args)
+        {
+            int womenIndex=0;
+            string[] coordinates = Console.ReadLine().Split();                                           //Get Will&#39;s Location
+            willLocation = new Point(Int32.Parse(coordinates[0]),
+                                            Int32.Parse(coordinates[1]));
+            int interestedWomen = Int32.Parse(Console.ReadLine());                                       //How many lady&#39;s he digging
+            int totalWomen = Int32.Parse(Console.ReadLine());                                            //How many are around
+            Point[] womenLocations = new Point[totalWomen];
+            Point[] closestWomen = new Point[interestedWomen];                                           //for output
+            for (int i = 0; i &lt; totalWomen; i++)
+            {
+                coordinates = Console.ReadLine().Split();                                                //Where dey at doe
+                womenLocations[i] = new Point(Int32.Parse(coordinates[0]),
+                                                Int32.Parse(coordinates[1]));
+            }
+            Point kthSmallest = Select(womenLocations, 0, womenLocations.Length - 1, interestedWomen);  //Pick the kth closest one
+            double kthDistance = GetDistance(kthSmallest);                                              //get her distance
+            Console.WriteLine();
+            for(int j = 0; j &lt; totalWomen; j++)
+            {
+                if(GetDistance(womenLocations[j]) &lt; kthDistance)
+                {
+                    closestWomen[womenIndex] = womenLocations[j];                                        //put the rest of the women who are closer in an array    
+                    
+                    womenIndex++;
+                }
+            }
+            QuickSort(closestWomen, 0, interestedWomen-1);
+            for(int m = 0; m &lt; interestedWomen; m++)
+            {
+                Console.WriteLine(&#34;{0} {1}&#34;, closestWomen[m].X.ToString(), closestWomen[m].Y.ToString());   //Let will know their location 
+            }
+            Console.ReadLine();
+       
+        }
+
+       
+        //split the coordinates into smaller and larger portion in reference to the kth element
+        //return the index that the kth smallest element is at
+        public static int Partition(int pivotIndex, int leftIndex, int rightIndex, Point[] coordinates)
+        {          
+            //put the pivot at the end of the array 
+            Swap(coordinates, pivotIndex, rightIndex);
+            int store = leftIndex;
+            for(int i=leftIndex; i &lt;rightIndex; i++)
+            {
+                if(GetDistance(coordinates[i]) &lt; GetDistance(coordinates[rightIndex]))
+                {
+                    Swap(coordinates, store, i);
+                    store++;
+                }
+            }
+            //restore pivot
+            Swap(coordinates, store, rightIndex);
+            return store;
+        }
+        //find the point of the kth element and return it
+        public static Point Select(Point[] coordinates, int leftIndex, int rightIndex, int k)
+        {
+            if (leftIndex == rightIndex)
+                return coordinates[leftIndex];
+            int pivotIndex = new Random().Next(leftIndex, rightIndex);
+            pivotIndex = Partition(pivotIndex, leftIndex, rightIndex, coordinates);
+
+            if (k == pivotIndex)
+                return coordinates[k];
+            else if (k &lt; pivotIndex)
+                return Select(coordinates, leftIndex, pivotIndex - 1, k);
+            else
+                return Select(coordinates, pivotIndex + 1, rightIndex, k);
+        }
+        //Sort the array for output using QuickSort
+        private static void QuickSort(Point[] coordinates, int leftIndex, int rightIndex)
+        {
+            if (leftIndex &gt;= rightIndex)
+                return;
+            Point pivotPoint = coordinates[leftIndex];
+            int leftStore = leftIndex;
+            int rightStore = rightIndex;
+            while(leftStore &lt; rightStore)
+            {
+                while(leftStore &lt; rightStore &amp;&amp; GetDistance(coordinates[rightStore]) &gt; GetDistance(pivotPoint))
+                {
+                    rightStore--;
+                }
+                coordinates[leftStore] = coordinates[rightStore];
+                while(leftStore &lt; rightStore &amp;&amp; GetDistance(coordinates[leftStore]) &lt; GetDistance(pivotPoint))
+                {
+                    leftStore++;
+                }
+                coordinates[rightStore] = coordinates[leftStore];
+            }
+            coordinates[leftStore] = pivotPoint;
+
+            QuickSort(coordinates, leftIndex, leftStore - 1);
+            QuickSort(coordinates, leftStore + 1, rightIndex);
+        }
+
+        //Calculate the distance between will&#39;s location and the lady&#39;s
+        public static double GetDistance(Point neighbour)
+        {
+           double dist = Math.Sqrt(Math.Pow(neighbour.X - willLocation.X, 2) + Math.Pow(neighbour.Y - willLocation.Y, 2));
+
+            return dist;
+        }
+
+       //Swap for partitioning
+        private static void Swap(Point[] coordinates, int i, int j)
+        {
+            Point tempSwap = coordinates[i];
+            coordinates[i] = coordinates[j];
+            coordinates[j] = tempSwap;
+              
+        }
+
+ 
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>fn main() {
+    let input = read_input();
+    let lines: Vec&lt;&amp;str&gt; = input.lines().collect();
+
+    let will_coord: Vec&lt;i32&gt; = lines[0]
+        .splitn(2, &#39; &#39;)
+        .map(|x| x.parse().unwrap())
+        .collect();
+    let k: usize = lines[1].parse().unwrap();
+    let n: usize = lines[2].parse().unwrap();
+
+    let mut women: Vec&lt;(i32, i32, u32)&gt; = Vec::with_capacity(n);
+    for line in lines.iter().skip(3) {
+        women.push(make_triple(line, &amp;will_coord));
+    }
+
+    let mut short_list = select_k(women, k);
+    short_list.sort_by_key(|w| w.2);
+    for women in short_list {
+        println!(&#34;{} {}&#34;, women.0, women.1);
+    }
+}
+
+fn select_k(mut women: Vec&lt;(i32, i32, u32)&gt;, k: usize) -&gt; Vec&lt;(i32, i32, u32)&gt; {
+    let pivot = women.last().unwrap().2;
+    let mut index = 0;
+    let len = women.len();
+    for i in 0..women.len() {
+        if women[i].2 &lt; pivot {
+            women.swap(i, index);
+            index += 1;
+        }
+    }
+    women.swap(index, len - 1);
+
+    if index == k - 1 {
+        women.truncate(index + 1);
+        women
+    } else if index &lt; k - 1 {
+        let right = women.split_off(index);
+        let mut short_list = select_k(right, k - index);
+        women.append(&amp;mut short_list);
+        women
+    } else {
+        women.truncate(index);
+        select_k(women, k)
+    }
+}
+
+#[inline]
+fn make_triple(line: &amp;str, will: &amp;Vec&lt;i32&gt;) -&gt; (i32, i32, u32) {
+    let coord: Vec&lt;i32&gt; = line.splitn(2, &#39; &#39;)
+        .map(|x| x.parse().unwrap())
+        .collect();
+    let dist_sq: u32 = ((coord[0] - will[0]).pow(2) + (coord[1] - will[1]).pow(2)) as u32;
+    (coord[0], coord[1], dist_sq)
+}
+
+fn read_input() -&gt; String {
+    use std::io::{self, Read};
+
+    let mut buf = String::new();
+    io::stdin()
+        .read_to_string(&amp;mut buf)
+        .expect(&#34;Failed reading input.&#34;);
+    buf
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Haskell
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>import Data.List (partition, sort)
+import Data.List.Split (splitOn)
+import Control.Monad (replicateM)
+import System.IO
+
+-- | A lady is defined by her X, Y coordinates and her distance from William.
+data Lady = Lady Int Int Int
+
+-- | Equality and comparison are based only on distance from William.
+instance Eq Lady where
+  (==) (Lady _ _ d1) (Lady _ _ d2) = d1 == d2
+
+instance Ord Lady where
+  compare (Lady _ _ d1) (Lady _ _ d2) = d1 `compare` d2
+
+instance Show Lady where
+  show (Lady x y _) = show x ++ &#34; &#34; ++ show y
+
+-- | The squared distance between two x y coordinates.  The square distance
+--   is used because for this particular problem only the relative ordering
+--   between distances is needed.  This allows for the expensive call to sqrt
+--   to be skipped.
+distanceSq :: (Int, Int) -&gt; (Int, Int) -&gt; Int
+distanceSq (x1, y1) (x2, y2) = (x1 - x2)^2 + (y1 - y2)^2
+
+-- | Given a ladies X, Y coordinates and Williams X,Y coordinates, create
+--   a Lady.
+toLady :: (Int, Int) -&gt; (Int, Int) -&gt; Lady
+toLady willPos ladyPos = Lady (fst ladyPos) (snd ladyPos) (distanceSq willPos ladyPos)
+
+-- | Select the kth smallest element from a list using the &lt; operator for
+--   comparison.
+quickselect :: (Ord a) =&gt; Int -&gt; [a] -&gt; a
+quickselect k (x:xs)
+  | k &lt; lengthLeft = quickselect k left
+  | k &gt; lengthLeft = quickselect (k - lengthLeft - 1) right
+  | otherwise = x
+    where (left, right) = partition (&lt; x) xs
+          lengthLeft = length left
+
+-- | Return the k smallest elements in a list with respect to the &lt; operator.
+--   The resulting list may not be sorted.
+smallestK :: (Ord a) =&gt; Int -&gt; [a] -&gt; [a]
+smallestK k original = take k $ filter (&lt;= e) original
+  where e = quickselect (k-1) original
+
+-- | Helper function for reading a point (pair of ints) from stdin.
+readPoint :: IO (Int, Int)
+readPoint = do
+  [x, y] &lt;- map read . splitOn &#34; &#34; &lt;$&gt; getLine
+  return (x, y)
+
+-- | Helper function for reading an int from stdin.
+readInt :: IO Int
+readInt = read &lt;$&gt; getLine
+
+main = do
+  william &lt;- readPoint
+  k &lt;- readInt
+  n &lt;- readInt
+  ladies &lt;- map (toLady william) &lt;$&gt; replicateM n readPoint
+  mapM_ print $ sort $ smallestK k ladies
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#42" data-toggle="collapse">
+            roederw - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="42">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;cmath&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+
+struct gurl {
+    int x;
+    int y;
+    int distance;
+
+    gurl(int x1, int y1, int x2, int y2) : x(x1), y(y1) {
+        distance = std::sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)));
+    }
+};
+
+bool operator &lt; (const gurl&amp; a, const gurl&amp; b) {
+    return a.distance &lt; b.distance;
+}
+
+int main() {
+    int will_x, will_y;
+    int will_wants, alot_of_women;
+    std::vector&lt;gurl&gt; gurls;
+
+    std::cin &gt;&gt; will_x &gt;&gt; will_y;
+    std::cin &gt;&gt; will_wants &gt;&gt; alot_of_women;
+    
+    for (int i = 0; i &lt; alot_of_women; ++i) {
+        int x, y;
+        std::cin &gt;&gt; x &gt;&gt; y;
+        gurls.emplace_back(x, y, will_x, will_y);
+    }
+
+    std::nth_element(gurls.begin(), gurls.begin() + will_wants, gurls.end()); // Can I just use this without writing my own? STD &gt; All
+    std::sort(gurls.begin(), gurls.begin() + will_wants);
+
+    for (int i = 0; i &lt; will_wants; ++i)
+        std::cout &lt;&lt; gurls[i].x &lt;&lt; &#34; &#34; &lt;&lt; gurls[i].y &lt;&lt; std::endl;
+
+    return 0;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#38" data-toggle="collapse">
+            ayoub116 - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="38">
+        <pre><code>import java.util.*;
+
+/*
+ * Ali Ayoub [15.01.2017]
+ * POTW 2016 week 2 created by Quinn Perfetto
+ * http://potw.quinnftw.com/problem/2016/2/
+ * 
+ * K nearest neighbors
+ * finding the k closest people to Will
+ */
+
+public class NearestNeighbours {
+	
+	public static class Tree {
+		private Person root;
+		
+		public void insert(Person p) {
+			if (root == null) {
+				root = p;
+				return;
+			}
+			
+			if (p.distance &lt;= root.distance) {
+				if (root.left == null) {
+					root.left = p;
+				} else {
+					insert(p, root.left);
+				}
+			} else {
+				if (root.right == null) {
+					root.right = p;
+				} else {
+					insert(p, root.right);	
+				}
+			}
+		}
+		
+		private void insert(Person p, Person parent) {
+			if (p.distance &lt;= parent.distance) {
+				if (parent.left == null) {
+					parent.left = p;
+				} else {
+					insert(p, parent.left);
+				}
+			} else {
+				if (parent.right == null) {
+					parent.right = p;
+				} else {
+					insert(p, parent.right);
+				}
+			}
+		}
+		
+		public void collectClosestK(Person root, ArrayList&lt;Person&gt; closest, int k) {
+			if (root == null) {
+				return;
+			}
+			
+			collectClosestK(root.left, closest, k);
+			if (closest.size() &lt; k) {
+				closest.add(root);
+			} else {
+				return;
+			}
+			collectClosestK(root.right, closest, k);
+		}
+	}
+	
+	public static class Person {
+		private int x;
+		private int y;
+		private int distance;
+		private Person left;
+		private Person right;
+		
+		public Person(int x, int y) {
+			this.x = x;
+			this.y = y;
+			left = null;
+			right = null;
+		}
+	
+	}
+
+	public static void main(String[] args) {
+		Scanner in = new Scanner(System.in);
+		int x = in.nextInt();
+		int y = in.nextInt();
+		int k = in.nextInt();
+		int n = in.nextInt();
+		
+		// create Will
+		Person w = new Person(x, y);
+		w.distance = 0;
+
+		Tree tree = new Tree();
+		Person p1 = new Person(in.nextInt(), in.nextInt());
+		p1.distance = ((int)Math.pow(p1.x - w.x, 2) + (int)Math.pow(p1.y - w.y, 2));
+		tree.insert(p1);
+		
+		for (int i = 0; i &lt; n-1; i++) {
+			Person p = new Person(in.nextInt(), in.nextInt());
+			p.distance = ((int)Math.pow(p.x - w.x, 2) + (int)Math.pow(p.y - w.y, 2));
+			tree.insert(p);
+		}
+		
+		in.close();
+
+		ArrayList&lt;Person&gt; closest = new ArrayList&lt;Person&gt;();
+		tree.collectClosestK(tree.root, closest, k);
+		for(Person p : closest) {
+			System.out.println(p.x + &#34; &#34; + p.y);
+		}
+		
+	}
+
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

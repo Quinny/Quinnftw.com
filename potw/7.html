@@ -1,0 +1,860 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>The best thing about being me... There are so many "me"s</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="http://vignette4.wikia.nocookie.net/matrix/images/c/c8/Agent_Smith2.jpg/revision/latest?cb=20090501201325" class="img-responsive">
+</div>
+<br />
+Each program in the matrix, including Agent Smith, is assigned an incremental process ID.   When Agent Smith infects another program he changes their process ID to his own.  Agent Smith is the only program that has this ability.  This creates a glitch in the matrix, since there now exists multiple processes with the same ID.  Given the process ID's for each program in the matrix, determine Agent Smith's process ID.
+<br />
+<h3>Input format</h3>
+<ul>
+<li>An integer <code>N</code> representing the number of programs in the matrix</li>
+<li><code>N</code> space separated integers in the range <code>[1, N - 1]</code></li>
+</ul>
+<h3>Output Format</h3>
+<ul>
+<li>A single integer <code>P</code> representing agent Smiths process ID</li>
+</ul>
+
+<div class="row">
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+10
+3 4 7 9 2 4 1 4 6 5
+</pre>
+</div>
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+4
+</pre>
+</div>
+</div>
+
+<div style="background-color: rgba(0, 255, 0, 0.5); padding:10px;">
+3rd and fourth year students must be able to identify Agent Smith using <b>O(1)</code> additional memory and O(n) time</b>
+<small><a href="https://www.jasondavies.com/duplicates/">spoiler</a></small>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int main() {
+	size_t N;
+	int n;
+	std::cin &gt;&gt; N;
+
+	std::vector&lt;int&gt; vec;
+
+	for(size_t i = 0; i &lt; N; i++) {
+		std::cin &gt;&gt; n;
+		vec.push_back(n);
+	}
+
+	for(size_t i = 0; i &lt; vec.size(); i++) {
+		if(vec[abs(vec[i])] &gt;= 0)
+			vec[abs(vec[i])] = -vec[abs(vec[i])];
+		else {
+			std::cout &lt;&lt; abs(vec[i]) &lt;&lt; std::endl;
+			return 0;
+		}
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>from collections import Counter
+
+def getinput():
+    return input()
+
+# Creates a count of how many times each process ID appears
+def findDuplicates(inputList):
+    processTally = Counter()
+    for i in inputList:
+        processTally[i] += 1
+    return processTally
+
+# Returns the most frequent ID
+def identifySmith(inputList):
+    # The most common process
+    smith = findDuplicates(inputList).most_common(1)
+    # Just return the process ID
+    return smith[0][0]
+
+# Never actually used...
+processCount = getinput()
+# The list of process ID&#39;s
+processes = getinput().split()
+# The main function
+print(identifySmith(processes))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;iterator&gt;
+#include &lt;vector&gt;
+
+template &lt;typename Node, typename AdvanceFn&gt;
+Node get_cycle_start(const Node&amp; start, const AdvanceFn&amp; advance) {
+  auto tortoise = start;
+  auto hare = start;
+
+  do {
+    tortoise = advance(tortoise);
+    hare = advance(advance(hare));
+  } while (tortoise != hare);
+
+  hare = start;
+  while (tortoise != hare) {
+    tortoise = advance(tortoise);
+    hare = advance(hare);
+  }
+
+  return tortoise;
+}
+
+int main() {
+  int n;
+  std::cin &gt;&gt; n;
+
+  const std::vector&lt;int&gt; process_ids{std::istream_iterator&lt;int&gt;(std::cin),
+                                     std::istream_iterator&lt;int&gt;()};
+
+  const auto agent = get_cycle_start(
+      process_ids.back(),
+      [&amp;process_ids](const int x) { return process_ids[x - 1]; });
+  std::cout &lt;&lt; agent &lt;&lt; std::endl;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#31" data-toggle="collapse">
+            mishrai - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="31">
+        <pre><code>#include &lt;iostream&gt;
+
+int findAgentSmith(int len, int pids[]){
+	for(size_t i = 0; i &lt; len; i++){
+		// must use abs to preserve ability to use value as index
+		if(pids[abs(pids[i])] &gt;= 0)
+			pids[abs(pids[i])] = -pids[abs(pids[i])]; 
+		else // if something repeats, it&#39;s value is negative, return it&#39;s abs
+			return abs(pids[i]);
+	}
+}
+
+int main(void){
+	int N;
+	std::cin &gt;&gt; N;
+	int pids[N];
+	for(size_t i = 0; i &lt; N; i++) std::cin &gt;&gt; pids[i];
+	std::cout &lt;&lt; findAgentSmith(N, pids);
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#35" data-toggle="collapse">
+            vandolda - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="35">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main(void)
+{
+	int n;
+	int *ns;
+	
+	scanf(&#34;%d&#34;, &amp;n);
+	ns = (int*)malloc(n * sizeof(int));
+	for (int i = 0; i &lt; n; i++) {
+		ns[i] = 0;
+	}
+	
+	for (int i = 0; i &lt; n; i++) {
+		int j;
+		
+		scanf(&#34;%d&#34;, &amp;j);
+		if (ns[j - 1]) {
+			printf(&#34;%d&#34;, j);
+			break;
+		}
+		
+		ns[j - 1] = 1;
+	}
+	
+	free(ns);
+	
+	return EXIT_SUCCESS;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>/*
+ * =====================================================================================
+ *
+ *       Filename:  potw6.cpp
+ *
+ *    Description:
+ *
+ *        Version:  1.0
+ *        Created:  16/10/2016 20:58:37
+ *       Revision:  none
+ *       Compiler:  g++
+ *
+ *         Author:  Jose Alba
+ *   Organization:
+ *
+ * =====================================================================================
+ */
+
+
+#include&lt;iostream&gt;
+#include&lt;cmath&gt;
+
+using namespace std;
+
+int main(){
+    
+    unsigned int N;
+    cin &gt;&gt; N;
+    
+    int matrix[N];
+    
+    if(N &lt; 64){
+        long int checker = 0;
+        int currentValue;
+        //Due to the pigeonhold principle we know the if statement will activiate 
+        for(size_t c = 0; c &lt; N; c++){
+            cin &gt;&gt; currentValue;
+            if((checker &amp; (1 &lt;&lt; currentValue)) &gt; 0){
+                cout &lt;&lt; currentValue &lt;&lt; endl;
+                break;
+            }
+            checker |= (1 &lt;&lt; currentValue);
+        }
+    }
+
+    else{
+        for(size_t c = 0; c &lt; N; c++){
+            cin &gt;&gt; matrix[c];
+        }
+
+        for(size_t c = 0; c &lt; N; c++){
+            int currentValue = abs(matrix[c]);
+            if(matrix[currentValue] &gt; 0){
+                matrix[currentValue] = -matrix[currentValue];
+            }
+            else{
+                cout &lt;&lt; currentValue &lt;&lt; endl;
+                break;
+            } 
+        }
+    }
+
+    return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#17" data-toggle="collapse">
+            mccarth7 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="17">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdlib&gt;
+
+void print_repeat(std::vector&lt;int&gt; nums) {
+
+	for (int i = 0; i &lt; nums.size(); i++) {
+		if (nums[abs(nums[i])] &gt; 0)
+			nums[abs(nums[i])] = -nums[abs(nums[i])];
+		else {
+			std::cout &lt;&lt; abs(nums[i]) &lt;&lt; std::endl;
+			return;
+		}
+	}
+}
+
+int main() {
+
+	std::vector&lt;int&gt; nums;
+	int n, k;
+
+	std::cin &gt;&gt; n;
+
+	while (n-- &gt; 0) {
+		std::cin &gt;&gt; k;
+		nums.push_back(k);
+	}
+
+	print_repeat(nums);
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.*;
+
+public class w6 {
+
+    public static int getRepeatingElement(int[] a) {
+        for (int i = 0; i &lt; a.length; i++) {
+            if (a[Math.abs(a[i])] &gt; 0)
+                a[Math.abs(a[i])] = -a[Math.abs(a[i])];
+            else
+                return Math.abs(a[i]);
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        int n = kb.nextInt();
+        int[] a = new int[n];
+        for (int i = 0; i &lt; n; i++) {
+            a[i] = kb.nextInt();
+        }
+        System.out.println(getRepeatingElement(a));
+    }
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>use std::io;
+use std::io::prelude::*;
+
+fn main() {
+	let input = {
+		let mut buf = String::new();
+		io::stdin()
+			.read_to_string(&amp;mut buf)
+			.expect(&#34;Could not read from stdin.&#34;);
+		buf
+	};
+
+	let mut lines = input.lines();
+
+	let n = lines.next()
+		.and_then(|v| v.parse::&lt;usize&gt;().ok())
+		.expect(&#34;Invalid n.&#34;);
+
+	let mut nums = lines.next()
+		.map(|v| {
+			v.split_whitespace()
+				.take(n)
+				.map(|v| {
+					v.parse::&lt;usize&gt;()
+						.expect(&#34;Invalid number in sequence.&#34;)
+				}).collect::&lt;Vec&lt;_&gt;&gt;()
+		})
+		.expect(&#34;Invalid number line.&#34;);
+
+	// Find the frequency of each number and store it at the 
+	// index of that number - 1.
+	// We can preserve the current value of the number by
+	// adding n and using mod.
+	for i in 0..n {
+		let v = nums[i] as usize;
+
+		if nums[i] &lt; n {
+			nums[v - 1] += n;
+		} else {
+			nums[v % n - 1] += n;
+		}
+	}
+
+	// Find the id with the greatest frequency.
+	let mut id = 0;
+	for i in 1..n {
+		if nums[i] &gt; nums[id] {
+			id = i;
+		}
+	}
+
+	// Process ids are from 1 to N-1.
+	println!(&#34;{}&#34;, id + 1);
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#28" data-toggle="collapse">
+            culmonen - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="28">
+        <pre><code>//potw.java
+//Nicholas Culmone
+
+import java.util.*;
+
+public class potw{
+	public static void main(String[]args){
+
+		Scanner kb = new Scanner(System.in);
+		int progs = kb.nextInt();
+		kb.nextLine();
+		String[]ids = kb.nextLine().split(&#34; &#34;);
+
+		ArrayList&lt;Integer&gt;soFar = new ArrayList&lt;Integer&gt;();
+
+		for(int i=0;i&lt;progs;i++){
+			int idTmp = Integer.parseInt(ids[i]);
+			if(soFar.contains(idTmp)){
+				System.out.println(&#34;&#34; + idTmp);
+				break;
+			}
+			else{
+				soFar.add(idTmp);
+			}
+		}
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#!/usr/bin/env python3
+
+n = int(input())
+arr = [int(x) for x in input().split()]
+
+for i in range(n):
+    index = abs(arr[i])
+    if arr[index] &lt; 0:
+        print(index)
+        exit()
+    else:
+        arr[index] = arr[index] * -1
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#12" data-toggle="collapse">
+            singh1jo - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="12">
+        <pre><code>import java.util.Scanner;
+import java.util.StringTokenizer;
+
+public class RepeatingElement {
+	
+	public static void main(String[] arr) {
+		
+		//local variable
+		int totalElement=0;
+		int[] CountingNumber;
+		int number=0, index=0;
+		String Id;
+		
+		//Setting input
+		Scanner s = new Scanner(System.in);
+		totalElement= s.nextInt();
+		CountingNumber = new int[totalElement];
+		s.nextLine();
+		Id=s.nextLine();
+
+		//Store the element at its specific position
+		StringTokenizer IdSeparator = new StringTokenizer(Id, &#34; &#34;);
+		 while(IdSeparator.hasMoreTokens()){
+			 number = (Integer.parseInt(IdSeparator.nextToken()));
+			 if(CountingNumber[number-1] &gt; 0){
+				 System.out.println(number);
+				 return;
+			 }
+			  CountingNumber[number-1]=CountingNumber[number-1]+1;
+		 }	 
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#33" data-toggle="collapse">
+            kaise - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="33">
+        <pre><code>import java.util.Collections;
+import java.util.Scanner;
+import java.util.ArrayList;
+
+public class potw6 {
+
+    public static void main(String[] args) {
+        int size, i;
+        Scanner in = new Scanner(System.in);
+        size = in.nextInt();
+        in.nextLine();
+        ArrayList&lt;Integer&gt; array = new ArrayList&lt;Integer&gt;();
+        for(i=0; i&lt;size; ++i) {
+            array.add(i, in.nextInt());
+        }
+        /***
+         * From how I understand this, every time an integer n is found in the list, using the mod operator
+         * the value at array[n] will be incremented by the size of array
+         * by adding it by the same size, it breaks ties if there are 2 of the same quantity of different numbers by choosing
+         * the higher valued one. Otherwise the highest value will be getting the most hits, the index of which
+         * will have the value using mod due to incrementing by mod each time during the initial run-through
+         */
+
+        for(i=0; i&lt;size; ++i) {
+            int mov = array.get(i)%size;
+            array.set(mov, array.get(mov) + size);
+
+        }
+        System.out.println(array.indexOf(Collections.max(array)));
+    }
+
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;inttypes.h&gt;
+
+int main() {
+    uint32_t n, x;
+    scanf(&#34;%u/n&#34;, &amp;n);
+    /* Allocate and zero initiliaze an array of size n */
+    uint32_t *pids = calloc(n, sizeof(uint32_t));
+    /* Storing counts of appearances instead of the actual sequence of values */
+    scanf(&#34;%u&#34;, &amp;x);
+    for(uint32_t i = 1; i &lt; n; ++i) {
+        pids[x] += 1;
+        scanf(&#34; %u&#34;, &amp;x);
+    }
+    pids[x] += 1;
+    
+    for(uint32_t i = 0; i &lt; n; ++i) {
+        if (pids[i] &gt; 1) {
+            printf(&#34;%u\n&#34;, i);
+            free(pids);
+            return 0;
+        }
+    }
+
+    free(pids);
+    return -1;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#37" data-toggle="collapse">
+            vanier1 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="37">
+        <pre><code>#include&lt;iostream&gt;
+
+using namespace std;
+
+int main() {
+	int numPrograms;
+	cin &gt;&gt; numPrograms;
+	long long int array[numPrograms];
+	for(int a = 0; a &lt; numPrograms; ++a) {
+		long long int temp;
+		cin &gt;&gt; temp;
+		if(array[temp] == temp) { cout &lt;&lt; temp &lt;&lt; endl; break; }
+		array[temp] = temp;
+	}
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#24" data-toggle="collapse">
+            chanad - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="24">
+        <pre><code>#include &lt;cstdio&gt;
+
+using namespace std;
+
+int main() {
+    int n, smith = -1;
+    scanf(&#34;%d&#34;, &amp;n);
+
+    int progs[n];
+    for (int i = 0; i &lt; n; i++) {
+        progs[i] = 0;
+    }
+    
+    for (int i = 0; i &lt; n; i++) {
+        int userIn;
+        scanf(&#34;%d&#34;, &amp;userIn);
+
+        if (progs[userIn] == 0) {
+            progs[userIn]++;
+        }
+        else if (smith == -1) {
+            smith = userIn;
+        }
+    }
+
+    printf(&#34;%d\n&#34;, smith);
+
+    return 0;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+// Use Floyd&#39;s cycle detection algorithm to identify the repeating element.
+int infected(const std::vector&lt;int&gt;&amp; v) {
+  int tortoise = v[v[v.size() - 1] - 1], hare = v[v[v[v.size() - 1] - 1] - 1];
+  while (tortoise != hare) {
+    tortoise = v[tortoise - 1];
+    hare = v[v[hare - 1] - 1];
+  }
+
+  tortoise = v[v.size() - 1];
+  while (tortoise != hare) {
+    tortoise = v[tortoise - 1];
+    hare = v[hare - 1];
+  }
+  return tortoise;
+}
+
+int main() {
+  int n;
+  std::cin &gt;&gt; n;
+  std::vector&lt;int&gt; v;
+  while (n--) {
+    int tmp;
+    std::cin &gt;&gt; tmp;
+    v.push_back(tmp);
+  }
+
+  std::cout &lt;&lt; infected(v) &lt;&lt; std::endl;
+  return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#42" data-toggle="collapse">
+            roederw - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="42">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int next_id(const std::vector&lt;int&gt;&amp; process_ids, int n) {
+    return process_ids[n - 1];
+}
+
+int find_duplicate(const std::vector&lt;int&gt;&amp; process_ids) {
+    int slow = process_ids.back();
+    int fast = process_ids.back();
+
+    do {
+        slow = next_id(process_ids, slow);
+        fast = next_id(process_ids, next_id(process_ids, fast));
+    } while (slow != fast);
+
+    fast = process_ids.back();
+
+    while (slow != fast) {
+        slow = next_id(process_ids, slow);
+        fast = next_id(process_ids, fast);
+    }
+
+    return slow;
+}
+
+int main() {
+    int n;
+    std::vector&lt;int&gt; process_ids;
+    std::cin &gt;&gt; n;
+
+    for (int i = 0; i &lt; n; ++i) {
+        int temp_id;
+        std::cin &gt;&gt; temp_id;
+        process_ids.emplace_back(temp_id);
+    }
+
+    auto duplicate_value = find_duplicate(process_ids);
+    std::cout &lt;&lt; duplicate_value &lt;&lt; std::endl;
+    return 0;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#38" data-toggle="collapse">
+            ayoub116 - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="38">
+        <pre><code>package week6;
+import java.util.*;
+
+/*
+ * Ali Ayoub [24.01.2017]
+ * POTW 2016 week 6 created by Quinn Perfetto
+ * http://potw.quinnftw.com/problem/2016/6/
+ * 
+ * Agent Smith
+ * Determine which program is Agent Smith
+ */
+
+public class AgentSmith {
+
+	public static void main(String[] args) {
+		Scanner in = new Scanner(System.in);
+		int n = in.nextInt();
+		in.nextLine();
+		
+		HashSet&lt;Integer&gt; programs = new HashSet&lt;Integer&gt;();
+		while (in.hasNextInt()) {
+			int next = in.nextInt();
+			if (programs.contains(next)) {
+				System.out.println(next);
+				return;
+			}
+			programs.add(next);
+		}
+
+		in.close();
+	}
+
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

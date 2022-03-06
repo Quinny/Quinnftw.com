@@ -1,0 +1,1332 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Squad Goals</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div class="row">
+<div class="col-md-12">
+<div class="text-center">
+<img src="http://i.imgur.com/JlExnUC.png" class="img-responsive"/><br />
+<small><a href="https://en.wikipedia.org/wiki/Linus_Torvalds">Linus Torvalds</a> - creator of Linux and git,
+<a href="http://www.stroustrup.com/">Bjarne Stroustrup</a> - creator of C++,
+
+<a href="https://stallman.org/">Richard Stallman</a> - Founder of GNU</small>
+</div>
+</div>
+</div>
+<br />
+The computer science program at uWindsor is partitioned into a disjoint collection of groups, more commonly known as "Squads."   To be considered part of a squad, you need only be friends with a single member of it (friendship is a bidirectional relationship, i.e. a is friends with b <=> b is friends with a).  When two people are members of the same squad, they are known to be "rolling with" each other.
+<br /><br />
+Given a list of friendships, answer queries of the form "Does X roll with Y?"<br />
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> denoting  the number of friendships in computer science</li>
+<li>N lines of the format <code>person1 person2</code> denoting that <code>person1</code> is friends with <code>person2</code>.  People will be identified by their names which will be a sequence of lower case letters</li>
+<li>An integer <code>M</code> denoting the number of "roll with" queries</li>
+<li><code>M</code> lines of the form <code>person1 person2</code> asking "Does <code>person1</code> roll with <code>person2</code>?"</li>
+</ul>
+<h3>Output Format</h3>
+<ul>
+<li><code>M</code> lines, where the <code>i</code>'th line answers the <code>i</code>'th query.  If the two people roll with each other output "yes", otherwise "no".</li>
+</ul>
+
+<div class="row">
+<div class="col-md-6">
+<h2>Sample Input</h2>
+<pre>
+4
+quinn dave
+gabe dave
+maher haris
+mike mulatti
+2
+quinn gabe
+mike dave
+</pre>
+</div>
+<div class="col-md-6">
+<h2>Sample Output</h2>
+<pre>
+yes
+no
+</pre>
+</div>
+</div>
+<div style="background-color: rgba(0, 255, 0, 0.5); padding:10px;">
+3rd and fourth years must answer roll with queries in O(log(n)) time. <small><a href="https://en.wikipedia.org/wiki/Disjoint-set_data_structure">spoiler</a></small>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#32" data-toggle="collapse">
+            gabriels - C#
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="32">
+        <pre><code>﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+/*
+ * Gabriele, Selina 
+ * October 2016
+ * POTW 4
+ * Use disjoint sets to find friend sets within CS
+ * Input: N, N*Friend Sets (2 people), M, M*Friendship checks
+ * Output: you either can or can&#39;t sit with us
+ */
+namespace POTW_4
+{
+    public class Program
+    {
+
+        static void Main(string[] args)
+        {
+            int numOfFriendships = Int32.Parse(Console.ReadLine());
+            List&lt;Person&gt; Homies = new List&lt;Person&gt;();                           //For access to the Person objects created
+            DisjointSet Squads = new DisjointSet();
+            Person p1 = new Person();
+            Person p2 = new Person();
+            for (int i = 0; i &lt; numOfFriendships; i++)
+            {
+                string[] friends = Console.ReadLine().Split();
+                if (!Homies.Any(x =&gt; x.Name.Equals(friends[0].ToLower())))            //If we haven&#39;t already seen this homie
+                {
+                   
+                    p1 = new Person(friends[0].ToLower());
+                    Homies.Add(p1);
+                    Squads.MakeSet(p1);
+
+                }
+                else
+                    p1 = Homies.Single(x =&gt; x.Name.Equals(friends[0].ToLower()));   //grab the homie if we have
+
+                if (!Homies.Any(x =&gt; x.Name.Equals(friends[1].ToLower())))
+                {
+
+                    p2 = new Person(friends[1].ToLower());
+                    Homies.Add(p2);
+                    Squads.MakeSet(p2);
+
+                }
+                else
+                    p2 = Homies.Single(x =&gt; x.Name.Equals(friends[1].ToLower()));
+                Squads.Union(p1, p2);
+            }
+
+            int numOfFriendChecks = Int32.Parse(Console.ReadLine());
+            string[] areTheyFriends = new string[numOfFriendChecks];                                    //store the results for clean output
+            for (int j = 0; j &lt; numOfFriendChecks; j++)
+            {
+                string[] rollsWith = Console.ReadLine().Split();
+                p1 = Homies.Single(x =&gt; x.Name.Equals(rollsWith[0].ToLower()));
+                p2 = Homies.Single(x =&gt; x.Name.Equals(rollsWith[1].ToLower()));
+                if (p1 == null || p2 == null)                                                              //make sure they are referring to people in the forest
+                {
+                    Console.WriteLine(&#34;You may have messed up the spelling, try again.&#34;);
+                    --j;
+                }
+                else
+                    areTheyFriends[j] = Squads.IsUnioned(p1, p2) ? &#34;yes&#34; : &#34;no&#34;;                            
+            }
+            Console.WriteLine();
+            for (int k = 0; k &lt; numOfFriendChecks; k++)
+            {
+                Console.WriteLine(&#34;{0}&#34;, areTheyFriends[k]);                                                //print out the stored results
+            }
+            Console.ReadLine();
+
+        }
+    }
+
+    public class DisjointSet
+    {
+        private Dictionary&lt;Person, Node&gt; Friends = new Dictionary&lt;Person, Node&gt;();
+
+        public void MakeSet(Person friend)
+        {
+            Friends.Add(friend, new Node(friend, 0));
+        }
+
+        public bool IsUnioned(Person x, Person y)
+        {
+            Person xSet = Find(x);
+            Person ySet = Find(y);
+            Node xNode = Friends.First(f =&gt; f.Key.Equals(xSet)).Value;
+            Node yNode = Friends.First(f =&gt; f.Key.Equals(ySet)).Value;
+
+            if (xNode.Parent == yNode.Parent)                                        //Same parents mean same squad
+                return true;                                                        //they roll with each other
+
+            return false;
+        }
+        public void Union(Person x, Person y)
+        {
+            Person xSet = Find(x);
+            Person ySet = Find(y);
+            if (xSet == null || ySet == null || xSet == ySet)
+                return;
+
+            Node xNode = Friends.First(f =&gt; f.Key.Equals(xSet)).Value;
+            Node yNode = Friends.First(f =&gt; f.Key.Equals(ySet)).Value;
+            if (xNode.Rank &lt; yNode.Rank)
+                xNode.Parent = y;
+            else if (xNode.Rank &gt; yNode.Rank)
+                yNode.Parent = x;
+            else
+            {
+                yNode.Parent = x;
+                xNode.Rank++;
+            }
+        }
+
+        private Person Find(Person x)
+        {
+            var node = Friends.First(f =&gt; f.Key.Equals(x)).Value;
+
+            if (node == null) return null;
+
+            if (!node.Parent.Equals(x))
+                node.Parent = Find(node.Parent);
+
+            return node.Parent;
+        }
+    }
+    //Class to store the names of people with checking for duplicates
+    public class Person
+    {
+      
+        public string Name;
+        public Person() { }
+        public Person(string name)
+        {
+            Name = name;
+        }
+
+    }
+    //Nodes used for the disjoint set
+    public class Node
+    {
+        public int Rank;
+        public Person Parent;
+        public Node(Person parent, int rank)
+        {
+            Parent = parent;
+            Rank = rank;
+        }
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::collections::HashMap;
+use std::io;
+
+struct WeightedQuickUnion {
+	roots: Box&lt;[usize]&gt;,
+	sizes: Box&lt;[usize]&gt;,
+}
+
+impl WeightedQuickUnion {
+	/// Constructs a new WeightedQuickUnion.
+	fn new(size: usize) -&gt; Self {
+		let mut roots = Vec::with_capacity(size);
+		let mut sizes = Vec::with_capacity(size);
+
+		for i in 0..size {
+			roots.push(i);
+			sizes.push(1);
+		}
+
+		WeightedQuickUnion {
+			roots: roots.into_boxed_slice(),
+			sizes: sizes.into_boxed_slice(),
+		}
+	}
+
+	/// Determines the root of the index i.
+	fn root(&amp;self, mut i: usize) -&gt; usize {
+		while i != self.roots[i] {
+			i = self.roots[i];
+		}
+
+		i
+	}
+
+	/// Determines if first has the same root as second.
+	fn is_connected(&amp;self, first: usize, second: usize) -&gt; bool {
+		self.root(first) == self.root(second)
+	}
+
+	/// Merges first and second.
+	fn union(&amp;mut self, first: usize, second: usize) {
+		let i = self.root(first);
+		let j = self.root(second);
+
+		if i == j {
+			return;
+		}
+
+		if self.sizes[i] &lt; self.sizes[j] {
+			self.roots[i] = j;
+			self.sizes[j] += self.sizes[i];
+		} else {
+			self.roots[j] = i;
+			self.sizes[i] += self.sizes[j];
+		}
+	}
+}
+
+/// Attempts to read a pair of strings from stdin.
+/// Returns Some((first, second)) on success or None on failure.
+fn read_pair() -&gt; Option&lt;(String, String)&gt; {
+	let mut buf = String::new();
+	io::stdin().read_line(&amp;mut buf).expect(&#34;Could not read from stdin.&#34;);
+
+	let mut res = buf.split_whitespace();
+
+	if let (Some(s1), Some(s2)) = (res.next(), res.next()) {
+		Some((s1.to_owned(), s2.to_owned()))
+	} else {
+		None
+	}
+}
+
+fn main() {
+	// The number of friendships that will be entered.
+	let num_friendships = {
+		let mut buf = String::new();
+		io::stdin().read_line(&amp;mut buf).unwrap();
+		buf.trim().parse().unwrap()
+	};
+
+	// At least double the amount of pairs.
+	let mut wqu = WeightedQuickUnion::new(num_friendships * 2usize);
+	let mut friend_map = HashMap::new();
+	let mut cur_id = 0;
+
+	// Read the friendship pairs.
+	for _ in 0..num_friendships {
+		let (s1, s2) = read_pair().expect(&#34;Invalid pair.&#34;);
+
+		// A closure to easily add new ids or obtain ids already in the map.
+		let mut or_insert_with = |name| {
+			*friend_map.entry(name).or_insert_with(|| {
+				let id = cur_id;
+				cur_id += 1;
+				id
+			})
+		};
+
+		let id1 = or_insert_with(s1);
+		let id2 = or_insert_with(s2);
+
+		// Connect the two ids.
+		wqu.union(id1, id2);
+	}
+
+	// The number of queries that will be entered.
+	let num_queries = {
+		let mut buf = String::new();
+		io::stdin().read_line(&amp;mut buf).unwrap();
+		buf.trim().parse().unwrap()
+	};
+
+	let mut queries = Vec::with_capacity(num_queries);
+
+	// Read query pairs.
+	for _ in 0..num_queries {
+		let (s1, s2) = read_pair().expect(&#34;Invalid pair.&#34;);
+
+		let id1 = *friend_map.get(&amp;s1).expect(&amp;format!(&#34;{} is not in the group.&#34;, &amp;s1));
+		let id2 = *friend_map.get(&amp;s2).expect(&amp;format!(&#34;{} is not in the group.&#34;, &amp;s2));
+
+		queries.push((id1, id2));
+	}
+
+	// Check if the pairs are connected.
+	for (id1, id2) in queries {
+		if wqu.is_connected(id1, id2) {
+			println!(&#34;yes&#34;);
+		} else {
+			println!(&#34;no&#34;);
+		}
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;unordered_map&gt;
+
+template &lt;class T&gt;
+class union_find {
+public:
+  void init_vertex(const T&amp; u) {
+    if (parents.find(u) == parents.end()) {
+      parents[u] = u;
+      sizes[u] = 1;
+    }
+  }
+
+  void connect(const T&amp; u, const T&amp; v) {
+    init_vertex(u);
+    init_vertex(v);
+
+    if (u == v) {
+      return;
+    }
+
+    const T&amp; root1 = root(u);
+    const T&amp; root2 = root(v);
+
+    if (sizes[root1] &gt; sizes[root2]) {
+      parents[root2] = root1;
+      sizes[root2] += sizes[root1];
+    } else {
+      parents[root1] = root2;
+      sizes[root1] += sizes[root2];
+    }
+  }
+
+  T root(const T&amp; u) {
+    auto iter = parents.find(u);
+    if (iter-&gt;first != iter-&gt;second) {
+      T ancestor = root(iter-&gt;second);
+      iter-&gt;second = ancestor;
+      return ancestor;
+    }
+    return iter-&gt;first;
+  }
+
+  bool connected(const T&amp; u, const T&amp; v) {
+    if (parents.find(u) == parents.end() || parents.find(v) == parents.end()) {
+      return false;
+    }
+    return root(u) == root(v);
+  }
+
+private:
+  std::unordered_map&lt;T, T&gt; parents;
+  std::unordered_map&lt;T, uint32_t&gt; sizes;
+};
+
+int main() {
+  uint32_t n;
+  std::cin &gt;&gt; n;
+
+  union_find&lt;std::string&gt; squad_checker{};
+
+  for (int i = 0; i &lt; n; ++i) {
+    std::string u, v;
+    std::cin &gt;&gt; u &gt;&gt; v;
+    squad_checker.connect(u, v);
+  }
+
+  std::cin &gt;&gt; n;
+  for (uint32_t i = 0; i &lt; n; ++i) {
+    std::string u, v;
+    std::cin &gt;&gt; u &gt;&gt; v;
+    std::cout &lt;&lt; (squad_checker.connected(u, v) ? &#34;yes&#34; : &#34;no&#34;) &lt;&lt; std::endl;
+  }
+
+  return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;unordered_map&gt;
+
+// A data structure for efficiently managing disjoint sets.  The disjoint sets
+// are represented as trees, where the root of the tree is known as the set&#39;s
+// representative.  All children of the representative belong to the same set.
+// Two useful operations are provided:
+//  Union - Join two subsets into a single set.  This is done by finding the
+//          representative for both sets, u and v, and then connecting u to be
+//          a child of v.
+//
+//  Find  - Find the representative for the given element.
+//
+// Note that A belongs to the same set as B if they have the same
+// representative.
+template &lt;typename T&gt;
+class UnionFind {
+ public:
+  // Merge the sets containing u and v.
+  void connect(const T&amp; u, const T&amp; v) {
+    add_if_not_present(u);
+    add_if_not_present(v);
+    if (u == v) return;
+
+    // Find the represntative of each element.
+    const auto&amp; r1 = find(u);
+    const auto&amp; r2 = find(v);
+
+    // Attach the smaller of the two trees to be a child of the larger.  This
+    // keeps the tree&#39;s shallow.
+    if (rank_[r1] &gt;= rank_[r2]) {
+      parent_[r2] = r1;
+      rank_[r1] += rank_[r2];
+    } else {
+      parent_[r1] = r2;
+      rank_[r2] += rank_[r1];
+    }
+  }
+
+  // Check if u and v belong to the same set.
+  bool connected(const T&amp; u, const T&amp; v) {
+    if (parent_.find(u) == parent_.end() || parent_.find(v) == parent_.end()) {
+      return false;
+    }
+
+    return find(u) == find(v);
+  }
+
+ private:
+  // Map a node to its parent node.  If parent_[a] == a, then a is a root.
+  std::unordered_map&lt;T, T&gt; parent_;
+  // Map a node to its number of child nodes.
+  std::unordered_map&lt;T, std::size_t&gt; rank_;
+
+  // Create a new singleton set if u is not in any other set.
+  void add_if_not_present(const T&amp; u) {
+    if (parent_.find(u) == parent_.end()) {
+      parent_[u] = u;
+      rank_[u] = 1;
+    }
+  }
+
+  // Find the representative of u.  This find method also performs path
+  // compression such that the next time it is called with the same argument,
+  // the look up should be constant.  This method assumes that u is contained
+  // in a set.
+  const T&amp; find(const T&amp; u) {
+    const auto&amp; u_parent = parent_.find(u)-&gt;second;
+    if (u_parent == u) {
+      return u;
+    }
+    return parent_[u] = find(u_parent);
+  }
+};
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+
+  int n_friendships;
+  std::cin &gt;&gt; n_friendships;
+
+  UnionFind&lt;std::string&gt; squads;
+  std::string n1, n2;
+  for (int i = 0; i &lt; n_friendships; ++i) {
+    std::cin &gt;&gt; n1 &gt;&gt; n2;
+    squads.connect(n1, n2);
+  }
+
+  int n_queries;
+  std::cin &gt;&gt; n_queries;
+
+  for (int i = 0; i &lt; n_queries; ++i) {
+    std::cin &gt;&gt; n1 &gt;&gt; n2;
+    std::cout &lt;&lt; (squads.connected(n1, n2) ? &#34;yes&#34; : &#34;no&#34;) &lt;&lt; std::endl;
+  }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>use std::collections::HashMap;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+fn main() {
+    let input = get_input();
+    let lines: Vec&lt;&amp;str&gt; = input.lines().collect();
+    let n: usize = lines[0].parse().unwrap();
+    let friends = &amp;lines[1..n + 1];
+    let queries = &amp;lines[n + 2..];
+
+    // Rust&#39;s type inference is pretty crazy.
+    // This is a HashMap&lt;&amp;str, Rc&lt;RefCell&lt;Vec&lt;&amp;str&gt;&gt;&gt;&gt;
+    let mut people = HashMap::with_capacity(n / 2);
+
+    for line in friends {
+        let pair: Vec&lt;&amp;str&gt; = line.splitn(2, &#39; &#39;).collect();
+
+        let p1_seen = people.contains_key(pair[0]);
+        let p2_seen = people.contains_key(pair[1]);
+
+        let (squad1, squad2) = match (p1_seen, p2_seen) {
+
+            (false, false) =&gt; {
+                let new_squad = make_squad(pair[0]);
+                people.insert(pair[0], new_squad.clone());
+                people.insert(pair[1], new_squad.clone());
+                new_squad.borrow_mut().push(pair[1]);
+                continue;
+
+            }
+            (false, true) =&gt; {
+                let squad = get_squad(pair[1], &amp;people);
+                squad.borrow_mut().push(pair[0]);
+                people.insert(pair[0], squad);
+                continue;
+            }
+            (true, false) =&gt; {
+                let squad = get_squad(pair[0], &amp;people);
+                squad.borrow_mut().push(pair[1]);
+                people.insert(pair[1], squad);
+                continue;
+            }
+            (true, true) =&gt; {
+                let first = get_squad(pair[0], &amp;people);
+                let second = get_squad(pair[1], &amp;people);
+                if first == second {
+                    continue;
+                } else {
+                    (first, second)
+                }
+            }
+        };
+
+        // To make the borrow checker happy
+        let one_greater_than_two = squad1.borrow().len() &gt;= squad2.borrow().len();
+        if one_greater_than_two {
+            for person in squad2.borrow().iter() {
+                people.insert(person, squad1.clone());
+            }
+            squad1.borrow_mut().append(&amp;mut squad2.borrow_mut());
+        } else {
+            for person in squad1.borrow().iter() {
+                people.insert(person, squad2.clone());
+            }
+            squad2.borrow_mut().append(&amp;mut squad1.borrow_mut());
+        }
+    }
+
+    for line in queries {
+        let pair: Vec&lt;&amp;str&gt; = line.splitn(2, &#39; &#39;).collect();
+
+        let p1_seen = people.contains_key(pair[0]);
+        let p2_seen = people.contains_key(pair[1]);
+
+        match (p1_seen, p2_seen) {
+            (true, true) =&gt; {
+                if people.get(pair[0]).unwrap() == people.get(pair[1]).unwrap() {
+                    println!(&#34;yes&#34;);
+                } else {
+                    println!(&#34;no&#34;);
+                }
+            }
+            _ =&gt; println!(&#34;no&#34;),
+        }
+    }
+}
+
+#[inline]
+fn get_squad&lt;&#39;a&gt;(person: &amp;str,
+                 people: &amp;HashMap&lt;&amp;str, Rc&lt;RefCell&lt;Vec&lt;&amp;&#39;a str&gt;&gt;&gt;&gt;)
+                 -&gt; Rc&lt;RefCell&lt;Vec&lt;&amp;&#39;a str&gt;&gt;&gt; {
+    people.get(person).unwrap().clone()
+}
+
+#[inline]
+fn make_squad(og: &amp;str) -&gt; Rc&lt;RefCell&lt;Vec&lt;&amp;str&gt;&gt;&gt; {
+    let mut l = Vec::with_capacity(2);
+    l.push(og);
+    Rc::new(RefCell::new(l))
+}
+
+#[inline]
+fn get_input() -&gt; String {
+    use std::io::{self, Read};
+
+    let mut buf = String::new();
+    io::stdin()
+        .read_to_string(&amp;mut buf)
+        .expect(&#34;Failure reading input.&#34;);
+    buf
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code># A function to get input so I can write using open() and you can test using input()
+def getinput():
+    return input()
+
+# Groups together lines with name matches (in a way that needs to be repeated)
+def group_iteration(inputList):
+    # The line number that&#39;s currently the search terms
+    searchLineNumber = 0
+    # The queue of lines to be deleted
+    deletionQueue = []
+    # Take a line of our list...
+    for searchLine in inputList:
+        #... and search every subsequent line for name matches
+        currentLineNumber = searchLineNumber + 1
+        for line in inputList[(searchLineNumber + 1):]:
+            # Check whether any of the names are in the current line
+            nameMatch = False
+            for name in searchLine:
+                if name in inputList[currentLineNumber]:
+                    nameMatch = True
+                    break
+            # If there is a match, append all the other names to the current line...
+            if nameMatch == True:
+                for name in searchLine:
+                    if name not in inputList[currentLineNumber]:
+                        inputList[currentLineNumber].append(name)
+                #...and queue the old line for deletion (at the front of the list)
+                if searchLineNumber not in deletionQueue:
+                    deletionQueue.insert(0, searchLineNumber)
+                #...and break, since the current line is queued to become the search one
+                currentLineNumber += 1
+                break
+            else:
+                currentLineNumber += 1
+        searchLineNumber += 1
+    # Delete redundant lines
+    for line in deletionQueue:
+        del inputList[line]
+    return inputList
+
+# Runs group_iteration() until the list it outputs is the same as the input list
+def group(inputList):
+    previousLength = 0
+    while len(inputList) != previousLength:
+        previousLength = len(inputList)
+        inputList = group_iteration(inputList)
+    return inputList
+
+# Searches the list for a line with both search terms
+# Takes input as a list of two terms and a list to search
+def searchList(searchTerms, inputList):
+    for line in inputList:
+        if (searchTerms[0] in line) and (searchTerms[1] in line):
+            return &#34;yes&#34;
+    return &#34;no&#34;
+
+# Number of friendships
+friendships = int(getinput())
+# List of pairs of friends (stored as lists)
+friendshipList = []
+# Process inputs into a list
+for i in range(friendships):
+    friendshipList.append(getinput().split())
+# Sort said list into as few groups as possible
+friendshipList = group(friendshipList)
+
+# Number of search terms
+searchTermNumber = int(getinput())
+# List of search term pairs (stored as lists)
+searchTermList = []
+for i in range(searchTermNumber):
+    searchTermList.append(getinput().split())
+
+# Run the searches, and output the results
+for searchTerms in searchTermList:
+    print(searchList(searchTerms, friendshipList))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#18" data-toggle="collapse">
+            gubaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="18">
+        <pre><code>import java.util.HashMap;
+import java.util.Scanner;
+
+class Node {
+	private Node parent;
+	private int rank;
+	
+	Node() {
+		this.parent = this;
+		this.rank = 0;
+	}
+	
+	public static void Union(Node x, Node y) {
+		Node xRoot = find(x);
+		Node yRoot = find(y);
+		if (xRoot.equals(yRoot))
+			return;
+		
+		if (xRoot.rank &lt; yRoot.rank)
+			xRoot.parent = yRoot;
+		else if (xRoot.rank &lt; yRoot.rank)
+			yRoot.parent = xRoot;
+		else {
+			yRoot.parent = xRoot;
+			xRoot.rank++;
+		}
+	}
+	
+	public static Node find(Node x) {
+		if (!x.parent.equals(x))
+			x.parent = find(x.parent);
+		return x.parent;
+	}
+
+	public Node getParent() {
+		return parent;
+	}
+
+	public void setParent(Node parent) {
+		this.parent = parent;
+	}
+
+	public int getRank() {
+		return rank;
+	}
+
+	public void setRank(int rank) {
+		this.rank = rank;
+	}
+}
+
+public class Potw4 {
+	public static void main(String[] args) {
+		HashMap&lt;String, Node&gt; disjointSetMap = new HashMap&lt;&gt;();
+		Scanner sc = new Scanner(System.in);
+		int numberOfSets = sc.nextInt();
+		
+		for (int i = 0; i &lt; numberOfSets; i++) {
+			String xNode = sc.next();
+			String yNode = sc.next();
+			disjointSetMap.putIfAbsent(xNode, new Node()); // TODO: Only if non existent
+			disjointSetMap.putIfAbsent(yNode, new Node()); // TODO: Only if non existent
+			Node.Union(disjointSetMap.get(xNode), disjointSetMap.get(yNode));
+		}
+		
+		int numberOfQueries = sc.nextInt();
+		for (int j = 0; j &lt; numberOfQueries; j++) {
+			System.out.println(
+					determineIfCommonParentExists(disjointSetMap.get(sc.next()), disjointSetMap.get(sc.next()))
+					? &#34;yes&#34; : &#34;no&#34;);
+		}
+	}
+
+	private static boolean determineIfCommonParentExists(Node node, Node node2) {
+		return Node.find(node).equals(Node.find(node2));
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>package problems;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+
+public class DisjointSet {
+
+    private Map&lt;Long, Node&gt; map = new HashMap&lt;&gt;();
+    
+    class Node {
+        long data;
+        String name;
+        Node parent;
+        int rank;
+    }
+
+
+    public void makeSet(long data) {
+        Node node = new Node();
+        node.data = data;
+        node.parent = node;
+        node.rank = 0;
+        map.put(data, node);
+    }
+
+
+    public boolean union(long data1, long data2) {
+        Node node1 = map.get(data1);
+        Node node2 = map.get(data2);
+
+        Node parent1 = findfriendset(node1);
+        Node parent2 = findfriendset(node2);
+
+        if (parent1.data == parent2.data) {
+            return false;
+        }
+
+        if (parent1.rank &gt;= parent2.rank) {
+            parent1.rank = (parent1.rank == parent2.rank) ? parent1.rank + 1 : parent1.rank;
+            parent2.parent = parent1;
+        } else {
+            parent1.parent = parent2;
+        }
+        return true;
+    }
+
+
+    public long findfriendset(long data) {
+        return findfriendset(map.get(data)).data;
+    }
+
+    private Node findfriendset(Node node) {
+        Node parent = node.parent;
+        if (parent == node) {
+            return parent;
+        }
+        node.parent = findfriendset(node.parent);
+        return node.parent;
+    }
+
+    public static void main(String args[]) {
+    	Integer friendIndex= 0;
+        DisjointSet friends = new DisjointSet();
+        Map&lt;String,Integer&gt; map = new HashMap&lt;&gt;();
+
+        Scanner scan = new Scanner(System.in);
+        int N = Integer.parseInt(scan.nextLine());
+        
+        for(int c = 0; c &lt; N; c++){
+        	String[] pairOfFriends = scan.nextLine().split(&#34; &#34;);
+        	
+        	if(!map.containsKey(pairOfFriends[0])){
+        		map.put(pairOfFriends[0], friendIndex);
+        		friends.makeSet(friendIndex);
+        		friendIndex++;
+        	}
+        	if(!map.containsKey(pairOfFriends[1])){
+        		map.put(pairOfFriends[1], friendIndex);
+        		friends.makeSet(friendIndex);
+        		friendIndex++;
+        	}
+        	
+        	friends.union(map.get(pairOfFriends[0]), map.get(pairOfFriends[1]));
+        }
+        
+        int M = Integer.parseInt(scan.nextLine());
+        for(int c = 0; c &lt; M; c++){
+        	String[] pairOfCompanions = scan.nextLine().split(&#34; &#34;);
+            System.out.println((friends.findfriendset(map.get(pairOfCompanions[0])) ==
+            		friends.findfriendset(map.get(pairOfCompanions[1])))?&#34;yes&#34;:&#34;no&#34;);
+        }
+        
+        scan.close();
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#17" data-toggle="collapse">
+            mccarth7 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="17">
+        <pre><code>
+
+#include &lt;iostream&gt;
+#include &lt;map&gt;
+
+class Disjoint_Set {
+  std::map&lt;std::string, std::string&gt; parent;
+  std::map&lt;std::string, int&gt; depth;
+
+ public:
+  std::string find(std::string person) {
+    if (parent[person] == person) {
+      return person;
+    }
+
+    return find(parent[person]);
+  }
+
+  void join(std::string person_1, std::string person_2) {
+    std::string parent_1 = find(person_1);
+    std::string parent_2 = find(person_2);
+
+    if (depth[parent_1] &gt; depth[parent_2])
+      parent[parent_2] = parent_1;
+
+    else if (depth[parent_2] &gt; depth[parent_1])
+      parent[parent_1] = parent_2;
+
+    else {
+      parent[parent_1] = parent_2;
+      depth[parent_2]++;
+    }
+  }
+
+  void insert(std::string person) {
+    if (parent.count(person) &gt; 0) {
+      return;
+    }
+
+    parent[person] = person;
+    depth[person] = 0;
+  }
+};
+
+int main() {
+  Disjoint_Set ds;
+
+  int n, m;
+  std::string person1, person2;
+
+  std::cin &gt;&gt; n;
+
+  for (int i = 0; i &lt; n; i++) {
+    std::cin &gt;&gt; person1 &gt;&gt; person2;
+
+    ds.insert(person1);
+    ds.insert(person2);
+
+    ds.join(person1, person2);
+  }
+
+  std::cin &gt;&gt; m;
+
+  for (int i = 0; i &lt; m; i++) {
+    std::cin &gt;&gt; person1 &gt;&gt; person2;
+
+    if (ds.find(person1) == ds.find(person2))
+      std::cout &lt;&lt; &#34;yes\n&#34;;
+    else
+      std::cout &lt;&lt; &#34;no\n&#34;;
+  }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#22" data-toggle="collapse">
+            malolepp - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="22">
+        <pre><code>/* Patrick Malolepszy POTW4 */
+
+#include &lt;iostream&gt;
+#include &lt;map&gt;
+
+using namespace std;
+
+// Tree node structure
+struct Node {
+	int rank; //approximate depth of node
+	string name;
+	Node *parent;
+};
+
+Node* makeSquad (string nameIn) {
+	Node *node = new Node;
+	node-&gt;rank = 0;
+	node-&gt;name = nameIn;
+	// Start with node pointing back to itself.
+	node-&gt;parent = node;
+	return node;
+}
+
+Node* findNode (Node *node) {
+	Node *parent = node-&gt;parent;
+	// Path compression technique.
+	if (parent == node) {
+		return parent;
+	}
+	node-&gt;parent = findNode(node-&gt;parent);
+	return node-&gt;parent;
+
+}
+
+void unionSquadz(Node *n1, Node *n2) {
+	Node *parent1 = findNode(n1);
+	Node *parent2 = findNode(n2);
+
+	//Check if already in same squad:
+	if (parent1-&gt;name == parent2-&gt;name) {
+		return;
+	}
+	//whoever has highest rank becomes squad leader
+	if (parent1-&gt;rank &gt;= parent2-&gt;rank) {
+		//increment rank if they both have same rank
+		if (parent1-&gt;rank == parent2-&gt;rank) {
+			parent1-&gt;rank++;
+		}
+		parent2-&gt;parent = parent1;
+	} else {
+		parent1-&gt;parent = parent2;
+	}
+	return;
+}
+
+
+int main () {
+	int n;
+	cin &gt;&gt; n;
+	map&lt;string, Node*&gt; nodes;
+	while (n--) {
+		string a, b;
+		cin &gt;&gt; a &gt;&gt; b;
+		// New name, no squad D:
+		if (nodes.find(a) == nodes.end()) {
+			nodes[a] = makeSquad(a);
+		}
+		if (nodes.find(b) == nodes.end()) {
+			nodes[b] = makeSquad(b);
+		}
+		//Now all bros are in squads, time to combine two squadz.
+		Node *bro1 = nodes[a];
+		Node *bro2 = nodes[b];
+		unionSquadz(bro1, bro2);
+	}
+	/*C++ map&#39;s find in O(log(n)), 
+		and then queries are processed in O(log(n)) time, where n is the depth of the tree. 
+		However with path compression in place, this quickly moves towards constant time 
+		as the depth of the tree will decrease as more queries are done. */
+	cin &gt;&gt; n;
+	while (n--) {
+		string a, b;
+		cin &gt;&gt; a &gt;&gt; b;
+		Node *n1 = nodes[a];
+		Node *n2 = nodes[b];
+		if (findNode(n1) == findNode(n2) ) {
+			cout &lt;&lt; &#34;yes&#34; &lt;&lt; endl;
+		} else {
+			cout &lt;&lt; &#34;no&#34; &lt;&lt; endl;
+		}
+	}
+
+	return 0;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;map&gt;
+
+using namespace std;
+
+class dicksoutforharambe {
+    private:
+        map&lt;string,string&gt; p;
+        map&lt;string,int&gt; depth;
+    public:
+        string find(string);
+        void insert(string);
+        void join(string,string);
+        bool union_find(string,string);
+};
+
+void dicksoutforharambe::insert(string gorilla) {
+    if(p.count(gorilla) &gt; 0)
+        return;
+    p[gorilla] = gorilla;
+    depth[gorilla] = 0;
+}
+
+
+void dicksoutforharambe::join(string a, string b) {
+    string p1 = find(a), p2 = find(b);    
+
+    if(depth[p1] &gt; depth[p2]) {
+        p[p2] = p1;
+    } else if(depth[p2] &gt; depth[p1]) {
+        p[p1] = p2;
+    } else {
+        p[p1] = p2;
+        depth[p2]++;
+    }
+}
+
+string dicksoutforharambe::find(string gorilla) {
+    if(p[gorilla] == gorilla)
+        return gorilla;
+    return find(p[gorilla]);
+}
+
+bool dicksoutforharambe::union_find(string a, string b) {
+    return this-&gt;find(a) == this-&gt;find(b);
+}
+
+int main() {
+    int N;
+    string gorilla1, gorilla2;
+
+    dicksoutforharambe ihatemylife;    
+    cin &gt;&gt; N;
+
+    while(N-- &gt; 0) {
+        cin &gt;&gt; gorilla1 &gt;&gt; gorilla2;
+        ihatemylife.insert(gorilla1);
+        ihatemylife.insert(gorilla2);
+
+        ihatemylife.join(gorilla1, gorilla2);
+    }
+
+    cin &gt;&gt; N;
+    while(N-- &gt; 0) {
+        cin &gt;&gt; gorilla1 &gt;&gt; gorilla2;
+        cout &lt;&lt; (ihatemylife.union_find(gorilla1,gorilla2) ? &#34;yes&#34; : &#34;no&#34;) &lt;&lt; endl;
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#!/usr/bin/env python3
+
+
+class Squad:
+	def __init__(self, person):
+		self.person = person
+		self.parent = self
+		self.rank = 0
+
+
+def union(x, y):
+	xRoot = find(x)
+	yRoot = find(y)
+	if xRoot == yRoot:
+		return
+
+	if xRoot.rank &lt; yRoot.rank:
+		xRoot.parent = yRoot
+	elif xRoot.rank &gt; yRoot.rank:
+		yRoot.parent = xRoot
+	else:
+		yRoot.parent = xRoot
+		xRoot.rank += 1
+
+
+def find(x):
+	if x.parent != x:
+		x.parent = find(x.parent)
+	return x.parent
+
+
+def main():
+	squads = {}  # person : squad
+
+	num_friendships = int(input())
+
+	for i in range(num_friendships):
+		person1, person2 = input().split()
+		if person1 not in squads:
+			squads[person1] = Squad(person1)
+		if person2 not in squads:
+			squads[person2] = Squad(person2)
+		union(squads[person1], squads[person2])
+
+	num_queries = int(input())
+
+	for i in range(num_queries):
+		person1, person2 = input().split()
+		if find(squads[person1]) == find(squads[person2]):
+			print(&#39;yes&#39;)
+		else:
+			print(&#39;no&#39;)
+
+
+if __name__ == &#39;__main__&#39;:
+	main()
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

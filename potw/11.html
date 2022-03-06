@@ -1,0 +1,577 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>BrainF!@k</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <img src="http://i0.wp.com/listverse.com/wp-content/uploads/2011/02/brainfuck.jpg"  class="img img-responsive" />
+
+Quinn is considering rewriting the POTW site in BrainF!@k, but he needs a blazing fast interpreter.  The language is pretty simple, containing only 8 different instructions.  The full language specification can be found <a href="https://en.wikipedia.org/wiki/Brainfuck#Language_design">here</a>. You may assume the input programs do not contain comments and are syntactically correct.  All code will appear on a single line and will use no more than 2048 memory cells.  There is no bound on program size.
+<br /><br />
+Write a brainf!@k interpreter <b>in a language that you haven't submitted in before.</b><br />
+<div class="row">
+<div class="col-md-6">
+<h3>Sample Input</h2>
+<pre>
++++++++++++>+>>>>++++++++++++++++++++++++++++++++++++++++++++>++++++++++++++++++++++++++++++++<<<<<<[>[>>>>>>+>+<<<<<<<-]>>>>>>>[<<<<<<<+>>>>>>>-]<[>++++++++++[-<-[>>+>+<<<-]>>>[<<<+>>>-]+<[>[-]<[-]]>[<<[>>>+<<<-]>>[-]]<<]>>>[>>+>+<<<-]>>>[<<<+>>>-]+<[>[-]<[-]]>[<<+>>[-]]<<<<<<<]>>>>>[++++++++++++++++++++++++++++++++++++++++++++++++.[-]]++++++++++<[->-<]>++++++++++++++++++++++++++++++++++++++++++++++++.[-]<<<<<<<<<<<<[>>>+>+<<<<-]>>>>[<<<<+>>>>-]<-[>>.>.<<<[-]]<<[>>+>+<<<-]>>>[<<<+>>>-]<<[<+>-]>[<+>-]<<<-]
+</pre>
+</div>
+<div class="col-md-6">
+<h3>Sample Output</h2>
+<pre>
+1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89
+</pre>
+</div>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>import java.util.*;
+
+public class BloomFilter {
+    private final int LENGTH = 65535;
+    private byte[] mem = new byte[LENGTH];
+    private int pointer;
+    
+    private Scanner sc = new Scanner(System.in);
+
+    public void interpret(String c) {
+        int l = 0;
+        for(int i = 0; i &lt; c.length(); i++) {
+
+            switch(c.charAt(i)) {
+                case &#39;&gt;&#39; : pointer = (pointer == LENGTH-1) ? 0 : pointer + 1; break;
+                case &#39;&lt;&#39; : pointer = (pointer == 0) ? LENGTH-1 : pointer - 1; break;
+                case &#39;+&#39; : mem[pointer]++; break; 
+                case &#39;-&#39; : mem[pointer]--; break;
+                case &#39;.&#39; : System.out.print((char) mem[pointer]); break;
+                case &#39;,&#39; : mem[pointer] = (byte) sc.next().charAt(0); break;
+                case &#39;[&#39; : 
+                    if(mem[pointer] == 0) {
+                    i++;
+                        while(l &gt; 0 || c.charAt(i) != &#39;]&#39;) {
+                            if(c.charAt(i) == &#39;[&#39;) l++;
+                            if(c.charAt(i) == &#39;]&#39;) l--;
+                            i++;
+                        }
+                    }  
+                break;
+                case &#39;]&#39; :            
+                    if(mem[pointer] != 0) {
+                    i--;
+                        while(l &gt; 0 || c.charAt(i) != &#39;[&#39;) {
+                            if(c.charAt(i) == &#39;]&#39;) l++;
+                            if(c.charAt(i) == &#39;[&#39;) l--;
+                            i--;
+                        }
+                    i--;
+                    }
+                break;
+                default : continue;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        new BloomFilter().interpret(sc.nextLine());
+        System.out.println();
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>#include &lt;stdio.h&gt;
+
+#define MAX_PROGRAM_SIZE 4096
+#define MAX_DATA_SIZE 2048
+
+char prog[MAX_PROGRAM_SIZE];
+char* insn_ptr = prog;
+
+char data[MAX_DATA_SIZE];
+char* data_ptr = data;
+
+void eval() {
+	// Keep track of the jump in case we encounter a loop
+	// and must jump back.
+	char* start_insn = insn_ptr;
+	char c;
+
+	while(c = *(insn_ptr++)) {
+		if(c == &#39;&gt;&#39;)	  data_ptr++;
+		else if(c == &#39;&lt;&#39;) data_ptr--;
+		else if(c == &#39;+&#39;) (*data_ptr)++;
+		else if(c == &#39;-&#39;) (*data_ptr)--;
+		else if(c == &#39;.&#39;) putchar(*data_ptr);
+		else if(c == &#39;,&#39;) (*data_ptr) = getchar();
+		else if(c == &#39;[&#39;) {
+			if((*data_ptr) == 0) {
+				int nest_level = 0;
+
+				while((c = *(insn_ptr++)) != &#39;]&#39; || nest_level != 0) {
+					if(c == &#39;[&#39;) nest_level++;
+					else if(c == &#39;]&#39;) nest_level--;
+				}
+			} else {
+				// Recursively eval the inner loop.
+				eval();
+			}
+		} 
+		else if(c == &#39;]&#39;) {
+			if((*data_ptr) != 0) {
+				// Jump back to the start of this loop.
+				insn_ptr = start_insn;
+			} else {
+				// Break out of this inner loop and return.
+				break;
+			}
+		}
+	}
+}
+
+int main() {
+	scanf(&#34;%s&#34;, prog);
+	eval();
+	return 0;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - PHP
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>&lt;?php
+// The program code to interpret
+$program = readline();
+
+// The memory
+$memory = array();
+for($i = 0; $i &lt;= 2048; $i++) {
+  $memory[$i] = 0;
+}
+
+$instructionPointer = 0;
+$dataPointer = 0;
+
+// Keeps track of all the loops in the program
+$loopCount = 0;
+$currentLoop = 0;
+$loopPairs = array();
+$unpairedLoops = array();
+
+// Parse all the loops prior to running
+for($i = 0; $i &lt; (intval(strlen($program))); $i++) {
+  switch($program[$i]) {
+    case &#34;[&#34;:
+      $unpairedLoops[] = $i;
+      break;
+    case &#34;]&#34;:
+      // The loop&#39;s beginning has to be the most recent unpaired one
+      $loopPairs[] = Array(array_pop($unpairedLoops), $i);
+  }
+}
+
+// Create indexes of where everything begins/ends
+$loopBeginnings = array();
+$loopEnds = array();
+foreach($loopPairs as $pair) {
+  $loopBeginnings[$pair[1]] = $pair[0];
+  $loopEnds[$pair[0]] = $pair[1];
+}
+
+
+// Run the program
+while($instructionPointer &lt; strlen($program)) {
+  switch($program[$instructionPointer]) {
+    case &#34;&gt;&#34;:
+      $dataPointer++;
+      break;
+    case &#34;&lt;&#34;:
+      $dataPointer--;
+      break;
+    case &#34;+&#34;:
+      $memory[$dataPointer]++;
+      break;
+    case &#34;-&#34;:
+      $memory[$dataPointer]--;
+      break;
+    case &#34;.&#34;:
+      echo chr($memory[$dataPointer]);
+      break;
+    case &#34;,&#34;:
+      $memory[$dataPointer] = ord(readline());
+      break;
+    case &#34;[&#34;:
+      // If the current memory cell is 0, skip to the end of the loop
+      if($memory[$dataPointer] == 0) {
+        $instructionPointer = $loopEnds[$instructionPointer];
+      }
+      break;
+    case &#34;]&#34;:
+      // If the current memory cell is non-zero, return to the beginning of the loop
+      if($memory[$dataPointer] != 0) {
+        $instructionPointer = $loopBeginnings[$instructionPointer];
+        // To counteract the incrementing at the end
+        $instructionPointer--;
+        break;
+      }
+  }
+
+  $instructionPointer++;
+}
+?&gt;
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - JavaScript
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>var readline = require(&#39;readline&#39;);
+
+function buildJumpTable(code) {
+  var jumpTable            = {},
+      bracketLocationStack = [];
+
+  code.split(&#39;&#39;).forEach((command, index) =&gt; {
+    if (command == &#34;[&#34;) {
+      bracketLocationStack.push(index);
+    } else if (command == &#34;]&#34;) {
+      var openBracket = bracketLocationStack.pop();
+      jumpTable[openBracket] = index;
+      jumpTable[index] = openBracket;
+    }
+  });
+
+  return jumpTable;
+}
+
+function interpret(code) {
+  var jumpTable          = buildJumpTable(code),
+      memory             = new Array(2048).fill(0),
+      instructionPointer = 0,
+      memoryPointer      = 0;
+
+  var instructionHandlers = {
+    &#34;&gt;&#34;: () =&gt; ++memoryPointer,
+    &#34;&lt;&#34;: () =&gt; --memoryPointer,
+    &#34;+&#34;: () =&gt; ++memory[memoryPointer],
+    &#34;-&#34;: () =&gt; --memory[memoryPointer],
+    &#34;.&#34;: () =&gt; process.stdout.write(String.fromCharCode(memory[memoryPointer])),
+    &#34;[&#34;: () =&gt; {
+      if (memory[memoryPointer] == 0) {
+        instructionPointer = jumpTable[instructionPointer];
+      }
+    },
+    &#34;]&#34;: () =&gt; {
+      if (memory[memoryPointer] != 0) {
+        instructionPointer = jumpTable[instructionPointer];
+      }
+    }
+  }
+
+  while (instructionPointer != code.length) {
+    var currentInstruction = code[instructionPointer];
+    instructionHandlers[currentInstruction]();
+    ++instructionPointer;
+  }
+}
+
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false
+});
+
+rl.on(&#39;line&#39;, interpret);
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#35" data-toggle="collapse">
+            vandolda - MoonScript
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="35">
+        <pre><code>-- Moonscript is cool little scripting language that compiles to Lua.
+-- It&#39;s essentially Coffeescript but for Lua instead of Javascript.
+-- It has an online compiler/interpreter that can be accessed at
+-- http://moonscript.org/compiler/.
+
+bf = (code) -&gt;
+    code ..= &#34; &#34; -- Append a space to the end of the code to remove issues of
+                 -- the last character being skipped.
+    mem = {0}
+    mem_ptr = 1
+    output = &#34;&#34;
+    ip = 1
+    while ip &lt; code\len!
+        -- Get the current operation from the code.
+        op = code\sub(ip, ip)
+
+        if op == &#34;+&#34;
+            -- Increment the current mem cell.
+            mem[mem_ptr] += 1
+
+        elseif op == &#34;-&#34;
+            -- Decrement the current mem cell.
+            mem[mem_ptr] -= 1
+
+        elseif op == &#34;&gt;&#34;
+            -- Move the memory pointer ahead, initializing the cell if it hasn&#39;t
+            -- been used before.
+            mem_ptr += 1
+            if mem[mem_ptr] == nil then mem[mem_ptr] = 0
+
+        elseif op == &#34;&lt;&#34;
+            -- Move the memory pointer back, initializing the cell if it hasn&#39;t
+            -- been used before.
+            mem_ptr -= 1
+            if mem[mem_ptr] == nil then mem[mem_ptr] = 0
+
+        elseif op == &#34;[&#34;
+            if mem[mem_ptr] == 0
+                -- Go to the character after the matching ]
+                inner_brackets = 0
+                while true
+                    ip += 1
+                    if code\sub(ip, ip) == &#34;[&#34;
+                        inner_brackets += 1
+                    elseif code\sub(ip, ip) == &#34;]&#34;
+                        if inner_brackets &gt; 0
+                            inner_brackets -= 1
+                        else
+                            break
+
+        elseif op == &#34;]&#34;
+            if mem[mem_ptr] != 0
+                -- Loop back to the matching [
+                inner_brackets = 0
+                while true
+                    ip -= 1
+                    if code\sub(ip, ip) == &#34;]&#34;
+                        inner_brackets += 1
+                    elseif code\sub(ip, ip) == &#34;[&#34;
+                        if inner_brackets &gt; 0
+                            inner_brackets -= 1
+                        else
+                            break
+
+        elseif op == &#34;.&#34;
+            output ..= string.char(mem[mem_ptr])
+
+        --elseif curr_char == &#34;,&#34;
+            -- No way to handle input at this time.
+
+        ip += 1
+
+    output
+
+print bf(io.read())
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#31" data-toggle="collapse">
+            mishrai - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="31">
+        <pre><code>import java.util.Scanner;
+
+public class Brainfuck {
+	
+    private final int maxlen = 2048;
+    private byte[] memory = new byte[maxlen];
+    private int ptr;
+    
+    public void interpret(String input) {
+        int count = 0;
+        int inputLen = input.length();
+        for(int i = 0; i &lt; inputLen; i++) {
+        	char c = input.charAt(i);
+        	switch(c){
+        	case &#39;&gt;&#39;:
+        		ptr = ptr == maxlen-1 ? 0 : ptr + 1;
+        		break;
+        	case &#39;&lt;&#39;:
+        		ptr = ptr == 0 ? maxlen-1 : ptr - 1;
+        		break;
+        	case &#39;+&#39;:
+        		memory[ptr]++;
+        		break;
+        	case &#39;-&#39;:
+        		memory[ptr]--;
+        		break;
+        	case &#39;.&#39;:
+        		System.out.print((char) memory[ptr]);
+        		break;
+        	case &#39;,&#39;:
+        		//omitted
+        		break;
+        	case &#39;[&#39;:
+        		if(memory[ptr] == 0) {
+                    i++;
+                    while(count &gt; 0 || input.charAt(i) != &#39;]&#39;) {
+                        if(input.charAt(i) == &#39;[&#39;) count++;
+                        if(input.charAt(i) == &#39;]&#39;) count--;
+                        i++;
+                    }
+                }
+        		break;
+        	case &#39;]&#39;:
+        		if(memory[ptr] != 0) {
+                    i--;
+                    while(count &gt; 0 || input.charAt(i) != &#39;[&#39;) {
+                        if(input.charAt(i) == &#39;]&#39;) count++;
+                        if(input.charAt(i) == &#39;[&#39;) count--;
+                        i--;
+                    }
+                    i--;
+                }
+        		break;
+        	default:
+        		System.out.println(&#34;Invalid Symbol&#34;);
+        	}
+        }
+    }
+    public static void main(String[] args) {
+    	Scanner stdin = new Scanner(System.in);
+        new Brainfuck().interpret(stdin.nextLine());
+        stdin.close();
+    }
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+char* interpret(char* data_pointer, char* begin, char* end);
+char* find_match(char* start);
+
+int main() {
+  char* memory = (char*)malloc(2048);
+  char* input = (char*)malloc(2048);
+
+  size_t bytes = read(0, input, 2048);
+
+  interpret(memory, input, input + bytes - 2);
+  printf(&#34;\n&#34;);
+
+  free(memory);
+  free(input);
+
+  return 0;
+}
+
+char* interpret(char* data_pointer, char* begin, char* end) {
+  for (char* c = begin; c &lt;= end; ++c) {
+    switch(*c) {
+      case &#39;&gt;&#39;:
+        ++data_pointer;
+        break;
+      case &#39;&lt;&#39;:
+        --data_pointer;
+        break;
+      case &#39;+&#39;:
+        ++(*data_pointer);
+        break;
+      case &#39;-&#39;:
+        --(*data_pointer);
+        break;
+      case &#39;.&#39;:
+        printf(&#34;%c&#34;, *data_pointer);
+        break;
+      case &#39;,&#39;:
+        read(0, data_pointer, 1);
+        break;
+      case &#39;[&#39;:
+        while (*data_pointer) {
+          data_pointer = interpret(data_pointer, c + 1, find_match(c));
+        }
+        c = find_match(c);
+      default:
+        break;
+    }
+  }
+
+  return data_pointer;
+}
+
+char* find_match(char* ptr) {
+  int count = 1;
+  while (count) {
+    ++ptr;
+    if (*ptr == &#39;[&#39;)
+      ++count;
+    if (*ptr == &#39;]&#39;)
+      --count;
+  }
+  return ptr;
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

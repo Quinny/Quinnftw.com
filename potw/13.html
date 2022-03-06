@@ -1,0 +1,928 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Lucky Trees</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      A lucky tree is a tree which contains at least one root-to-leaf path whose sum is 13.  For example:
+<br /><br />
+<div align="center">
+<img class="img img-responsive" src="https://i.imgur.com/DuPkX2G.png" />
+</div>
+<br />
+is considered a lucky tree, whereas:
+<br /><br />
+<div align="center">
+<img class="img img-responsive" src="https://i.imgur.com/F9GE1IC.png" />
+</div>
+<br /><br />
+is not.  The above trees can be expressed in terms of their rows like so:
+<div class="row">
+<div class="col-md-6">
+<pre>
+4
+9 8
+2 3 1 7
+</pre>
+</div>
+<div class="col-md-6">
+<pre>
+10
+3 4
+1 2 9 13
+</pre>
+</div>
+</div>
+<br />
+Given a tree expressed in row form, determine if it is lucky or not.
+<br />
+<h2>Input Format</h2>
+<ul>
+<li>An integer <code>N</code> in the range [2, 10] denoting the number of rows in the tree</li>
+<li><code>N</code> lines of space separated integers in the range [-100, 100], each line representing a row in the tree.  All trees provided will be compete binary trees, that is: all nodes except those in the final row will have two children.</li>
+</ul>
+<h2>Output Format</h2>
+<ul>
+<li>If the provided tree is lucky, output "lucky", otherwise output "not lucky"</li>
+</ul>
+<div class="row">
+<div class="col-md-6">
+<h2>Sample Input</h2>
+<pre>
+3
+4
+9 8
+2 3 1 7
+</pre>
+</div>
+<div class="col-md-6">
+<h2>Sample Output</h2>
+<pre>
+lucky
+</pre>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<pre>
+3
+10
+3 4
+1 2 9 13
+</pre>
+</div>
+<div class="col-md-6">
+<pre>
+not lucky
+</pre>
+</div>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code># Number of lines
+n = int(input())
+lucky = False
+
+# Build the tree
+tree = []
+for i in range(n):
+    tree.append(list(map(int, input().split())))
+
+# The sum of the first branch
+leafSum = 0
+for j in range(n):
+    leafSum += tree[j][0]
+
+# Depth-first search
+for i in range(2 ** (n-1)):
+    # If it&#39;s lucky, no need to continue
+    if(leafSum == 13):
+        lucky = True
+        break
+    # Pop a leaf from the nth row every time, the n-1th row every other time, etc.
+    for j in range(n):
+        if (i+1) % (2 ** j) == 0:
+            # Remove the old leaf from the sum
+            leafSum -= tree[(n-1)-j][0]
+            tree[(n-1)-j].pop(0)
+            # Add the next one (if there is a next one)
+            if len(tree[(n-1)-j]) &gt; 0:
+                leafSum += tree[(n-1)-j][0]
+
+if lucky == False:
+    print(&#34;not lucky&#34;)
+else:
+    print(&#34;lucky&#34;)
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::io::{self, Read};
+
+fn find_13(tree: &amp;[i32]) -&gt; bool {
+	fn find(tree: &amp;[i32], idx: usize, v: i32) -&gt; bool {
+		if idx &lt; tree.len() {
+			let v = tree[idx] + v;
+			find(tree, 2 * idx + 1, v) || find(tree, 2 * idx + 2, v)
+		} else {
+			v == 13
+		}
+	}
+
+	find(tree, 0, 0)
+}
+
+fn main() {
+	let mut input = String::new();
+	io::stdin().read_to_string(&amp;mut input).unwrap();
+
+	let mut lines = input.lines();
+
+	let n = lines.next()
+		.and_then(|v| v.parse::&lt;usize&gt;().ok())
+		.unwrap();
+
+	let tree = lines.take(n)
+		.flat_map(|l| {
+			l.split_whitespace()
+				.map(|v| v.parse::&lt;i32&gt;().unwrap())
+		})
+		.collect::&lt;Vec&lt;_&gt;&gt;();
+
+	if find_13(&amp;tree) {
+		println!(&#34;lucky&#34;);
+	} else {
+		println!(&#34;not lucky&#34;);
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#!/usr/bin/env python3
+from collections import deque
+
+
+class Node:
+	def __init__(self, val):
+		self.val = val
+		self.left = None
+		self.right = None
+
+
+def main():
+	num_rows = int(input())
+
+	root = Node(int(input()))
+	q = deque()
+	q.append(root)
+
+	for _ in range(1, num_rows):
+		row = [int(x) for x in input().split()]
+		i = 0
+		while i &lt; len(row):
+			node = q.popleft()
+			node.left = Node(node.val + row[i])
+			node.right = Node(node.val + row[i+1])
+			q.append(node.left)
+			q.append(node.right)
+			i += 2
+
+	if 13 in [node.val for node in q]:
+		print(&#39;lucky&#39;)
+	else:
+		print(&#39;not lucky&#39;)
+
+
+if __name__ == &#39;__main__&#39;:
+	main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>import sys
+
+# Given a line of space separated integers, return the tree row representation.
+def make_tree_row(line):
+    return [int(x) for x in line.split(&#34; &#34;)]
+
+# Return the children indicies of a given row and column.
+def children(row, col):
+    return (row + 1, 2 * col), (row + 1, 2 * col + 1)
+
+# Check if the row is a leaf row.
+def is_leaf(tree, row):
+    return row == len(tree)
+
+# Determine if there exists a root to leaf path which sums to 13 in the given
+# tree.
+def is_lucky(tree, row = 0, col = 0, path_sum = 0):
+    if is_leaf(tree, row):
+        return path_sum == 13
+
+    lc, rc = children(row, col)
+    return is_lucky(tree, *lc, path_sum + tree[row][col]) or\
+           is_lucky(tree, *rc, path_sum + tree[row][col])
+
+def main():
+    n_rows = int(input())
+    tree = [make_tree_row(line) for line in sys.stdin.readlines()]
+    if is_lucky(tree):
+        print(&#34;lucky&#34;)
+    else:
+        print(&#34;not lucky&#34;)
+
+main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#28" data-toggle="collapse">
+            culmonen - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="28">
+        <pre><code>// UWindsor CSS POTW Week 13 - Lucky Trees
+// Nicholas Culmone
+
+import java.util.*;
+import java.awt.*;
+
+public class lucky{
+	public static void main(String[]args){
+		BTree tree = new BTree();		
+		Scanner kb = new Scanner(System.in);
+
+		int l = kb.nextInt();
+		kb.nextLine();
+
+		for(int i=0;i&lt;l;i++){
+			String tmp = kb.nextLine();
+			String[]vals = tmp.split(&#34; &#34;);
+			tree = addVals(vals,tree);
+		}
+
+		int ans = getLucky(tree);
+
+		if(ans == 0) System.out.print(&#34;not &#34;);
+		System.out.println(&#34;lucky&#34;);
+
+
+	}
+
+	public static int getLucky(BTree tree){
+		return getLucky(tree.getRoot(),0);
+	}
+
+	public static int getLucky(BNode n, int tot){
+		tot += n.getVal();
+
+		if(n.getLeft() == null){
+			if(tot == 13) return 1;
+			return 0;
+		}
+		else{
+			return getLucky(n.getLeft(),tot) + getLucky(n.getRight(),tot);
+		}
+	}
+
+	public static BTree addVals(String[]vals, BTree tree){
+		int hei = (int)(Math.log(vals.length) / Math.log(2));
+
+		if(hei == 0){
+			tree.setRoot(Integer.parseInt(vals[0]));
+			return tree;
+		}
+
+		for(int i=0;i&lt;vals.length;i++){
+			int tmp = (int)Math.pow(2,hei-1), n = Integer.parseInt(vals[i]), iTmp = i;
+			BNode spot = tree.getRoot();
+
+			while(true){
+				if(tmp &lt;= iTmp){
+					iTmp -= tmp;
+					if(spot.getRight() == null){
+						spot.setRight(new BNode(n,spot));
+						break;
+					}
+					spot = spot.getRight();
+				}
+				else{
+					if(spot.getLeft() == null){
+						spot.setLeft(new BNode(n,spot));
+						break;
+					}
+					spot = spot.getLeft();
+				}
+				tmp /= 2;
+			}
+		}
+		return tree;
+	}
+}
+
+class BTree{
+	private BNode root;
+
+	public BTree(){
+		root = null;
+	}
+
+	public void setRoot(int v){
+		root = new BNode(v,null);
+	}
+	public BNode getRoot(){
+		return root;
+	}
+
+}
+
+class BNode{
+	private int val;
+	private BNode left, right, parent;
+
+	public BNode(int v, BNode p){
+		val = v;
+		parent = p;
+		left = null;
+		right = null;
+	}
+
+	public void setLeft(BNode n){
+		left = n;
+	}
+	public void setRight(BNode n){
+		right = n;
+	}
+
+	public BNode getLeft(){
+		return left;
+	}
+	public BNode getRight(){
+		return right;
+	}
+	public int getVal(){
+		return val;
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#38" data-toggle="collapse">
+            ayoub116 - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="38">
+        <pre><code>package week13;
+import java.util.*;
+
+public class LuckyTree {
+	
+	public static ArrayList&lt;Integer&gt; readData() {
+		ArrayList&lt;Integer&gt; data = new ArrayList&lt;Integer&gt;();
+		Scanner readInput= new Scanner(System.in);
+		
+		int rows = readInput.nextInt();
+		int n = 1;
+		while(n &lt;= (int)(Math.pow(2, rows) - 1)) {
+			data.add(readInput.nextInt());
+			n++;
+		}
+		
+		readInput.close();
+		return data;
+	}
+	
+	public static boolean isLuckyTree(ArrayList&lt;Integer&gt; data, int targetSum) {
+		int rootIndex = 0;
+		return isLuckyTree(data, rootIndex, targetSum);
+	}
+	
+	private static boolean isLuckyTree(ArrayList&lt;Integer&gt; data, int rootIndex, int currentSum) {
+		currentSum -= data.get(rootIndex);
+		
+		if ((rootIndex*2+2) &lt; data.size()) {
+			int leftChildIndex = rootIndex*2+1;
+			int rightChildIndex = rootIndex*2+2;
+			
+			return isLuckyTree(data, leftChildIndex, currentSum) 
+					|| isLuckyTree(data, rightChildIndex, currentSum);
+		} else if(currentSum == 0) {
+			return true;
+		}
+		
+		return false;		
+	}
+	
+	public static String printResult(boolean isLuckyTree) {
+		return isLuckyTree ? &#34;lucky&#34; : &#34;not lucky&#34;;
+	}
+
+	public static void main(String[] args) {
+		ArrayList&lt;Integer&gt; list = readData();
+		boolean result = isLuckyTree(list, 13);
+		System.out.println(printResult(result));
+	}
+
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.*;
+public class w13 {
+    public static class node {
+        int val;
+        node left, right;
+
+        public node(int val) { this.val = val; }
+
+        public boolean isLeafNode() {
+            return this.left == null &amp;&amp; this.right == null;
+        }
+    }
+
+    public static boolean isLucky(node root, int val) {
+        int currSum = val - root.val;
+        if (root.isLeafNode() &amp;&amp; currSum == 0) return true;
+        boolean leftSubtree = false, rightSubtree = false;
+        if (root.left != null) leftSubtree = isLucky(root.left, currSum);
+        if (root.right != null) rightSubtree = isLucky(root.right, currSum);
+        return leftSubtree || rightSubtree;
+    }
+
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        int n = kb.nextInt();
+        int numberOfNonLeafNodes = (int) Math.pow(2, n - 2) - 1;
+        node root = new node(kb.nextInt());
+        Queue&lt;node&gt; q = new LinkedList&lt;node&gt;();
+        q.add(root);
+        for (int i = 0; i &lt; numberOfNonLeafNodes; i++) {
+            node aNode = q.poll();
+            aNode.left = new node(kb.nextInt());
+            q.add(aNode.left);
+            aNode.right = new node(kb.nextInt());
+            q.add(aNode.right);
+        }
+        node next = q.poll();
+        while (kb.hasNextInt()) {
+            int a = kb.nextInt();
+            if (next.left == null) {
+                next.left = new node(a);
+            }
+            else if (next.right == null) {
+                next.right = new node(a);
+            }
+            else {
+                next = q.poll();
+                next.left = new node(a);
+            }
+        }
+        if (isLucky(root, 13)) System.out.println(&#34;lucky&#34;);
+        else System.out.println(&#34;not lucky&#34;);
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>package problems_of_the_week;
+
+import java.util.Scanner;
+
+public class week13 {
+
+	public static void main(String[] args){
+		Scanner scan = new Scanner(System.in);
+
+		int height = scan.nextInt();
+		int[] binaryTree = new int[(int) (Math.pow(2, height)-1)];
+		
+		for(int c = 0, length = (int) (Math.pow(2, height) -1); c &lt; length; c++)
+			binaryTree[c] = scan.nextInt();
+		
+		System.out.println(luckyTree(0, height, 13, 0, binaryTree)?&#34;lucky&#34; : &#34;not lucky&#34;);
+		
+		scan.close();
+	}
+	
+	public static boolean luckyTree(int position,int allowedIterations,int luckyNumber, int currentNumber, int[] binaryTree){
+		if(allowedIterations == 0)
+			return luckyNumber == currentNumber;
+	
+		return luckyTree(2*position + 1, allowedIterations-1, luckyNumber, currentNumber + binaryTree[position], binaryTree) ||
+				luckyTree(2*position + 2, allowedIterations-1, luckyNumber, currentNumber + binaryTree[position], binaryTree);
+
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#30" data-toggle="collapse">
+            pickup - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="30">
+        <pre><code>//Eric Pickup
+//University of Windsor POTW#13 - Lucky Trees
+//05/01/2017
+
+#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+
+int pathSum(int node, int sum);
+
+int sum = 0;
+int numNodes = 0;
+int nodes[512];
+
+int main(void) { 
+
+	int numRows;
+	scanf(&#34;%d&#34;,&amp;numRows);
+
+	//Determing number of nodes expected to input
+	for (int i = 0; i &lt; numRows; i++) {
+		numNodes+=pow(2,i);
+	}
+
+	//Scanning and assigning nodes into array
+	for(int i = 0; i &lt; numNodes; i++) {
+		scanf(&#34;%d&#34;,&amp;nodes[i]);
+	}
+
+	//Checking answer
+	if (pathSum(0,13) == 1) {
+		printf(&#34;lucky&#34;);
+	} else {
+		printf(&#34;not lucky&#34;);
+	}
+
+}
+
+int pathSum(int node, int sum) {
+	if(node &gt; numNodes) {
+		return(sum==0);	//Base number
+	} else {
+		sum = sum - nodes[node];
+		return(pathSum(node*2+1,sum) || pathSum(node*2+2,sum)); //Checking LS and RS
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+bool lucky(std::uint32_t i, int sum, int target, const std::vector&lt;int&gt;&amp; tree) {
+  if (i &gt;= tree.size()) {
+    return sum == target;
+  }
+  return lucky(i * 2 + 1, sum + tree[i], target, tree) ||
+         lucky(i * 2 + 2, sum + tree[i], target, tree);
+}
+
+int main() {
+  int height;
+  std::cin &gt;&gt; height;
+  std::vector&lt;int&gt; tree((1 &lt;&lt; height) - 1);
+
+  int n, i = 0;
+  while (std::cin &gt;&gt; n) {
+    tree[i++] = n;
+  }
+
+  if (!lucky(0, 0, 13, tree)) std::cout &lt;&lt; &#34;un&#34;;
+  std::cout &lt;&lt; &#34;lucky&#34; &lt;&lt; std::endl;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#42" data-toggle="collapse">
+            roederw - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="42">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+// Hi Quinn &lt;3
+// I couldn&#39;t think of anything O(n) time and O(1) space off the top of my head... so recursion it is.
+
+const int LUCKY = 13;
+
+bool check_sum(const std::vector&lt;int&gt;&amp; tree, int position, int sum) {
+    if (position &gt; tree.size() - 1) {
+        if (sum == LUCKY)
+            return true;
+        return false;
+    }
+
+    return check_sum(tree, (2 * position) + 1, sum + tree[position]) ||
+        check_sum(tree, (2 * position) + 2, sum + tree[position]);
+}
+
+int main() {
+
+    int input;
+    std::vector&lt;int&gt; tree;
+
+    std::cin.ignore();
+    while (std::cin &gt;&gt; input)
+        tree.push_back(input);
+    
+    if (check_sum(tree, 0, 0))
+        std::cout &lt;&lt; &#34;lucky&#34; &lt;&lt; std::endl;
+    else
+        std::cout &lt;&lt; &#34;not lucky&#34; &lt;&lt; std::endl;
+
+    return 0;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
+
+int32_t tree[1023];
+
+int main() {
+    int depth;
+    scanf(&#34;%d&#34;, &amp;depth);
+    for(unsigned i = 0; i &lt; (2 &lt;&lt; depth-1)-1; ++i) {
+        scanf(&#34;%d&#34;, tree+i);
+    }
+
+    for(unsigned i = 0; i &lt; 511; ++i) {
+        tree[(2*i) + 1] += tree[i];
+        tree[(2*i) + 2] += tree[i];
+    }
+
+    _Bool is_lucky = 0;
+    for(unsigned i = 1022; i &gt;= 511; --i) {
+        is_lucky = is_lucky || (tree[i] == 13); 
+    }
+
+    if(is_lucky) {
+        printf(&#34;lucky\n&#34;);
+    } else {
+        printf(&#34;not lucky\n&#34;);
+    }
+
+    return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#44" data-toggle="collapse">
+            gilbert4 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="44">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+bool lucky(int sum, int cur, std::vector&lt;int&gt; const&amp; v) {
+	if (cur &gt;= v.size()) {
+		return sum == 13;
+	}
+	sum += v.at(cur);
+	return lucky(sum, 2 * cur + 1, v) || lucky(sum, 2 * cur + 2, v);
+}
+
+int main() {
+	int x;
+	std::cin &gt;&gt; x; // Eat height, its unnecessary
+	std::vector&lt;int&gt; v;
+	while (std::cin &gt;&gt; x) {
+		v.push_back(x);
+	}
+
+	if (lucky(0, 0, v)) {
+		std::cout &lt;&lt; &#34;lucky\n&#34;;
+	} else {
+		std::cout &lt;&lt; &#34;not lucky\n&#34;;
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#45" data-toggle="collapse">
+            barronh - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="45">
+        <pre><code>//Problem of the Week 13 - Lucky Trees
+//Jan 10, 2017
+//By: Adam Barron
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cmath&gt;
+
+typedef class node {
+public:
+	int key;
+	node *left;
+	node *right;
+}Node;
+
+Node* MakeTree(int it, std::vector&lt;int&gt; data) {
+	if (it &gt;= data.size())
+		return nullptr;
+
+	Node* node = new Node();
+	node-&gt;key = data[it];
+
+	node-&gt;left = MakeTree((2 * it) + 1, data);
+	node-&gt;right = MakeTree((2 * it) + 2, data);
+
+	return node;
+}
+
+bool ExplorePaths(Node* node, int sum) {
+	if (node == nullptr)
+		return false;
+
+	sum += node-&gt;key;
+	if (node-&gt;left == nullptr &amp;&amp; node-&gt;right == nullptr)
+		return sum == 13;
+	else
+		return ExplorePaths(node-&gt;left, sum) || ExplorePaths(node-&gt;right, sum);
+}
+
+void DestroyTree(Node* node) {
+	if (node != nullptr) {
+		DestroyTree(node-&gt;left);
+		DestroyTree(node-&gt;right);
+		delete node;
+	}
+}
+
+int main() {
+	int height;
+	std::cin &gt;&gt; height;
+
+	std::vector&lt;int&gt; data;
+	int x;
+	while (std::cin &gt;&gt; x)
+		data.push_back(x);
+
+	if (std::pow(2, height) - 1 != data.size()) {
+		std::cout &lt;&lt; &#34;The number of nodes you entered would not created a balanced binary tree of height &#34; &lt;&lt; height &lt;&lt; &#34;.\n&#34;;
+		return 0;
+	}
+
+	Node* root = MakeTree(0, data);
+
+	if (ExplorePaths(root,0))
+		std::cout &lt;&lt; &#34;lucky&#34;;
+	else
+		std::cout &lt;&lt; &#34;not lucky&#34;;
+
+	DestroyTree(root);
+	return 0;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>#include &lt;iostream&gt;
+
+bool checkIfLucky(const int* arr, int i, int sum, int size) {
+    return (i &gt;= size) ? 
+        (sum == 13)
+        :
+        (  checkIfLucky(arr, 2*i+1, sum+arr[i], size) 
+        || checkIfLucky(arr, 2*i+2, sum+arr[i], size) )
+    ; 
+} 
+
+int main() {
+    int levels, curr, i = 0;
+    std::cin &gt;&gt; levels;
+   
+    // &#34;I have dynamic arrays, I have the best dynamic arrays&#34; -Donald Trump
+    int* arr = new int[(1&lt;&lt;levels)-1] ;
+
+    while(std::cin &gt;&gt; curr) {
+        arr[i++] = curr; 
+    }
+     
+    std::cout &lt;&lt; 
+        (checkIfLucky(arr, 0, 0, (1&lt;&lt;levels)-1) ? &#34;lucky&#34; : &#34;not lucky&#34; ) 
+        &lt;&lt; std::endl
+    ;
+    
+    // &#34;When stdin sends their input, they&#39;re not sending their best&#34; -Donald Trump
+    delete [] arr;
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

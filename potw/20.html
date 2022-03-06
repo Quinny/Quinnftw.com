@@ -1,0 +1,105 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Yo-Yo Brah</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="https://pbs.twimg.com/profile_images/652105089205731328/kKuLkqxr.jpg" class="img img-responsive" />
+<small>Incase this image confuses you, this is a famous Cellist by the name of Yo-Yo Ma</small>
+</div>
+<br />
+You just bought a new Yo-Yo and are fascinated with how the design changes as it spins.  After some careful observation you determine that the Yo-Yo completes exactly one quarter of a clock-wise rotation in approximately 1 millisecond.  Given a matrix representing the design of the Yo-Yo before it starts to spin, output the orientation of the design after <code>N</code> milliseconds.
+
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> representing the size of the Yo-Yo</li>
+<li><code>N</code> lines each containing <code>N</code> characters representing the design of the Yo-Yo</li>
+<li>An integer <code>M</code> (>= 0) denoting the number of milliseconds the Yo-Yo will spin for</li>
+</ul>
+
+<h3>Output Format</h3>
+<ul>
+<li>The orientation of the design after the Yo-Yo spins for <code>M</code> milliseconds</li>
+</ul>
+
+<div class="row">
+
+
+
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+16
+       _.-;;-._ 
+'-..-'|   ||   |
+'-..-'|_.-;;-._|
+'-..-'|   ||   |
+'-..-'|_.-''-._|
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+2
+</pre>
+</div>
+
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+++++++++++++++++
+|_.-''-._|'-..-'
+|   ||   |'-..-'
+|_.-;;-._|'-..-'
+|   ||   |'-..-'
+ _.-;;-._       
+</pre>
+</div>
+
+</div>
+<i>Note: Do not worry about the orientation of individual characters (i.e. when you rotate leave ";" as ";")</i>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

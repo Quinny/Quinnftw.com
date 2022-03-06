@@ -1,0 +1,828 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Nerd Alert</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      Quinn has learned a lot about judging people since he first introduced his QDist metric.  He has been secretly mining data on his computer science classmates, trying to identify a more accurate model for determining coolness.  For this new model, three attributes were observed about each student:
+<br /><br />
+<ul>
+<li>How similar the student is to Quinn</li>
+<li>How much time the student spends in the Java Lab</li>
+<li>Whether or not the student is considered a "nerd" or "cool"</li>
+</ul>
+After the data was collected, Quinn graphed it to see if he could make any sense of it:
+<div align="center">
+<img class="img img-responsive" src="http://i.imgur.com/lNVUSB5.png" />
+<small>Data doesn't lie folks, similarity to Quinn is proven to be positively correlated with coolness.</small>
+</div>
+<br />
+Interestingly, the data seems to be <a href="https://en.wikipedia.org/wiki/Linear_separability">linearly separable</a>.  This means that a simple machine learning model, such as a <a href="http://computing.dcu.ie/~humphrys/Notes/Neural/single.neural.html">single layer perceptron</a>, could be trained to "learn" what it means to be cool.  This model could then be used to classify incoming first years to determine their coolness!
+<br /><br />
+Given a dataset containing Quinn's observations, train a model to classify incoming first years coolness.
+<br /><br />
+<h3>Input format</h3>
+<ul>
+<li>A integer <code>N</code>, denoting the number of students observed</li>
+<li><code>N</code> lines of the form <code>X Y C</code> representing each students Time Spent in the Java Lab, Similarity to Quinn, and Nerd or Coolness.  <code>C = 1</code> implies the student is cool, and <code>C = -1</code> implies the student is a nerd.
+<li>An integer <code>M</code> denoting the number of incoming first years</li>
+<li><code>M</code> lines of the form <code>X Y</code> representing the two attributes of these students.  Note that <code>C</code> is not provided, this must be determined</li>
+</ul>
+<h3>Output Format</h3>
+<ul>
+<li><code>M</code> lines containing either "Cool" or "Nerd", the i'th line being a classification of the i'th incoming first year</li>
+</ul>
+
+<a href="https://gist.github.com/Quinny/9226749a94ca0341d6b93b082dc1d16b">Major spoiler: an implementation of a perceptron classifier in C for those who need some help.</a>
+
+<div class="row">
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+40
+65 57 -1
+13 29 1
+82 56 -1
+11 27 1
+8 29 1
+8 25 1
+94 69 -1
+15 29 1
+60 78 -1
+45 2 1
+1 24 1
+51 88 -1
+76 71 -1
+41 18 1
+79 76 -1
+7 16 1
+93 62 -1
+84 72 -1
+87 97 -1
+41 14 1
+89 87 -1
+8 15 1
+61 70 -1
+44 11 1
+46 83 -1
+23 1 1
+20 12 1
+77 62 -1
+93 74 -1
+1 6 1
+68 40 -1
+40 20 1
+16 25 1
+24 5 1
+59 58 -1
+1 8 1
+88 48 -1
+89 92 -1
+52 76 -1
+32 3 1
+10
+57 52
+89 57
+11 22
+68 91
+42 11
+26 12
+22 15
+55 53
+13 17
+48 78
+</pre>
+</div>
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+Nerd
+Nerd
+Cool
+Nerd
+Cool
+Cool
+Cool
+Nerd
+Cool
+Nerd
+</pre>
+</div>
+</div> 
+
+<h2>Sample Input Graph</h2>
+<div align="center">
+<img class="img img-responsive" src="http://i.imgur.com/fcqwK6x.png">
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::io;
+use std::io::prelude::*;
+
+struct Perceptron {
+	x_weight: f64,
+	y_weight: f64,
+	bias: f64,
+	learning_rate: f64,
+}
+
+impl Perceptron {
+	fn new(learning_rate: f64) -&gt; Self {
+		Perceptron {
+			x_weight: 0.0,
+			y_weight: 0.0,
+			bias: 0.0,
+			learning_rate: learning_rate,
+		}
+	}
+
+	fn apply(&amp;mut self, x: i32, y: i32) -&gt; i32 {
+		if ((self.x_weight * x as f64) + (self.y_weight * y as f64) + self.bias) &gt; 0.0 {
+			1
+		} else {
+			-1
+		}
+	}
+
+	fn learn(&amp;mut self, x: i32, y: i32, true_output: i32) -&gt; i32 {
+		let predicted_output = self.apply(x, y);
+		let error = true_output - predicted_output;
+
+		self.x_weight += (x * error) as f64 * self.learning_rate;
+		self.y_weight += (y * error) as f64 * self.learning_rate;
+		self.bias += (1 * error) as f64 * self.learning_rate;
+
+		error
+	}
+
+	fn train_until_convergence(&amp;mut self, data: &amp;[(i32, i32, i32)]) {
+		loop {
+			if data.iter().fold(0, |i, &amp;(x, y, o)| i + self.learn(x, y, o)) == 0 {
+				break;
+			}
+		}
+	}
+}
+
+fn main() {
+    let input = {
+        let mut buf = String::new();
+        io::stdin().read_to_string(&amp;mut buf).unwrap();
+        buf
+    };
+
+    let mut lines = input.lines();
+
+    let n = lines.next().and_then(|v| v.parse::&lt;usize&gt;().ok()).unwrap();
+    let students = lines.by_ref()
+    	.take(n)
+    	.map(|l| {
+    		let mut w = l.split_whitespace();
+
+    		let time_spent = w.next().and_then(|v| v.parse::&lt;i32&gt;().ok()).unwrap();
+    		let similarity = w.next().and_then(|v| v.parse::&lt;i32&gt;().ok()).unwrap();
+    		let status = w.next().and_then(|v| v.parse::&lt;i32&gt;().ok()).unwrap();
+
+    		(time_spent, similarity, status)
+    	}).collect::&lt;Vec&lt;_&gt;&gt;();
+
+    let mut p = Perceptron::new(0.1);
+    p.train_until_convergence(&amp;students[..]);
+
+    let m = lines.next().and_then(|v| v.parse::&lt;usize&gt;().ok()).unwrap();
+    let first_years = lines.by_ref()
+    	.take(m)
+    	.map(|l| {
+    		let mut w = l.split_whitespace();
+
+    		let time_spent = w.next().and_then(|v| v.parse::&lt;i32&gt;().ok()).unwrap();
+    		let similarity = w.next().and_then(|v| v.parse::&lt;i32&gt;().ok()).unwrap();
+
+    		(time_spent, similarity)
+    	});
+
+    for (time_spent, similarity) in first_years {
+    	if p.apply(time_spent, similarity) == 1 {
+    		println!(&#34;Cool&#34;);
+    	} else {
+    		println!(&#34;Nerd&#34;);
+    	}
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Haskell
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>import Data.List.Split (splitOn)
+import Control.Monad (replicateM)
+import Control.Arrow (second)
+
+-- | A data type which models a perceptron layer.
+data PerceptronLayer = PerceptronLayer {
+  weights            :: [Double],
+  bias               :: Double,
+  learningRate       :: Double,
+  activationFunction :: (Double -&gt; Double)
+}
+
+-- | Creates an empty perceptron layer with the supplied learning rate and
+--   activation function.  Weights and bias are initialized to 0.
+emptyLayer :: Int -&gt; Double -&gt; (Double -&gt; Double) -&gt; PerceptronLayer
+emptyLayer nInputs rate af = PerceptronLayer ws 0 rate af
+  where ws = replicate nInputs 0
+
+-- | Applies the perceptron to the feature vector and returns the output.
+apply :: PerceptronLayer -&gt; [Double] -&gt; Double
+apply layer features = activationFunction layer $ (dot (weights layer) features) + bias layer
+  where dot xs ys = sum $ zipWith (*) xs ys
+
+-- | Given a feature vector and an expected output, update the weights and bias
+--   of the layer according to the perceptron learning rule, and return the error.
+learn :: PerceptronLayer -&gt; [Double] -&gt; Double -&gt; (PerceptronLayer, Double)
+learn layer features trueOutput = (PerceptronLayer nws nb (learningRate layer) (activationFunction layer), error)
+  where
+    error = trueOutput - (apply layer features)
+    delta (weight, feature) = weight + ((learningRate layer) * feature * error)
+    nws = map delta $ zip (weights layer) features
+    -- | The bias can be treated as a weight with a constant input feature of 1.
+    nb = delta (bias layer, 1)
+
+-- | Continuously train on the dataset until the error is 0.
+trainUntillConvergence :: PerceptronLayer -&gt; [([Double], Double)] -&gt; PerceptronLayer
+trainUntillConvergence layer dataset
+  | error == 0 = layer
+  | otherwise = trainUntillConvergence layer&#39; dataset
+    where
+      (layer&#39;, error) = foldl update (layer, 0) dataset
+      update (model, error) (features, label) = second (+error) $ learn model features label
+
+-- | The step activation function.
+step :: Double -&gt; Double
+step x = if x &gt; 0 then 1 else -1
+
+-- | Read a labeled example from stdin.
+readLabeledExample :: IO ([Double], Double)
+readLabeledExample = do
+  [x, y, label] &lt;- map read . splitOn &#34; &#34; &lt;$&gt; getLine
+  return ([x, y], label)
+
+-- | Read an unlabled example from stdin.
+readUnlabeledExample :: IO [Double]
+readUnlabeledExample = map read . splitOn &#34; &#34; &lt;$&gt; getLine
+
+-- | Read an integer from stdin.
+readInt :: IO Int
+readInt = read &lt;$&gt; getLine
+
+main = do
+  nTrainingSamples &lt;- readInt
+  trainingData &lt;- replicateM nTrainingSamples readLabeledExample
+  let model = trainUntillConvergence (emptyLayer 2 0.01 step) trainingData 
+
+  nTestingSamples &lt;- readInt
+  testingData &lt;- replicateM nTestingSamples readUnlabeledExample
+  mapM_ putStrLn (map toLabel $ map (apply model) testingData)
+    where toLabel x = if x &gt; 0 then &#34;Cool&#34; else &#34;Nerd&#34;
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#43" data-toggle="collapse">
+            arifs - C#
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="43">
+        <pre><code>﻿//==========================================
+// Saman Arif
+//==========================================
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using System.Drawing;
+
+//==========================================
+// Using the idea of the Least Squared Line
+//==========================================
+
+namespace MachineLearning
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            //==================================
+            // Input Stuff
+            //==================================
+            StreamReader readInput = new StreamReader(Console.OpenStandardInput());
+
+            int numValues = Int32.Parse(readInput.ReadLine());
+
+            LeastSquared coolLine = new LeastSquared();
+            LeastSquared nerdLine = new LeastSquared();
+
+            for (int i = 0; i &lt; numValues; i++)
+            {
+                String input = readInput.ReadLine();
+                String[] split = input.Split(&#39; &#39;);
+                if(int.Parse(split[2]) == 1)
+                {
+                    coolLine.addData(int.Parse(split[0]), int.Parse(split[1]));
+                }
+                else
+                {
+                    nerdLine.addData(int.Parse(split[0]), int.Parse(split[1]));
+                }
+            }
+
+            //Make Initial Line
+            double errorCool = coolLine.calculateLine();
+            double errorNerd = nerdLine.calculateLine();
+
+            //==================================
+            // Calculate &amp; continuously add
+            //==================================
+            numValues = Int32.Parse(readInput.ReadLine());
+
+            for(int i = 0; i &lt; numValues; i++)
+            {
+                String input = readInput.ReadLine();
+                String[] split = input.Split(&#39; &#39;);
+                int x = int.Parse(split[0]);
+                int y = int.Parse(split[1]);
+
+                //=================================================
+                // Which line  is closer?
+                // distance =&gt; C
+                // Trick: us input x, and create a new y with that
+                // input, looks messy
+                //=================================================
+                double x2 = ((coolLine.getA() * x + coolLine.getB()) - coolLine.getB()) / coolLine.getA();
+                double y2 = coolLine.getA() * x + coolLine.getB();
+                double dist1 = Math.Sqrt(Math.Pow(x - x2, 2) + Math.Pow(y - y2, 2));
+
+                x2 = ((nerdLine.getA() * x + nerdLine.getB()) - nerdLine.getB()) / nerdLine.getA();
+                y2 = nerdLine.getA() * x + nerdLine.getB();
+                double dist2 = Math.Sqrt(Math.Pow(x - x2, 2) + Math.Pow(y - y2, 2));
+
+                if(dist1 &lt; dist2)
+                {
+                    Console.WriteLine(&#34;Cool&#34;);
+                }
+                else
+                {
+                    Console.WriteLine(&#34;Nerd&#34;);
+                }
+            }
+
+            readInput.Close();
+        }
+    }
+
+    class LeastSquared
+    {
+        List&lt;double&gt; X;
+        List&lt;double&gt; Y;
+        List&lt;double&gt; XX;
+        List&lt;double&gt; XY;
+        double A;
+        double B;
+
+        public LeastSquared()
+        {
+            X = new List&lt;double&gt;();
+            Y = new List&lt;double&gt;();
+            XX = new List&lt;double&gt;();
+            XY = new List&lt;double&gt;();
+            A = 0;
+            B = 0;
+        }
+
+        public void addData(int x, int y)
+        {
+            X.Add(x);
+            Y.Add(y);
+            XX.Add(x * x);
+            XY.Add(x * y);
+        }
+
+        //==============================
+        // Ax^2 + Bx = xy
+        // Ax + Bn = y
+        //==============================
+        public double calculateLine()
+        {
+            double xk = 0;
+            double yk = 0;
+            double xk2 = 0;
+            double xkyk = 0;
+
+            for (int i = 0; i &lt; X.Count; i++)
+            {
+                xk += X[i];
+                yk += Y[i];
+                xk2 += XX[i];
+                xkyk += XY[i];
+            }
+
+            //Find B
+            double m12 = xk / xk2;
+            double bcoef = X.Count - (m12 * xk);
+            double ycoef = yk - (m12 * xkyk);
+            B = ycoef / bcoef;
+
+            //Find A
+            A = (xkyk - (B * xk)) / xk2;
+            double error = 0;
+            for (int i = 0; i &lt; X.Count; i++)
+            {
+                error += Math.Pow((A * X[i] + B) - Y[i],2);
+            }
+
+            error = error * 1 / X.Count;
+            error = Math.Sqrt(error);
+
+            return error;
+        }
+
+        public double getA()
+        {
+            return A;
+        }
+
+        public double getB()
+        {
+            return B;
+        }
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>setCount = int(input())
+
+learningData = []
+weights = [1,1]
+tally = 0
+for i in range(setCount):
+    learningData.append(list(map(int, input().split())))
+    # A correction for false to make my implementation work
+    if(learningData[i][2] == -1):
+        learningData[i][2] = 0
+
+
+# Threshold
+t = 0
+# Learning Rate
+lRate = 0.001
+# Number of incorrect outputs
+errCount = 1
+while errCount &gt; 0:
+    errCount = 0
+    for i in range(setCount):
+        x = learningData[i][0] * weights[0]
+        y = learningData[i][1] * weights[1]
+        # Correct output
+        answer = learningData[i][2]
+        # Program&#39;s output
+        if (x + y) &gt;= t:
+            output = 1
+        else:
+            output = 0
+        if(output != answer):
+            errCount += 1
+            weights[0] += learningData[i][0] * (answer - output)
+            weights[1] += learningData[i][1] * (answer - output)
+            t -= lRate * (answer - output)
+
+toTest = int(input())
+for i in range(toTest):
+    info = list(map(int, input().split()))
+    if(((weights[0] * info[0]) + (weights[1] * info[1])) &gt;= t):
+        print(&#34;Cool&#34;)
+    else:
+        print(&#34;Nerd&#34;)
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#42" data-toggle="collapse">
+            roederw - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="42">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+// NOTE: Anyone that hangs out with Quinn is instantly a nerd. I believe this question is flawed.
+
+typedef struct {
+  double x_weight;
+  double y_weight;
+  double bias;
+  double learning_rate;
+} SAL; // SAL was a fitting name.
+
+typedef struct {
+    int java;
+    int quinn;
+    int nerdiness;
+} Student; // Every student contains a bit of Quinn in them.
+
+void init (SAL* thing_that_learns, double learning_rate) {
+    thing_that_learns-&gt;x_weight = 0;
+    thing_that_learns-&gt;y_weight = 0;
+    thing_that_learns-&gt;bias = 0;
+    thing_that_learns-&gt;learning_rate = learning_rate;
+}
+
+Student* init_Student(int java, int quinn, int nerdiness)  {
+    Student* student = new Student();
+    student-&gt;java = java;
+    student-&gt;quinn = quinn;
+    student-&gt;nerdiness = nerdiness;
+    return student;
+}
+
+// Im a nerd.
+int u_a_nerd_bruh(SAL* thing_that_learns, int x, int y) {
+    double nerd_level = (thing_that_learns-&gt;x_weight * x) + (thing_that_learns-&gt;y_weight * y) + thing_that_learns-&gt;bias;
+    return nerd_level &gt; 0 ? 1: -1;
+}
+
+// Learn bitch.
+int learn_mothafucka(SAL* thing_that_learns, Student* student) {
+    int predicted_output = u_a_nerd_bruh(thing_that_learns, student-&gt;java, student-&gt;quinn);
+    int error = student-&gt;nerdiness - predicted_output;
+
+    thing_that_learns-&gt;x_weight = thing_that_learns-&gt;x_weight + (student-&gt;java * error * thing_that_learns-&gt;learning_rate);
+    thing_that_learns-&gt;y_weight = thing_that_learns-&gt;y_weight + (student-&gt;quinn * error * thing_that_learns-&gt;learning_rate);
+    thing_that_learns-&gt;bias = thing_that_learns-&gt;bias + (1 * error * thing_that_learns-&gt;learning_rate);
+
+    return error;
+}
+
+// Train bitch.
+void train_that_mothafucka(SAL* thing_that_learns, std::vector&lt;Student*&gt; students) {
+    while (true) {
+        int total_error = 0;
+        for (auto&amp; student : students) {
+            total_error+= learn_mothafucka(thing_that_learns, student);
+        }
+
+        if (total_error == 0) break;
+    }
+}
+
+int main() {
+    int n;
+    std::vector&lt;Student*&gt; students;
+    std::cin &gt;&gt; n;     
+    
+    for (int i = 0; i &lt; n; ++i) {
+        int time_in_java, time_with_quinn, nerdiness;
+        std::cin &gt;&gt; time_in_java &gt;&gt; time_with_quinn &gt;&gt; nerdiness;
+        students.push_back(init_Student(time_in_java, time_with_quinn, nerdiness));
+    }
+
+    // SAL kind of sucks.
+    SAL thing_that_learns;
+    init(&amp;thing_that_learns, 0.01);
+    train_that_mothafucka(&amp;thing_that_learns, students);
+
+    int input;
+    std::vector&lt;std::pair&lt;int, int&gt;&gt; students_to_evaluate;
+    std::cin &gt;&gt; input;
+    
+    // Did we really learn anything?
+    for (int i = 0; i &lt; input; ++i) {
+        int x, y;
+        std::cin &gt;&gt; x &gt;&gt; y;
+        if (u_a_nerd_bruh(&amp;thing_that_learns, x, y) == 1)
+            std::cout &lt;&lt; &#34;Cool&#34; &lt;&lt; std::endl;
+        else
+            std::cout &lt;&lt; &#34;Nerd&#34; &lt;&lt; std::endl;
+    }
+    
+    return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#38" data-toggle="collapse">
+            ayoub116 - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="38">
+        <pre><code>package potwcoolness;
+import java.util.*;
+
+/*
+ * POTW exercise - http://potw.quinnftw.com/
+ * Coolness Perceptron Classifier - very simple single-layered perceptron training for linearly separable data
+ * Used to learn the weights applied to two parameters for determination of coolness
+ * Parameters: 1 - similarity to Quinn from quinnftw.com
+ * 			   2 - time spent in Java Lab in UWindsor
+ */
+
+public class CoolNerdPerceptronClassifier {
+	
+	// parseInput()
+	private int[][][] trainingData;
+	private int[][][] appliedData;
+	private int trainingDataSize;
+	private int appliedDataSize;
+	
+	// learnFromData()
+	private double[] weights;
+	private double bias;
+	private double learningRate;
+	private int threshold;
+	
+	public void parseInput() {
+		System.out.println(&#34;Please enter the data:\n&#34;);
+		
+		Scanner sc = new Scanner(System.in);
+		
+		/*
+		 * [i][0][0] = row = single student data = {{,}, {}}
+		 * [0][i][0] = sub-cell per row = {{,}, {output}}
+		 * [0][0][i] = element in sub-cell of row = parameter = {{similarity, java lab}, {}}
+		 * 
+		 */
+		
+		trainingDataSize = sc.nextInt();
+		trainingData = new int[trainingDataSize][2][2];		
+		int parsedLines=0;
+		
+		while (parsedLines &lt; trainingDataSize) {
+			trainingData[parsedLines][0][0] = sc.nextInt();
+			trainingData[parsedLines][0][1] = sc.nextInt();
+			trainingData[parsedLines][1][0] = sc.nextInt();
+			parsedLines++;
+		}
+		
+		appliedDataSize = sc.nextInt();
+		appliedData = new int[appliedDataSize][2][2];
+		parsedLines=0;
+		
+		while (parsedLines &lt; appliedDataSize) {
+			appliedData[parsedLines][0][0] = sc.nextInt();
+			appliedData[parsedLines][0][1] = sc.nextInt();
+			appliedData[parsedLines][1][0] = 0;
+			parsedLines++;
+		}
+		
+		sc.close();
+
+	}
+	
+	public void learnFromData() {
+		// initialize weights and bias as random numbers between -1 and 1
+		weights =  new double[2];
+		weights[0] = Math.random() * 2 - 1;
+		weights[1] = Math.random() * 2 - 1;
+		bias = Math.random() * 2 - 1;
+
+		threshold = 0; // threshold for coolness
+		learningRate = 0.1; 
+		
+		double weightedSum;
+		double output;
+		double error;
+		// start learning
+		while (true) {
+			int totalError = 0;
+			
+			for (int i = 0; i &lt; trainingDataSize; i++) {
+				weightedSum = 0;
+				
+				// calculate the weightedSum for the current row parameters
+				for (int ii = 0; ii &lt; 2; ii++) {
+					weightedSum += trainingData[i][0][ii] * weights[ii];
+				}
+			
+				// check whether the output passes the threshold for coolness
+				output = (weightedSum + bias) &gt; threshold ? 1 : -1;
+				
+				// error = expected output - true output
+				error = trainingData[i][1][0] - output;
+				totalError += error;
+				
+				// determine new weights
+				for (int ii = 0; ii &lt; 2; ii++) {
+					weights[ii] = weights[ii] + (trainingData[i][0][ii] * error * learningRate);
+				}
+				
+				// determine new bias
+				bias = bias + (1 * error * learningRate);	
+			}
+			
+			if (totalError == 0) {
+				break;
+			}
+		}
+	}
+	
+	public void determineCoolness() {
+		double output = 0;
+		int result;
+		
+		for (int i = 0; i &lt; appliedDataSize; i++) {
+			for (int ii = 0; ii &lt; 2; ii++) {
+				output += (appliedData[i][0][ii] * weights[ii]);
+			}
+			output += bias;
+		    result = output &gt; 0 ? 1 : -1;
+		    appliedData[i][1][0] = result;
+			output = 0;
+		}
+	}
+	
+	public String toString() {
+		String output = &#34;\nResults:\n&#34;;
+		
+		for (int i = 0; i &lt; appliedDataSize; i++) {
+			if (appliedData[i][1][0] &gt; threshold) {
+				output += &#34;Cool\n&#34;;
+			} else {
+				output += &#34;Nerd\n&#34;;
+			}
+		}
+		
+		return output;
+	}
+
+	public static void main(String[] args) {		
+		
+		CoolNerdPerceptronClassifier c1 = new CoolNerdPerceptronClassifier();
+		
+		c1.parseInput();
+		c1.learnFromData();
+		c1.determineCoolness();
+		System.out.println(c1.toString());
+	}
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

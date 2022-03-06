@@ -1,0 +1,434 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Roommate Findr</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+
+<img src="https://i.imgur.com/9l2tHr1.png" class="img img-responsive">
+</div>
+<br />
+
+Dave is currently searching for the ideal roommate.  Being more courteous than Quinn, Dave has not been <a href="http://potw.quinnftw.com/problem/2016/12/">unknowingly collecting data on his peers</a>.  As a result, enough data is not available to train a machine learning model to learn Dave's perfect roommate, and he must rely on a simple but effective measure of similarity known as the <a href="https://en.wikipedia.org/wiki/Jaccard_index">Jaccard similarity metric</a>.
+<br /><br />
+Dave has scraped the Facebook pages of each of his perspective roommates and extracted a list of their favourite activities/interests.  His ideal roommate is  the candidate whose interests yield the highest jaccard similarity to his own.  Given the collected data, determine Dave's ideal roommate.
+
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> denoting the number of candidates</li>
+<li><i>Note that Dave will always be the first candidate</i></li>
+<li><code>N</code> lines of the form <code>name a1 a2 ... an</code> (each person will have at least one activity)
+</li>
+</ul>
+
+<h3>Output Format</h3>
+<ul>
+<li>The name of the candidate which has the highest compatibility with Dave as defined above</li>
+</ul>
+
+<div class="row">
+
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+5
+Dave gastrostegal runover saltlessness
+Suzanne gastrostegal
+Patricia externalist
+Joshua externalist saltlessness gastrostegal
+Stacie externalist
+</pre>
+</div>
+
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+Joshua
+</pre>
+</div>
+
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>class Person:
+    def __init__(self, name, interests):
+        self.name = name
+        self.interests = interests
+        self.score = None
+    def getName(self):
+        return self.name
+    def getInterests(self):
+        return self.interests
+    def checkCompatibility(self, otherPerson):
+        otherInterests = otherPerson.getInterests()
+        union = len(self.interests) + len(otherInterests)
+        intersection = 0
+        for interest in self.interests:
+            if interest in otherInterests:
+                intersection += 1
+        union -= intersection
+        return intersection / union
+
+n = int(input())
+people = []
+for i in range(n):
+    line = input().split()
+    currentPerson = Person(line[0], line[1:])
+    people.append(currentPerson)
+david = people.pop(0)
+people.sort(key=lambda x: x.checkCompatibility(david), reverse=True)
+print(people.pop(0).getName())
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>#include &lt;algorithm&gt;
+#include &lt;iostream&gt;
+#include &lt;iterator&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+#include &lt;unordered_set&gt;
+#include &lt;vector&gt;
+
+template &lt;typename T&gt;
+int intersection_size(const std::unordered_set&lt;T&gt;&amp; s1,
+                      const std::unordered_set&lt;T&gt;&amp; s2) {
+  int ret = 0;
+  for (const auto&amp; e : s1) {
+    ret += s2.find(e) != s2.end();
+  }
+  return ret;
+}
+
+class Roommate {
+ public:
+  const std::string name;
+  const std::unordered_set&lt;std::string&gt; activities;
+
+  Roommate(const std::string&amp; name,
+           const std::unordered_set&lt;std::string&gt; activities)
+      : name(name), activities(activities) {}
+
+  double jaccard_similarity(const Roommate&amp; other) const {
+    int intersection = intersection_size(activities, other.activities);
+    int union_size = activities.size() + other.activities.size() - intersection;
+    return intersection / static_cast&lt;double&gt;(union_size);
+  }
+};
+
+int main() {
+  int n_people;
+  std::cin &gt;&gt; n_people;
+  std::cin.ignore(1, &#39;\n&#39;);
+
+  std::vector&lt;Roommate&gt; people;
+  for (std::string line; std::getline(std::cin, line); /* empty */) {
+    std::istringstream ss(line);
+
+    std::string name;
+    ss &gt;&gt; name;
+
+    std::unordered_set&lt;std::string&gt; activities(
+        std::istream_iterator&lt;std::string&gt;{ss},
+        std::istream_iterator&lt;std::string&gt;{});
+
+    people.emplace_back(name, activities);
+  }
+
+  const auto&amp; dave = people.front();
+  const auto most_compatible = std::max_element(
+      people.begin() + 1, people.end(),
+      [&amp;dave](const auto&amp; p1, const auto&amp; p2) {
+        return p1.jaccard_similarity(dave) &lt; p2.jaccard_similarity(dave);
+      });
+  std::cout &lt;&lt; most_compatible-&gt;name &lt;&lt; std::endl;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#35" data-toggle="collapse">
+            vandolda - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="35">
+        <pre><code># Get the number of candidates.
+num_candidates = int(input())
+candidates = {}
+
+# Get all of the candidate activities, and store them in sets.
+for i in range(num_candidates):
+    line = input().split()
+    candidates[line[0]] = set(line[1:])
+
+most_similar = &#34;&#34;
+similarity = 0.0
+
+for name in candidates:
+    # If the current candidate is Dave, skip him.
+    if name == &#34;Dave&#34;: continue
+
+    # Calcualate the Jaccard similarity coefficient for the candidate and Dave.
+    jaccard_coeff = (len(candidates[&#39;Dave&#39;] &amp; candidates[name]) /
+                     len(candidates[&#39;Dave&#39;] | candidates[name]))
+
+    # If the current candidate is more similar then any previous one, make him
+    # the most similar.
+    if jaccard_coeff &gt; similarity:
+        similarity = jaccard_coeff
+        most_similar = name
+
+print(most_similar)
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+
+use std::io::{self, Read};
+
+fn main() {
+    let input = {
+        let mut input = String::new();
+        io::stdin().read_to_string(&amp;mut input).unwrap();
+        input
+    };
+
+    let mut lines = input.lines();
+
+    let n = lines.next()
+        .and_then(|v| v.parse::&lt;usize&gt;().ok())
+        .unwrap();
+
+    let dave = lines.next()
+        .unwrap()
+        .split(&#39; &#39;)
+        .skip(1);
+    let dave_cnt = dave.clone().count();
+
+    let candidate = lines.take(n - 1)
+        .map(|l| {
+            let mut w = l.split(&#39; &#39;);
+            let candidate = w.next().unwrap();
+            let w_cnt = w.clone().count();
+
+            let i = w.clone()
+                .filter(|w| dave.clone().find(|w1| w1 == w).is_some())
+                .count();
+
+            (candidate, i as f32 / (dave_cnt + w_cnt - i) as f32)
+        })
+        .max_by(|&amp;(_, l), &amp;(_, r)| l.partial_cmp(&amp;r).unwrap())
+        .map(|(candidate, _)| candidate)
+        .unwrap();
+
+    println!(&#34;{}&#34;, candidate);
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.*;
+public class solution {
+    static class candidate {
+        String name;
+        HashSet&lt;String&gt; interests = new HashSet&lt;String&gt;();
+        float jaccardIndex;
+        public candidate(String input) {
+            String[] inputs = input.split(&#34; &#34;);
+            name = inputs[0];
+            for (int i = 1; i &lt; inputs.length; i++)
+                interests.add(inputs[i]);
+        }
+    }
+
+    public static int numberInBothSets(candidate a, candidate b) {
+        int result = 0;
+        for (String interest : a.interests)
+            if (b.interests.contains(interest)) result++;
+        return result;
+    }
+
+    public static int numberInEitherSets(candidate a, candidate b) {
+        int result = 0;
+        for (String interest : a.interests)
+            if (!b.interests.contains(interest)) result++;
+        return result + b.interests.size();
+    }
+
+    public static float calculateJaccardIndex(int numberInBothSets, int numberInEitherSets) {
+        return (float) numberInBothSets / numberInEitherSets;
+    }
+
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        int n = kb.nextInt();
+        kb.next();
+        candidate dave = new candidate(kb.nextLine());
+        ArrayList&lt;candidate&gt; listOfPotentialRoomates = new ArrayList&lt;candidate&gt;();
+        for (int i = 0; i &lt; n - 1; i++) {
+            candidate curr = new candidate(kb.nextLine());
+            listOfPotentialRoomates.add(curr);
+        }
+        for (candidate aCandidate : listOfPotentialRoomates) {
+            int similarInterests = numberInBothSets(dave, aCandidate);
+            int totalInterests = numberInEitherSets(dave, aCandidate);
+            aCandidate.jaccardIndex = calculateJaccardIndex(similarInterests, totalInterests);
+        }
+        candidate highestJaccard = listOfPotentialRoomates.get(0);
+        for (candidate aCandidate : listOfPotentialRoomates) {
+            if (aCandidate.jaccardIndex &gt; highestJaccard.jaccardIndex) highestJaccard = aCandidate;
+        }
+        System.out.println(highestJaccard.name);
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;unordered_set&gt;
+#include &lt;vector&gt;
+
+struct roommate {
+  std::string name;
+  std::unordered_set&lt;std::string&gt; attributes;
+};
+
+std::istream&amp; operator&gt;&gt;(std::istream&amp; is, roommate&amp; r) {
+  std::string line;
+  std::getline(is, line);
+  std::stringstream ss(line);
+  ss &gt;&gt; r.name;
+
+  std::string attribute;
+  while (ss &gt;&gt; attribute) {
+    r.attributes.insert(attribute);
+  }
+
+  return is;
+}
+
+double jaccard_similarity(const roommate&amp; a, const roommate&amp; b) {
+  std::unordered_set&lt;std::string&gt; attribute_union;
+  std::unordered_set&lt;std::string&gt; attribute_intersection;
+
+  for (const std::string&amp; attr : a.attributes) {
+    attribute_union.insert(attr);
+    if (b.attributes.find(attr) != b.attributes.end()) {
+      attribute_intersection.insert(attr);
+    }
+  }
+
+  for (const std::string&amp; attr : b.attributes) {
+    attribute_union.insert(attr);
+  }
+
+  return (double)(attribute_intersection.size()) /
+         (double)(attribute_union.size());
+}
+
+int main() {
+  int n;
+  std::cin &gt;&gt; n;
+
+  // clear new line
+  {
+    std::string s;
+    std::getline(std::cin, s);
+  }
+
+  roommate me;
+  std::cin &gt;&gt; me;
+
+  std::vector&lt;roommate&gt; roommates;
+  for (int i = 1; i &lt; n; ++i) {
+    roommate tmp;
+    std::cin &gt;&gt; tmp;
+    roommates.push_back(tmp);
+  }
+
+  double max_similarity = jaccard_similarity(me, roommates[0]);
+  std::string optimal = roommates[0].name;
+
+  for (std::uint32_t i = 1; i &lt; roommates.size(); ++i) {
+    double sim = jaccard_similarity(me, roommates[i]);
+    if (sim &gt; max_similarity) {
+      max_similarity = sim;
+      optimal = roommates[i].name;
+    }
+  }
+
+  std::cout &lt;&lt; optimal &lt;&lt; std::endl;
+
+  return 0;
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

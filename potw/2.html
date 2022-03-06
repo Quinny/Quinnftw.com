@@ -1,0 +1,1259 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Determining Relevance</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      When determining how relevant a document is to a given query term, the frequency of the term in the document (that is, the number of times the term appears in the document) seems like a  good determinant.  The problem is that queries which contain commonly used words like "the" will seem to be highly relevant to all documents.
+
+<br /><br />
+
+<b>Term frequency-inverse document frequency (TF-IDF)</b> is a common technique used among search engines for determining which documents are most relevant to a given query.  This technique mitigates common word's contribution to relevance scores by weighting each <b>term's frequency</b> by a factor called the <b>inverse document frequency</b>.
+<br /><br />
+
+Given a collection of documents <code>D = {d1, d2, d3 ... dn}</code> and a query term <code>T</code>, TF-IDF of document <code>di</code> is defined as: <br /><br />
+<code>tf(T, di) * idf(T, D)</code> where:
+<br /><br />
+<ul>
+<li>
+<code>tf(T, di)</code> is the number of times the term <code>T</code> appears in document <code>di</code>
+</li>
+<li><code>idf(T, D)</code> is the <code>log</code> of the total number of documents divided by the number of documents which contain <code>T</code>.  Note that this is constant across all documents for a given <code>T</code>.</li>
+</ul>
+
+As you may remember from math class <code>log(x)</code> approaches 0 as <code>x</code> approaches 1, therefore terms which appear in a high number of documents will have a low <code>idf</code> score, and thus deemed less relevant.
+<br /><br />
+Given a set of documents and a query term, determine the TF-IDF score of the term in each document.
+
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> denoting the number of documents</li>
+<li><code>N</code> lines of space separated words representing the terms in each document (words will be all lower case containing no punctuation)</li>
+<li>A single word <code>T</code> denoting the query term
+</ul>
+
+<h3>Output Format</h3>
+<li><code>N</code> lines of the form <code>DocumentNo Score</code> (don't worry about the order)</li>
+
+<div class="row">
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+3
+this sentence is about ducks
+this sentence is about dogs
+dogs dogs dogs
+dogs
+</pre>
+</div>
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+1 0
+2 0.176091
+3 0.528274
+</pre>
+</div>
+</div>
+
+Idf(D, "dogs") = log10(3/2)<br />
+Tf(D1, "dogs") = 0<br />
+Tf(D2, "dogs") = 1<br />
+Tf(D2, "dogs") = 3<br /> <br />
+<small>Hint: maps are your friend.  They work very well for  representing the data for this problem</small>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>import math
+
+def idf(T, D):
+    count = 0
+    for i in xrange(len(D)):
+        if D[i].find(T) != -1:
+            count += 1
+
+    if count != 0:
+        return math.log(len(D)/float(count), 10)
+    else:
+        return 0 # to avoid dividing by zero
+
+def main():
+    N = input()
+
+    D = []
+    for i in xrange(N):
+       D.append(raw_input())
+    T = raw_input()
+
+    idfValue = idf(T, D)
+    
+    for i in xrange(len(D)):
+        print i+1, &#34;{0:.6f}&#34;.format(D[i].count(T) * idfValue)
+main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::collections::HashMap;
+use std::io;
+
+fn main() {
+	let mut documents = Vec::new(); // Vector containing each documents terms.
+	let mut buf = String::new(); // Buffer used to grab input from stdin.
+
+	// Read the number of documents being supplied.
+	let num = {
+		io::stdin().read_line(&amp;mut buf).unwrap();
+		buf.trim().parse::&lt;i32&gt;().expect(&#34;Invalid input for the number of documents.&#34;)
+	};
+
+	// Read the documents.
+	for _ in 0..num {
+		buf.clear(); // Clear the buffer.
+		io::stdin().read_line(&amp;mut buf).unwrap();
+
+		let mut map = HashMap::new();
+
+		// Terms are seperated by whitespace.
+		for term in buf.split_whitespace() {
+			*map.entry(term.to_owned()).or_insert(0) += 1;
+		}
+
+		documents.push(map);
+	}
+
+	// Read the search term from stdin.
+	let search = {
+		buf.clear(); // Clear the buffer.
+		io::stdin().read_line(&amp;mut buf).unwrap();
+		buf.trim().clone()
+	};
+	
+	// Calculate the idf.
+	let idf = {
+		// Calculate the amount of documents containing search.
+		let contains = documents.iter().filter(|doc| doc.contains_key(search)).count();
+		(documents.len() as f64 / contains as f64).log10()
+	};
+
+	// Print the documents.
+	for (index, document) in documents.iter().enumerate() {
+		let count = *document.get(search).unwrap_or(&amp;0);
+		println!(&#34;{} {:.6}&#34;, index, count as f64 * idf);
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Haskell
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>import qualified Data.Map as Map
+import Data.Function (on)
+import Control.Arrow (second)
+import Control.Monad (replicateM, mapM_)
+
+-- | Helper type aliases
+type Histogram a = Map.Map a Int
+type Term        = String
+type Document a  = (a, Histogram Term)
+type Corpus a    = [Document a]
+
+-- | Helper for doing floating point division on two integers.
+floatDivide :: Int -&gt; Int -&gt; Double
+floatDivide = (/) `on` fromIntegral
+
+-- | Converts a list of elements (which may have repeats) to a histogram
+--   representing the frequency of each element.
+toHistogram :: (Ord a) =&gt; [a] -&gt; Histogram a
+toHistogram = foldr f Map.empty
+  where f = flip (Map.insertWith (+)) 1
+
+-- | Get the frequency of a term in a document.  If the term is not present
+--   in the document, 0 will be returned.
+tf :: Term -&gt; Document a -&gt; Int
+tf term (label, doc) = Map.findWithDefault 0 term doc
+
+-- | Compute the IDF factor for a term in a corpus.
+idf :: Term -&gt; Corpus a -&gt; Double
+idf term corpus
+  | documentsContainingTerm == 0 = 0 -- Don&#39;t divide by 0.
+  | otherwise = logBase 10 (totalDocuments `floatDivide` documentsContainingTerm)
+    where
+      totalDocuments          = length corpus
+      documentsContainingTerm = length $ filter ((&gt;0) . tf term) corpus
+
+-- | Returns a list of (document label, tfidf score) pairs for each document in
+--   the corpus given the query term.
+tfidf :: Term -&gt; Corpus a -&gt; [(a, Double)]
+tfidf term corpus = map (second (*idfFactor)) termFreqencies
+  where
+    termFreqencies = zip (map fst corpus) $ map (fromIntegral . tf term) corpus
+    idfFactor = idf term corpus
+
+main = do
+  numberOfDocuments &lt;- read &lt;$&gt; getLine
+  corpus &lt;- zip [1..] &lt;$&gt; replicateM numberOfDocuments (toHistogram &lt;$&gt; words &lt;$&gt; getLine)
+  queryTerm &lt;- getLine
+  mapM_ (putStrLn . format) $ tfidf queryTerm corpus
+    where format (x, y) = show x ++ &#34; &#34; ++ show y
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#!/usr/bin/env python3
+from collections import Counter
+import math
+
+
+def get_idf(query, docs):
+	try:
+		return math.log10(len(docs) / sum(doc[query] &gt; 0 for doc in docs))
+	except ZeroDivisionError:
+		print(&#39;Your query is not in any of the documents provided!&#39;)
+		exit()
+
+
+def main():
+	num_docs = int(input())
+	docs = []
+
+	for i in range(num_docs):
+		docs.append(Counter(input().split()))
+
+	query = input()
+	idf = get_idf(query, docs)
+
+	for i, doc in enumerate(docs):
+		print(str(i+1) + &#39; &#39; + &#39;%.6f&#39; % (doc[query] * idf))
+
+
+if __name__ == &#39;__main__&#39;:
+	main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.Scanner;
+
+public class w3 {
+
+    public static class document {
+        private String value;
+        private int tf;
+        private boolean found = false;
+
+        public document(String input) {
+            this.value = input;
+        }
+
+        public boolean getFound() {
+            return this.found;
+        }
+
+        public void setTf(String t) {
+            this.tf = tf(t);
+        }
+
+        public int getTf() {
+            return this.tf;
+        }
+
+        /**
+        * Returns the number of times t appears in doc
+        *
+        * @param String t, the word
+        * @return int the number of occurrences of t in doc
+        */
+        private int tf(String t) {
+            int index = value.indexOf(t);
+            int count = 0;
+            while (index != -1) {
+                count++;
+                value = value.substring(index + 1);
+                index = value.indexOf(t);
+            }
+            if (count != 0) {
+                this.found = true;
+            }
+            return count;
+        }
+    }
+
+    /**
+    * Returns the log of the total number of documents divided
+    * by the number of documents which contain t
+    *
+    * @param int numberOfDocs, that contain t
+    * @param int totalDocs, total number of documents
+    * @return float, the idf
+    */
+    private static float idf(int numberOfDocs, int totalDocs) {
+        if (numberOfDocs == 0) {
+            return 0;
+        }
+        return (float) Math.log10((float)totalDocs/numberOfDocs);
+    }
+
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        int n = Integer.parseInt(kb.nextLine());
+        document[] docs = new document[n];
+
+        for (int i = 0; i &lt; n; i++) {
+            docs[i] = new document(kb.nextLine());
+        }
+
+        String t = kb.nextLine();
+        int numOfDocsWitht = 0;
+
+        for (int i = 0; i &lt; n; i++) {
+            docs[i].setTf(t);
+            if (docs[i].getFound() == true) {
+                numOfDocsWitht++;
+            }
+        }
+
+        float idfValue = idf(numOfDocsWitht, n);
+
+        for (int i = 0; i &lt; n; i++) {
+            System.out.print(i + 1 + &#34; &#34;);
+            System.out.println(idfValue * docs[i].getTf());
+        }
+    }
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code># Fixed version - now using input()
+import math
+
+documentCount = int(input(&#34;Enter input:\n&#34;))
+
+# List of documents
+documents = []
+for i in range(documentCount):
+    documents.append(str(input()).split())
+
+searchTerm = input()
+
+# Term count list with the same index as documents - aka tf(T, di)
+documentTermCount = []
+# The number of lines the search term appears in
+termAppearance = 0
+for line in documents:
+    termCount = 0
+    for word in line:
+        if word == searchTerm:
+            termCount += 1
+    documentTermCount.append(termCount)
+    if termCount &gt; 0:
+        termAppearance += 1
+# idf(T, D)
+if termAppearance == 0:
+    idfTD = 0
+else:
+    idfTD = math.log10(documentCount / termAppearance)
+
+# Output
+i = 0
+for line in documentTermCount:
+    i += 1
+    print(str(i) + &#34; &#34; + str(round((line * idfTD), 6)))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#18" data-toggle="collapse">
+            gubaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="18">
+        <pre><code>import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.stream.Collectors;
+
+public class TermFrequencyFinder {
+	private List&lt;String&gt; documentList;
+	private Map&lt;String, Integer&gt; termFrequencyMap;
+	
+	// Input each document and increment the frequency of each word for use later
+	public void inputDocumentWithTermFrequencyIncrement(String document) {
+		getDocumentList().add(document);
+		
+		for (String term : document.split(&#34; &#34;))
+			incrementTermFrequency(term);
+	}
+	
+	// Calculate both arguments to the equation and multiply them
+	public double calculateTerm_FrequencyInverse_DocumentFrequency(String document, String term) {
+		long termFrequency = calculateTermFrequencyInDocument(document, term);
+		long numberOfDocumentsInWhichTermIsPresent = calculateNumberOfDocumentsInWhichTermIsPresent(term);
+		double inverseDocumentFrequency = Math.log10((double)getDocumentList().size()/numberOfDocumentsInWhichTermIsPresent);
+		
+		return termFrequency * inverseDocumentFrequency;
+	}
+	
+	/* Private methods */
+	private void incrementTermFrequency(String term) {
+		getTermFrequencyMap().merge(term, 1, (currentFreq, one) -&gt; currentFreq + one);
+	}
+	
+	private long calculateNumberOfDocumentsInWhichTermIsPresent(String term) {
+		return getDocumentList()
+				.parallelStream()
+				.filter(document -&gt; document.contains(term))
+				.count();
+	}
+
+	private long calculateTermFrequencyInDocument(String document, String term) {
+		return Arrays.stream(document.split(&#34; &#34;))
+				.parallel()
+				.filter(s -&gt; s.equals(term))
+				.count();
+	}
+
+	/* Setters */
+	public List&lt;String&gt; getDocumentList() {
+		return documentList;
+	}
+
+	public void setDocumentList(List&lt;String&gt; documentList) {
+		this.documentList = documentList;
+	}
+
+	public Map&lt;String, Integer&gt; getTermFrequencyMap() {
+		return termFrequencyMap;
+	}
+
+	public void setTermFrequencyMap(Map&lt;String, Integer&gt; termFrequencyMap) {
+		this.termFrequencyMap = termFrequencyMap;
+	}
+	
+	// MAIN
+	public static void main(String[] args) {
+		TermFrequencyFinder finder = new TermFrequencyFinder();
+		finder.setDocumentList(new ArrayList&lt;&gt;());
+		finder.setTermFrequencyMap(new HashMap&lt;&gt;());
+		
+		Scanner sc = new Scanner(System.in);
+		int numbTerms = Integer.parseInt(sc.nextLine());
+		for (int i = 0; i &lt; numbTerms; i++)
+			finder.inputDocumentWithTermFrequencyIncrement(sc.nextLine());
+		
+		String term = sc.nextLine();
+		
+		int i = 0;
+		for (String document : finder.getDocumentList()) {
+			double tfidf = finder.calculateTerm_FrequencyInverse_DocumentFrequency(document, term);
+			System.out.printf(&#34;%d %.6f\n&#34;, i++, tfidf);
+		}
+	}
+	
+	
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#17" data-toggle="collapse">
+            mccarth7 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="17">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;map&gt;
+#include &lt;sstream&gt;
+#include &lt;cmath&gt;
+#include &lt;vector&gt;
+
+void print(
+	std::vector&lt; std::map&lt;std::string,int&gt; &gt; const&amp;,
+	std::map&lt;std::string, int&gt; const&amp;,
+	std::string const&amp;);
+
+int main() {
+
+	int n;
+	std::string line;
+	std::string word;
+	std::string queryTerm;
+	std::vector&lt; std::map&lt;std::string,int&gt; &gt; mList;
+	std::map&lt;std::string, int&gt; mTot;		
+
+	std::cin &gt;&gt; n;
+	std::getline(std::cin, line);				
+
+	for (int i = 0; i &lt; n; i++) {
+		std::getline(std::cin, line);
+
+		std::map&lt;std::string, int&gt; mCurr;
+
+		for (std::stringstream s(line); s &gt;&gt; word; mCurr[word]++)
+			if (mCurr.find(word) == mCurr.end())
+				mTot[word]++;
+
+		mList.push_back(mCurr);
+	}
+
+	std::cin &gt;&gt; queryTerm;
+
+	print(mList, mTot, queryTerm);
+
+	return 0;
+}
+
+void print(
+	std::vector&lt; std::map&lt;std::string,int&gt; &gt; const&amp; mList,
+	std::map&lt;std::string, int&gt; const&amp; mTot,
+	std::string const&amp; queryTerm) {
+
+	if (mTot.find(queryTerm) == mTot.end())
+		return;
+
+	int n = mList.size();
+	float tf;
+
+	float idf = log10(n/(float)mTot.find(queryTerm)-&gt;second);
+
+	for (int i = 0; i &lt; n; i++) {
+		tf = (mList[i].find(queryTerm) == mList[i].end() ?
+						0 :
+						mList[i].find(queryTerm)-&gt;second);
+
+		std::cout &lt;&lt; i+1
+							&lt;&lt; &#34; &#34;
+							&lt;&lt; tf*idf
+							&lt;&lt; std::endl;
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>import sys, math
+
+N = int(sys.stdin.readline())
+    
+D = []
+for x in range(N):
+    D.append(sys.stdin.readline())
+
+T = sys.stdin.readline().rstrip(&#39;\n&#39;)
+
+timesQueryAppears = 0
+iterations = []
+
+for x in range(N):
+    matches = D[x].count(T)
+    iterations.append(matches)
+
+    if matches != 0:
+        timesQueryAppears += 1 
+
+idf = 0
+if(timesQueryAppears != 0):
+    idf = math.log10(float(N)/timesQueryAppears)
+
+for x in range(N):
+    print x+1, idf * iterations[x]
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#22" data-toggle="collapse">
+            malolepp - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="22">
+        <pre><code>/*
+	Patrick Malolepszy - POTW#3 - http://potw.quinnftw.com/
+*/
+
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;sstream&gt;
+#include &lt;iterator&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+float calculateIdf(string query, vector&lt;map&lt;string, int&gt; &gt; documents) {
+	int documentsCount = 0;
+	for (int i = 0; i &lt; documents.size(); i++) {
+		if (documents[i][query] &gt; 0) {
+			documentsCount++;
+		}
+	}
+	if (documentsCount==0){
+		return 0;
+	}
+	return log10((float)documents.size() / (float)documentsCount);
+}
+
+int main () {
+	int N;
+	cin &gt;&gt; N;
+	// clear newline character
+	string line, query;
+	getline (cin, line);
+	vector&lt; map&lt;string,int&gt; &gt; documents;
+	for (int i = 0; i &lt; N ; i++ ) {
+		map&lt;string, int&gt; wordCount;
+		stringstream ss;
+		string word;
+		getline(cin, line);
+		ss &lt;&lt; line;
+		while (ss &gt;&gt; word) {
+			wordCount[word]++;
+		}
+		documents.push_back(wordCount);
+	}
+	cin &gt;&gt; query;
+	float idf = calculateIdf(query, documents);
+	for (int i = 1 ; i &lt;= documents.size() ; i++) {
+		cout &lt;&lt; i &lt;&lt; &#34; &#34; &lt;&lt; idf*documents[i-1][query] &lt;&lt; endl;
+	}
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;cmath&gt;
+#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+#include &lt;unordered_map&gt;
+#include &lt;vector&gt;
+
+class Document {
+ public:
+  Document(const std::string&amp; line) {
+    std::stringstream ss(line);
+    std::string word;
+    while (ss &gt;&gt; word) {
+      ++histogram[word];
+    }
+  }
+
+  bool contains_word(const std::string&amp; word) const {
+    return histogram.find(word) != histogram.end();
+  }
+
+  // Returns the number of times a given word appears in the Document.
+  unsigned frequency(const std::string&amp; word) const {
+    auto iter = histogram.find(word);
+    if (iter == histogram.end()) {
+      return 0;
+    }
+    return iter-&gt;second;
+  }
+
+ private:
+  std::unordered_map&lt;std::string, unsigned&gt; histogram;
+};
+
+int main() {
+  int n;
+  std::cin &gt;&gt; n;
+
+  std::vector&lt;Document&gt; documents;
+  std::string line;
+  std::getline(std::cin, line);  // Clear the extra newline from the buffer.
+
+  for (int i = 0; i &lt; n; ++i) {
+    std::string line;
+    std::getline(std::cin, line);
+    documents.emplace_back(line);
+  }
+
+  std::string query;
+  std::cin &gt;&gt; query;
+
+  // Represents the total number of documents |query| appears in.
+  unsigned total_occurences = 0;
+  std::vector&lt;unsigned&gt; frequencies;
+  for (const Document&amp; doc : documents) {
+    unsigned freq = doc.frequency(query);
+    if (freq &gt; 0) {
+      ++total_occurences;
+    }
+    frequencies.push_back(doc.frequency(query));
+  }
+
+  // Use a ternary operator to set idf, as |total_occurences| may be 0.
+  double idf =
+      (total_occurences != 0) ? (std::log10((double)n / total_occurences)) : 0;
+  for (int i = 0; i &lt; n; ++i) {
+    std::cout &lt;&lt; (i + 1) &lt;&lt; &#34; &#34; &lt;&lt; frequencies[i] * idf &lt;&lt; std::endl;
+  }
+
+  return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#31" data-toggle="collapse">
+            mishrai - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="31">
+        <pre><code>import math
+
+def tf(T, di):
+	return di.count(T)
+
+def idf(T, D):
+	return math.log10(float(T)/D) if D != 0 else 0
+
+if __name__ == &#39;__main__&#39;:
+	appearance = 0
+	strings   = {}
+
+	#read the input
+	num_lines = input()
+	for i in range(num_lines):
+		temp = raw_input()
+		strings[temp] = {}
+		strings[temp][&#39;documentnum&#39;] = i + 1;
+	search_term = raw_input()
+
+	#calculate tf for each document and find number of documents in which the search term appears
+	for sentence in strings:
+		strings[sentence][&#39;tf_val&#39;] = tf(search_term, sentence)
+		if search_term in sentence:
+			appearance = appearance + 1
+
+	#calculate once, value is constant
+	idf_val = idf(num_lines, appearance)
+	for sentence in strings:
+		print str(strings[sentence][&#39;documentnum&#39;]) + &#39;\t&#39; + str((strings[sentence][&#39;tf_val&#39;] * idf_val))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#20" data-toggle="collapse">
+            cao11d - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="20">
+        <pre><code>package week3;
+import java.util.*;
+import java.io.File;
+import java.util.Scanner;
+import java.math.*;
+
+public class POTW3 {
+
+	//If you are reading this, thanks for letting me know there are bugs in my program. However, as for you first request I can&#39;t change my 
+	 //code to use syste.in instead because my program is built base on the assumption that input comes from text file. Therefore, changing
+	  //the input method will be too time consuming  
+	
+	
+	//This method will find the content of last line in a text file
+	public static String findLastLine(String fileName){
+
+		String lastLine = &#34;&#34;;
+
+		try{
+			Scanner input = new Scanner(new File(fileName));
+
+			while(input.hasNextLine()) lastLine = input.nextLine();
+			input.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+
+		return lastLine;
+	}
+
+
+	public static void main(String []args){
+
+		int numDocs = 0;
+		int numTotalTerms = 0;
+		int [] termInDoc;
+		double idf = 0;
+		String quarryTerm =&#34;&#34;;
+		String [] line;
+
+
+		try{
+			Scanner input = new Scanner(new File(&#34;input.txt&#34;));
+
+			boolean isThereTermInDocs = false;
+			numDocs = Integer.parseInt(input.nextLine());
+			quarryTerm = POTW3.findLastLine(&#34;input.txt&#34;);
+			termInDoc = new int[numDocs];
+			int lineCounter = 0;
+			int docWithTerm = 0;
+
+			//Check every word in a line and record how many time the quarry term appeared 
+			while(input.hasNextLine()){
+				
+				boolean isThereTerm = false;
+				line = input.nextLine().split(&#34; &#34;);
+
+				if(lineCounter&lt; numDocs){	
+					for(String x:line){
+						if(x.compareTo(quarryTerm) == 0) {
+							termInDoc[lineCounter]++;
+							isThereTerm = true;
+							isThereTermInDocs = true;
+						}
+					}
+				}
+				if(isThereTerm) docWithTerm ++;
+				lineCounter++;
+			}
+			
+			
+			for(int x=0; x&lt; numDocs; x++){
+				
+				if(isThereTermInDocs)  idf = Math.log10(((double)numDocs/(double)(docWithTerm)));
+				
+				System.out.println((x+1) +&#34; &#34; + String.format(&#34;%.06f&#34;, idf*(double)termInDoc[x]) + &#34;\n&#34;);
+			}
+			
+			input.close();
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+
+	}
+
+
+
+
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#24" data-toggle="collapse">
+            chanad - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="24">
+        <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+
+using namespace std;
+
+int countInString(string toCount, string toFind) {
+	int index;
+	int count = 0;
+	while (true) {
+		index = toCount.find(toFind);
+		if (index == -1)
+			return count;
+
+		count++;
+		toCount = toCount.substr(index + toFind.length());
+	}
+}
+
+int main() {
+	int N;
+	string query;
+	vector&lt;string&gt; docs;
+
+	cin &gt;&gt; N;
+	cin.clear();
+	cin.ignore(std::numeric_limits&lt;std::streamsize&gt;::max(), &#39;\n&#39;);
+	for (int i = 0; i &lt; N; i++) {
+		string userIn;
+		getline(cin, userIn);
+		docs.push_back(userIn);
+	}
+	getline(cin, query);
+
+	// calc idf(T, D)
+	int toDivide = 0;
+	for (int i = 0; i &lt; N; i++) {
+		if (countInString(docs[i], query) &gt; 0) {
+			toDivide++;
+		}
+	}
+
+	if (toDivide == 0) {
+		for (int i = 0; i &lt; N; i++) {
+			printf(&#34;%d %d\n&#34;, i + 1, 0);
+		}
+		return 0;
+	}
+
+	float idf = log10(float(N) / float(toDivide));
+	//printf(&#34;here: %f\n&#34;, idf);
+
+	for (int i = 0; i &lt; N; i++) {
+		int T = countInString(docs[i], query);
+		printf(&#34;%d %f\n&#34;, i + 1, float(T) * idf);
+	}
+
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#32" data-toggle="collapse">
+            gabriels - C#
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="32">
+        <pre><code>﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+/*
+ * Gabriele, Selina 
+ * October 2016
+ * POTW 3 
+ * Relevant Term Frequency 
+ * Given a set of documents and a query term, determing the relevancy of each document
+ * INPUT: N num of docs, N*string strings to represent documents, T query term 
+ * OUTPUT: the relevancy of each document based on a term
+ */
+namespace POTW_3
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            double numOfDocs = Int32.Parse(Console.ReadLine());                                     //How many documents are we searching
+            string[] docContent = new string[(int)numOfDocs];                                       
+                    
+            for(int i = 0; i &lt; numOfDocs; i++)
+            {
+                docContent[i] = Console.ReadLine();                                                 //Get the document content
+            }
+            string queryTerm = Console.ReadLine();
+            double docsWithTerm = docContent.Where(x =&gt; x.Contains(queryTerm)).Count();             //How many documents contain the query
+            float totalTermFrequency = !docsWithTerm.Equals(0F)?(float)Math.Log10(numOfDocs / docsWithTerm): 0;                 //idf = Log10(numofDocs/docswithTerm);
+
+            float[] docScores = new float[(int)numOfDocs];
+           
+            for(int j = 0; j &lt; numOfDocs; j++)
+            {
+                docScores[j] = totalTermFrequency * TermFrequency(queryTerm, docContent[j]);        //tf * idf
+            }
+            for(int m = 0; m &lt; numOfDocs; m++)
+            {
+                Console.WriteLine(&#34;{0} {1}&#34;, m + 1, docScores[m]);
+            }
+            Console.ReadLine(); 
+        }
+
+        private static float TermFrequency(string queryTerm, string document)
+        {
+           
+            return new Regex(queryTerm).Matches(document).Count;                                     //Find all matches in the document 
+           
+        }
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#33" data-toggle="collapse">
+            kaise - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="33">
+        <pre><code>package com.company;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.lang.Math;
+
+
+public class Main {
+
+    public static void main(String[] args) {
+	    int inputNum;
+        double idf;
+        int relevance=0;
+        String query, doc;
+        List&lt;HashMap&lt;String, Integer&gt;&gt; listHist;
+        Scanner in = new Scanner(System.in);
+
+        inputNum = in.nextInt();
+        in.nextLine();
+        listHist = new ArrayList&lt;&gt;(inputNum);
+
+        for(int i=0; i &lt; inputNum; ++i) {
+            doc = in.nextLine();
+            listHist.add(i, new HashMap&lt;String, Integer&gt;());
+            //for every word in the document you update the histogram at arraylist(i)
+            for(String word : doc.split(&#34; &#34;)) {
+                //the histogram located at i is checked to contain the word you are searching for in the document
+                //if its not there, then it will be added and given an initial int value, i.e a count of 1
+                if(listHist.get(i).containsKey(word)) {
+                    int currentVal= listHist.get(i).get(word);
+                    listHist.get(i).put(word, currentVal + 1);
+                } else {
+                    listHist.get(i).put(word, 1);
+                }
+            }
+        }
+
+        query = in.nextLine();
+
+        for (HashMap&lt;String, Integer&gt; hist : listHist) {
+            if(hist.containsKey(query)) {
+                relevance++;
+            }
+        }
+
+        if (relevance &gt; 0) {
+            idf = (Math.log10((double)inputNum/(double)relevance));
+        } else {
+            idf = 0; // meaning there is no relevance at all
+        }
+
+        if(idf &gt; 0) {
+            for (HashMap&lt;String, Integer&gt; hist : listHist) {
+                if(hist.get(query) != null) {
+                    System.out.println(hist.get(query) * idf);
+                } else {
+                    System.out.println(0.0);
+                }
+            }
+        } else {
+            for (int i=0; i &lt;= inputNum; ++i) {
+                System.out.println(idf);
+            }
+        }
+    }//end of main
+}//end of class
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>use std::collections::HashMap;
+
+fn read_input() -&gt; String {
+    use std::io::{self, Read};
+
+    let mut buf = String::new();
+    io::stdin()
+        .read_to_string(&amp;mut buf)
+        .expect(&#34;Failure reading input from stdin.&#34;);
+    buf
+}
+
+fn get_word_map&lt;&#39;a&gt;(docs: &amp;&#39;a [&amp;str]) -&gt; HashMap&lt;&amp;&#39;a str, usize&gt; {
+    use std::collections::HashSet;
+
+    let mut map: HashMap&lt;&amp;str, usize&gt; = HashMap::new();
+    for doc in docs {
+        let set: HashSet&lt;&amp;str&gt; = doc.split_whitespace().collect();
+        for word in set {
+            let count = map.entry(word).or_insert(0);
+            *count += 1;
+        }
+    }
+    map
+}
+
+fn main() {
+    let input_buffer = read_input();
+
+    // lines becomes a vector of immutable references
+    // to substrings in input_buffer
+    let lines: Vec&lt;&amp;str&gt; = input_buffer.lines().collect();
+
+    let num_documents: usize = lines[0]
+        .parse()
+        .expect(&#34;Failure parsing integer from first line.&#34;);
+
+    // these become immutable slices (views) into parts of lines
+    let documents = &amp;lines[1..num_documents + 1];
+    let queries = &amp;lines[num_documents + 1..];
+
+    let mut word_appearances = get_word_map(documents);
+
+    let query = queries[0];
+    for (i, doc) in documents.iter().enumerate() {
+        let n = word_appearances.entry(query).or_insert(0);
+        let tf = doc.matches(query).count();
+        let idf = if tf == 0 {
+            0f64
+        } else {
+            (num_documents as f64 / *n as f64).log10()
+        };
+        println!(&#34;{} {}&#34;, i + 1, tf as f64 * idf);
+    }
+
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#42" data-toggle="collapse">
+            roederw - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="42">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cmath&gt;
+
+int main () {
+    int n;
+    std:: cin &gt;&gt; n;
+
+    std::vector&lt;std::string&gt; documents (n);
+    std::vector&lt;int&gt; document_count (n);
+    std::string query_term;
+    int sentences_with_term = 0;
+
+    std::cin.ignore();
+    for (int i = 0; i &lt; n; ++i)
+        std::getline(std::cin, documents[i]);
+
+    std::cin &gt;&gt; query_term;
+
+    for (int i = 0; i &lt; n; ++i) {
+        auto position = documents[i].find(query_term, 0);
+        while(position != std::string::npos) {
+            document_count[i]++;
+            position = documents[i].find(query_term, position + 1);
+        }
+
+        if (document_count[i] &gt; 0)
+            sentences_with_term++;
+    }
+    
+    double idf = (sentences_with_term &gt; 0) ? std::log10 ((double)n / sentences_with_term) : 0;
+    
+    for (int i = 0; i &lt; n; ++i)
+        std::cout &lt;&lt; (i + 1) &lt;&lt; &#34; &#34; &lt;&lt; idf * document_count[i] &lt;&lt; std::endl;
+    return 0;
+}</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

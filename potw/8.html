@@ -1,0 +1,460 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Secret HTTP Messages</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="http://s2.quickmeme.com/img/65/65eed5fd6adc52ed940f76b91d507693b43aecb09b6133e0b7e3f01947e5144a.jpg" class="img-responsive" />
+</div>
+<br />
+A secret message (which may or may not be a hint about next week's problem) has been embedded somewhere in the HTTP response from <a href="http://potw.quinnftw.com/problem/s3cret">potw.quinnftw.com/problem/s3cret</a>.  Write a program without using any external libraries that makes an HTTP GET request to the secret URL and prints the HTTP response.  You are not required to do any parsing of the response, but feel free to do so if you want to challenge yourself a little more.
+<br />
+<hr />
+HTTP is a protocol which dictates how information is transferred between clients and servers on the web.  Communicating via HTTP is much less complicated and scary than it may seem, the core of it is just sending structured data over sockets.  There are two main types of messages: <b>requests</b> and <b>responses</b>.  A client (you) makes a <b>request</b> to a server (potw.quinnftw.com), which in turn answers with a <b>response</b>. 
+<br /><br />
+For this problem, you only need to concern yourself with the format of a simple <b>GET</b> request.<br /><br />
+<pre>
+GET <i>path</i> HTTP/1.1<span style="color:red;">\r\n</span>
+Host: <i>www.site.com</i><span style="color:red;">\r\n\r\n</span>
+</pre>
+<i>Note the windows style line endings, this is part of the protocol</i>
+<br /><br />
+This will request the resource located at <i>path</i> from <i>site.com</i>.  In order to make the request, simply open up a socket connecting to <i>site.com</i> port 80 (standard HTTP port) and dump the request text to the socket. 
+<br /><br />
+Reading the response begs a longer explanation, so for the purpose of this problem I will suggest just to read some large amount of bytes (say, 10000) from the socket and hope that encompasses the entire response.
+
+<hr />
+<h3>Sample Output</h3>
+<pre>
+HTTP/1.1 200 OK
+Server: nginx/1.10.1
+Date: Thu, 13 Oct 2016 14:01:12 GMT
+Content-Type: text/html; charset=utf-8
+Connection: keep-alive
+Vary: Cookie,Accept-Encoding
+X-Frame-Options: SAMEORIGIN
+Set-Cookie: csrftoken=NZ0InlmZ6WcgtpHaVY8OnQUTcDxMRMas; expires=Thu, 12-Oct-2017 14:01:12 GMT; Max-Age=31449600; Path=/
+
+
+</pre>
+
+<b>Using curl, wget, etc. will not be accepted.</b>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>import http.client
+
+# Initialize connection, make request, get response
+connection = http.client.HTTPConnection(&#34;potw.quinnftw.com&#34;)
+connection.request(&#34;GET&#34;, &#34;/problem/s3cret&#34;)
+response = connection.getresponse()
+
+# Translate the HTTP version into the usual format
+responseString = &#34;HTTP/&#34; + str(response.version)[0] + &#34;.&#34; + str(response.version)[1]
+# Now add on status and reason
+responseString += &#34; &#34; + str(response.status) + &#34; &#34; + str(response.reason)
+# Output the HTTP response
+print(responseString)
+# Get and output the headers
+headers = response.getheaders()
+for header in headers:
+    print(header[0] + &#34;: &#34; + header[1])
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#31" data-toggle="collapse">
+            mishrai - GoLang
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="31">
+        <pre><code>package main
+
+import(
+	&#34;fmt&#34;
+	&#34;net/http&#34;
+)
+
+func main(){
+	resp, err := http.Get(&#34;http://potw.quinnftw.com/problem/s3cret&#34;)
+	if err == nil {
+		fmt.Println(resp)
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>#include &lt;netinet/in.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;unistd.h&gt;
+
+int main() {
+   const int response_len = 225; // at least the part we care about
+   const char request[] = 
+      &#34;GET /problem/s3cret HTTP/1.1\r\n&#34;
+      &#34;HOST: potw.quinnftw.com\r\n\r\n&#34;;
+   const int cached_ip = 1170439343;
+   // And by cached I mean hardcoded to spare a DNS lookup
+
+   char *buf = malloc(response_len);
+   int conn_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+   struct sockaddr_in addr;
+   addr.sin_family = AF_INET;
+   addr.sin_port = htons(80);
+   addr.sin_addr.s_addr = htonl(cached_ip);
+
+   connect(
+      conn_fd,
+      (struct sockaddr*) &amp;addr,
+      sizeof(addr)
+   );
+
+   write(conn_fd, request, sizeof(request));
+   read(conn_fd, buf, response_len);
+   
+   write(STDOUT_FILENO, buf + 204, 21);
+
+   close(conn_fd);
+   free(buf);
+   return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>use std::io::prelude::*;
+use std::net::TcpStream;
+
+const REQUEST: &amp;&#39;static [u8] = b&#34;GET /problem/s3cret HTTP/1.1\r\nHost: www.potw.quinnftw.com\r\n\r\n\0&#34;;
+
+fn main() {
+	let data = TcpStream::connect(&#34;www.potw.quinnftw.com:80&#34;)
+		.and_then(|mut s| {
+			try!(s.write(REQUEST));
+
+			let mut buf = String::new();
+			try!(s.read_to_string(&amp;mut buf));
+			Ok(buf)
+		})
+		.expect(&#34;Could not get data from stream.&#34;);
+
+	println!(&#34;{}&#34;, data);
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>import urllib2
+print urllib2.urlopen(&#34;http://potw.quinnftw.com/problem/s3cret&#34;).info()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#7" data-toggle="collapse">
+            joshio - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="7">
+        <pre><code>package com.sau;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+
+public class Main {
+
+    private static String GET_REQUEST =
+            &#34;GET /problem/s3cret HTTP/1.1\r\n&#34; +
+            &#34;Host: www.potw.quinnftw.com\r\n\r\n&#34;;
+
+    public static void main(String[] args) {
+        try {
+            //Create socket
+            Socket socket = new Socket(&#34;www.potw.quinnftw.com&#34;, 80);
+            //Get input &amp; output stream
+            PrintWriter pw = new PrintWriter(socket.getOutputStream());
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            //Write the GET request
+            pw.print(GET_REQUEST);
+            pw.flush();
+            //Read and print response
+            String line;
+            while((line = bufferedReader.readLine()) != null) {
+                System.out.println(line);
+            }
+            bufferedReader.close();
+            pw.close();
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+
+public class w7 {
+	public static void main(String[] args) throws IOException {
+        String hostname = &#34;potw.quinnftw.com&#34;;
+        int port = 80;
+        Socket socket = new Socket(hostname, port);
+        PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+
+		writer.println(&#34;GET /problem/s3cret HTTP/1.1&#34;);
+		writer.println(&#34;Host: &#34; + hostname);
+		writer.println(&#34;&#34;);
+		writer.flush();
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+		for (String line; (line = reader.readLine()) != null;) {
+			if (line.isEmpty())
+				break;
+			System.out.println(line);
+		}
+
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>#!/usr/bin/python
+
+import socket, urlparse, re, os
+
+def GET(url):
+    url = urlparse.urlparse(url)
+    path = url.path
+    if path == &#34;&#34;:
+        path = &#34;/&#34;
+    HOST = url.netloc
+    PORT = 80
+    
+    socket.setdefaulttimeout = 0.50
+    os.environ[&#39;no_proxy&#39;] = &#39;127.0.0.1,localhost&#39;
+    
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    s.settimeout(0.30)
+
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+   
+    s.connect((HOST, PORT))
+    s.send(&#34;GET %s HTTP/1.1\r\nHost: %s\r\n\r\n&#34;% (path, HOST))
+    data = (s.recv(10000))
+    
+    s.shutdown(1)
+    s.close()
+    return data
+
+if __name__ == &#39;__main__&#39;:
+    print GET(&#39;http://potw.quinnftw.com/problem/s3cret&#39;)
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;netdb.h&gt;
+
+#define RESPONSE_SIZE 10000
+
+int main(){
+	struct addrinfo hints, *servinfo;
+	char *request = &#34;GET /problem/s3cret HTTP/1.1\r\nHost: potw.quinnftw.com\r\n\r\n&#34;;
+	char *response = malloc(RESPONSE_SIZE);
+
+	memset(&amp;hints, 0, sizeof hints);
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	getaddrinfo(&#34;potw.quinnftw.com&#34;, &#34;80&#34;, &amp;hints, &amp;servinfo);
+
+	int sockfd = socket(servinfo-&gt;ai_family, servinfo-&gt;ai_socktype, servinfo-&gt;ai_protocol);
+	connect(sockfd, servinfo-&gt;ai_addr, servinfo-&gt;ai_addrlen);
+	send(sockfd, request, strlen(request), 0);
+	recv(sockfd, response, RESPONSE_SIZE, 0);
+	close(sockfd);
+
+	printf(&#34;%s&#34;, response);
+
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#35" data-toggle="collapse">
+            vandolda - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="35">
+        <pre><code># Import the socket library, to enable access to low-level TCP communication.
+import socket
+
+# Open a socket communicating with potw.quinnftw.com on port 80.
+s = socket.create_connection((&#39;potw.quinnftw.com&#39;, 80))
+
+# Send a basic GET request on the socket for the secret message page.
+s.sendall(b&#39;GET /problem/s3cret HTTP/1.1\r\nHost: potw.quinnftw.com\r\n\r\n&#39;)
+
+# Receive up to 10000 bytes from the socket, convert it into a UTF-8 string, then output it.
+print(s.recv(10000).decode(&#39;utf-8&#39;))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;arpa/inet.h&gt;
+#include &lt;netdb.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+
+int main() {
+  char output_buffer[256], input_buffer[256];
+
+  int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock_fd &lt; 0) {
+    printf(&#34;Error opening socket\n&#34;);
+    exit(1);
+  }
+  snprintf(output_buffer, 256, &#34;GET %s HTTP/1.1\r\nHost: %s\r\n\r\n&#34;,
+           &#34;/problem/s3cret&#34;, &#34;potw.quinnftw.com&#34;);
+
+  struct hostent* hserver = gethostbyname(&#34;potw.quinnftw.com&#34;);
+  if (hserver == NULL) {
+    printf(&#34;Error getting host name\n&#34;);
+  }
+
+  struct sockaddr_in addr;
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(80);
+  memcpy(&amp;addr.sin_addr, hserver-&gt;h_addr_list[0], hserver-&gt;h_length);
+
+  if (connect(sock_fd, (struct sockaddr*)&amp;addr, sizeof(addr))) {
+    printf(&#34;Failed to connect\n&#34;);
+    exit(1);
+  }
+
+  if (write(sock_fd, output_buffer, strlen(output_buffer)) &gt;= 0) {
+    printf(&#34;Awaiting response...\n&#34;);
+    if (read(sock_fd, input_buffer, 256) &gt; 0) {
+      printf(&#34;%s\n&#34;, input_buffer);
+    }
+  }
+
+  return 0;
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

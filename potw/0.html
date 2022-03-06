@@ -1,0 +1,641 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Welcome Back!</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      Given an IP address as an unsigned integer, print out the classic octet string representation.
+
+<div class="row">
+<div class="col-md-6">
+<h2>Sample Input</h2>
+<pre>
+2110443574
+</pre>
+</div>
+<div class="col-md-6">
+<h2>Sample Output</h2>
+<pre>
+125.202.208.54</pre>
+</div>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#2" data-toggle="collapse">
+            benne112 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="2">
+        <pre><code>#include&lt;iostream&gt;
+
+int main()
+{
+  unsigned int i;
+  std::cin &gt;&gt; i;
+  std::cout &lt;&lt;
+  static_cast&lt;int&gt;((i&gt;&gt;24) &amp; 0xFF) &lt;&lt; &#34;.&#34; &lt;&lt;
+  static_cast&lt;int&gt;((i&gt;&gt;16) &amp; 0xFF) &lt;&lt; &#34;.&#34; &lt;&lt;
+  static_cast&lt;int&gt;((i&gt;&gt; 8) &amp; 0xFF) &lt;&lt; &#34;.&#34; &lt;&lt;
+  static_cast&lt;int&gt;(i &amp; 0xFF)  
+  &lt;&lt; std::endl;
+
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
+
+int main() {
+	uint32_t ip;
+	scanf(&#34;%d&#34;, &amp;ip);
+	printf(&#34;%d.%d.%d.%d\n&#34;, *((uint8_t*)&amp;ip + 3),
+				*((uint8_t*)&amp;ip + 2),
+				*((uint8_t*)&amp;ip + 1),
+				*((uint8_t*)&amp;ip));    
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>def ipconvert(tenIP):
+	octIP = []
+	for i in range(4):
+		octIP = [(tenIP % 256)] + octIP
+		tenIP = tenIP // 256
+	final = &#34;&#34;
+	for n in octIP:
+		final += str(n) + &#34;.&#34;
+	# Taking &#34;print out&#34; literally
+	print(final[:-1])
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>fn main() {
+    /*
+        use std::net::Ipv4Addr;
+        println!(&#34;{}&#34;, Ipv4Addr::from(2110443574));
+    */
+    
+    let ip = 2110443574;
+    
+    let (b0, b1, b2, b3) = {
+        ((ip &gt;&gt; 24) as u8,
+         (ip &gt;&gt; 16) as u8,
+         (ip &gt;&gt; 8) as u8,
+         ip as u8)
+    };
+    
+    println!(&#34;{}.{}.{}.{}&#34;, b0, b1, b2, b3);
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>public class w1{
+
+	public static String convertIntToOctetString(int input)
+	{
+		return String.format(&#34;%d.%d.%d.%d&#34;, (input &gt;&gt; 24 &amp; 0xff), (input &gt;&gt; 16 &amp; 0xff), (input &gt;&gt; 8 &amp; 0xff), (input &amp; 0xff));
+	}
+     
+    public static void main(String args[])
+    {
+    	System.out.println(convertIntToOctetString(2110443574));
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#9" data-toggle="collapse">
+            huseinm - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="9">
+        <pre><code>#include&lt;iostream&gt;
+
+using namespace std;
+
+int main(){
+	int input;
+	cin &gt;&gt; input; 
+	for(int i = 0; i&lt;4; i++){
+		cout&lt;&lt;((input &gt;&gt; (3-i)*8) &amp; 0xFF);
+		if(i&lt;3) cout &lt;&lt; &#39;.&#39;;
+	}
+	cout &lt;&lt; endl;
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#8" data-toggle="collapse">
+            alam11o - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="8">
+        <pre><code>public class I {
+  
+	public static void main (String [] args)
+	{
+		I ip = new I();
+		//System.out.println(&#34;The octet ip is &#34; + ip.makeIP(123456789));
+		//System.out.println(&#34;The octet ip is &#34; + ip.makeIP(2110443574));
+	}
+	public String makeIP(long ip) {
+		StringBuilder num = new StringBuilder(50);
+		for (int i = 0; i &lt; 4; i++) {
+			num.insert(0, Long.toString(ip &amp; 0xff));
+			if (i &lt; 3) {
+				num.insert(0, &#39;.&#39;);
+			}
+			ip = ip &gt;&gt; 8;
+		}
+		return num.toString();
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>#include &lt;stdio.h&gt;
+
+int main() {
+	unsigned n;
+	scanf(&#34;%d&#34;, &amp;n);
+	printf(&#34;%d.%d.%d.%d\n&#34;, (n &gt;&gt; 24) &amp; 0xFF, (n &gt;&gt; 16) &amp; 0xFF, (n &gt;&gt; 8) &amp; 0xFF, n &amp; 0xFF);
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#!/usr/bin/env python3
+
+ip = int(input())
+
+ipstr = str(ip % 256)
+ip = ip // 256
+
+while ip &gt; 0:
+	ipstr = str(ip % 256) + &#39;.&#39; + ipstr
+	ip = ip // 256
+
+print (ipstr)
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#13" data-toggle="collapse">
+            ciavaglg - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="13">
+        <pre><code>integer = int(input())
+ip = []
+for shift in range(0, 25, 8) :
+	ip.append((integer &gt;&gt; shift) &amp; 0xFF)
+print(&#34;{}.{}.{}.{}&#34;.format(ip[3], ip[2], ip[1], ip[0]))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>import java.util.Scanner;
+
+public class Week1 {
+	static Scanner in = new Scanner(System.in);
+	
+	public static void main(String... Args){
+		System.out.println(&#34;hello&#34;);
+		int n = in.nextInt();
+		System.out.printf(&#34;%d.%d.%d.%d&#34;,(n&gt;&gt;24) &amp; 0xFF, (n&gt;&gt;16) &amp; 0xFF, (n&gt;&gt;8) &amp; 0xFF, n &amp; 0xFF);	
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#15" data-toggle="collapse">
+            shi12z - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="15">
+        <pre><code>temp = int(input())
+base = 256
+out = []
+while temp &gt;= base:
+    out.insert(0,str(temp % base))
+    temp = temp // base
+out.insert(0,str(temp))
+holder = &#34;.&#34;.join(out)
+print(holder)
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#18" data-toggle="collapse">
+            gubaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="18">
+        <pre><code>import java.util.Scanner;
+
+public class POTW_Week_1 {
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		long consoleIntegerInput = sc.nextLong();
+		String convertedIPAddress = convertUnsignedIntegerToIPAddress(consoleIntegerInput);
+		System.out.println(convertedIPAddress);
+	}
+
+	private static String convertUnsignedIntegerToIPAddress(long number) {
+		return  ((number &gt;&gt; 24) &amp; 0xFF)
+		+ &#34;.&#34; + ((number &gt;&gt; 16) &amp; 0xFF)
+		+ &#34;.&#34; + ((number &gt;&gt; 8 ) &amp; 0xFF)
+		+ &#34;.&#34; +	(number &amp; 0xFF);
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#17" data-toggle="collapse">
+            mccarth7 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="17">
+        <pre><code>#include &lt;iostream&gt;
+
+int main() {
+	int ip;
+	int bytes[4];
+
+	std::cin &gt;&gt; ip;
+
+
+	bytes[0] = ip &amp; 0xFF;
+	bytes[1] = (ip &gt;&gt; 8) &amp; 0xFF;
+    bytes[2] = (ip &gt;&gt; 16) &amp; 0xFF;
+    bytes[3] = (ip &gt;&gt; 24) &amp; 0xFF;
+
+    std::cout &lt;&lt; bytes[3] &lt;&lt; &#34;.&#34;
+    			&lt;&lt; bytes[2] &lt;&lt; &#34;.&#34;
+    			&lt;&lt; bytes[1] &lt;&lt; &#34;.&#34;
+    			&lt;&lt; bytes[0] &lt;&lt; std::endl;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+std::vector&lt;unsigned&gt; GetOctets(unsigned);
+
+int main() {
+  unsigned n;
+  std::cin &gt;&gt; n;
+
+  auto octets = GetOctets(n);
+  for (unsigned i = 0; i &lt; octets.size(); ++i) {
+    std::cout &lt;&lt; octets[i];
+    if (i + 1 != octets.size()) {
+      std::cout &lt;&lt; &#39;.&#39;;
+    }
+  }
+  std::cout &lt;&lt; std::endl;
+}
+
+// Produces a vector containing the octets represented in a IP address. The
+// octets are stored from most significant to least significant.
+std::vector&lt;unsigned&gt; GetOctets(unsigned n) {
+  std::vector&lt;unsigned&gt; octets;
+  for (int i = 3; i &gt;= 0; --i) {
+    octets.push_back((n &gt;&gt; (i * 8)) &amp; 0x000000FF);
+  }
+  return octets;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#22" data-toggle="collapse">
+            malolepp - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="22">
+        <pre><code>/* Patrick Malolepszy
+    POTW #1 2016/2017 - http://potw.quinnftw.com/*/
+import java.util.Scanner;
+
+public class POTW1 {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        // Assuming max IP is 255.255.255.255 -&gt; 4294967295 which is within long
+        long ipInt = scanner.nextLong();
+        for (int i = 3, j = 0; 0 &lt;= i &amp;&amp; j &lt; 4; i--, j++) {
+            int octet = (int) (ipInt/Math.pow(256, i));
+            ipInt -= (long)(Math.pow(256, i)*octet) ;
+            if (0 &lt; i) System.out.print(octet + &#34;.&#34;);
+            else System.out.println(octet);
+        }
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#24" data-toggle="collapse">
+            chanad - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="24">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;stdio.h&gt;
+
+using namespace std;
+
+int main() {
+	unsigned long long num;
+	int ip[4];
+
+	scanf(&#34;%llu&#34;, &amp;num);
+
+	for (int i = 0; i &lt; 4; i++) {
+		ip[i] = num % 256;
+		num /= 256;
+	}
+
+	printf(&#34;%d.%d.%d.%d\n&#34;, ip[3], ip[2], ip[1], ip[0]);
+
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#20" data-toggle="collapse">
+            cao11d - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="20">
+        <pre><code>import java.util.Scanner;
+
+public class ThisWeekProblem {
+	
+
+	public static void main (String [] args){
+		
+		Scanner in = new Scanner(System.in);
+		Integer ipAddress = 0;
+		String ipAddressString = &#34;&#34;;
+		int programCounter = 0;
+		
+		ipAddress = in.nextInt();
+		
+		while (programCounter &lt; 32){
+			
+			if(programCounter == 0)
+			ipAddressString =  (ipAddress &gt;&gt; programCounter &amp; 0xff) + ipAddressString ;
+			
+			else
+			ipAddressString =  (ipAddress &gt;&gt; programCounter &amp; 0xff) + &#34;.&#34;+ ipAddressString ;
+
+			programCounter += 8;
+		}
+		
+		System.out.printf(ipAddressString);
+		
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Haskell
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>import Data.Bits
+import Data.List
+
+getOctets :: Int -&gt; [Int]
+getOctets ip = map mask [3,2,1,0]
+  where mask x = (shift ip $ (-8) * x) .&amp;. 255
+
+showIP :: Int -&gt; String
+showIP = intercalate &#34;.&#34; . map show . getOctets
+
+main = showIP &lt;$&gt; read &lt;$&gt; getLine &gt;&gt;= print
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#32" data-toggle="collapse">
+            gabriels - C#
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="32">
+        <pre><code>﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+/*
+ * Gabriele, Selina
+ * October 2016
+ * CS Problem of the Week 1 
+ * Convert unsigned integer (IP Address) to octet string
+ * INPUT:int
+ * OUTPUT:string
+ */
+namespace POTW_1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {           
+            int inputIPAddress = Int32.Parse(Console.ReadLine());
+            string outputIP = ConvertIPToOctet(inputIPAddress);           
+            Console.Write(outputIP);
+            Console.ReadLine();
+        }
+
+        private static string ConvertIPToOctet(int inputIPAddress)
+        {
+            int[] bytesIP = new int[4];
+            for (int i = 0; i &lt; 4; i++)
+            {
+                bytesIP[i] = ((inputIPAddress &gt;&gt; (i * 8)) &amp; 0xFF);
+            }
+            return (new StringBuilder(bytesIP[3] + &#34;.&#34; + bytesIP[2] + &#34;.&#34; + bytesIP[1] + &#34;.&#34; + bytesIP[0]).ToString());
+        }
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#39" data-toggle="collapse">
+            parasrat - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="39">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+//A legitimate solution
+int max(int a, int b){
+	if(a&gt;b){
+		return a;
+	}
+	else{
+		return b;
+	}
+}
+int main(void){
+
+	int number;
+	scanf(&#34;%d&#34;, &amp;number);
+	for(int i=0;i&lt;3;i++){
+		printf(&#34;%d.&#34;,number/max(1,pow(256,(3-i)))%(256));
+	}
+	printf(&#34;%d&#34;,number%256);
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#42" data-toggle="collapse">
+            roederw - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="42">
+        <pre><code>#include &lt;iostream&gt;
+
+void printIP(unsigned int ip) {
+    std::cout &lt;&lt; ((ip &gt;&gt; 24) &amp; 0xFF) &lt;&lt; &#34;.&#34;
+            &lt;&lt; ((ip &gt;&gt; 16) &amp; 0xFF) &lt;&lt; &#34;.&#34;
+            &lt;&lt; ((ip &gt;&gt; 8) &amp; 0xFF) &lt;&lt; &#34;.&#34;
+            &lt;&lt; ((ip) &amp; 0xFF) &lt;&lt; std::endl;
+}
+
+int main() {
+    unsigned int ip;
+    std::cin &gt;&gt; ip;
+    printIP(ip);   
+}</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

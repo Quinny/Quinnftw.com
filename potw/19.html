@@ -1,0 +1,92 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Tree Age</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="http://scienceline.org/wp-content/uploads/2007/03/fir.jpg" class="img img-responsive">
+</div>
+<br /><br />
+It is well known that the age of a tree can be estimated by some function of the number of rings found within the trunk. <b>Perfetto Trees</b> are particularly easy to date, as their age is usually equal to the number of rings.  Given a top-down view of a cross section of a Perfetto Tree trunk, determine the age of the tree.
+<br />
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> denoting the size of the cross section</li>
+<li><code>N</code> lines, each containing <code>N</code> characters which are either <code>.</code> or <code>x</code>.  A <code>.</code> represents typical tree innards, whereas an <code>x</code> represents a piece of a ring
+</ul>
+<h3>Output Format</h3>
+<ul>
+<li>The estimated age of the tree (total number of rings)
+</ul>
+
+Note that rings are defined as connected sequences of <code>x</code>'s (connected meaning adjacent in the 4 cardinal directions: up, down, left, or right).
+
+<br />
+
+<div class="row">
+
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+20
+....................
+....xxxxx...........
+....x...x...........
+....x...x...........
+....xxxxx...........
+....................
+....................
+.xxxxxxxxxxxxxxxxxx.
+.x................x.
+.x................x.
+.x.....xxx........x.
+.x.....x.x........x.
+.x.....xxx........x.
+.x................x.
+.xxxxxxxxxxxxxxxxxx.
+....................
+....................
+....................
+....................
+....................
+</pre>
+</div>
+
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+3
+</pre>
+</div>
+
+</div>
+
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

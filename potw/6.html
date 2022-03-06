@@ -1,0 +1,712 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Detecting Malicious Websites</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img class="img-responsive" src="http://refugeeks.com/wp-content/uploads/2013/02/ie-banner.jpg">
+</div>
+<br />
+The CS department is developing a web browser to compete with Google Chrome.  One of the first things being worked on is a system for identifying malicious websites, and alerting the user if they attempt to visit one of these websites.
+<br /><br />
+Since the internet is a big scary place, the list of malicious websites that have been collected is massive, taking up 100MB+.  This will obviously not fit in the browser, and thus each time a user wishes to visit a website they first need to make a call to a service which checks its validity.  This approach obviously doesn't scale well since the universities servers are going to be flooded  with requests and slow down the users browsing experience.
+<br /><br />
+Ideally, we need an in-browser cache with the following properties:
+<ul>
+<li>Low memory footprint as to not substantially increase the download/update size of the browser</li>
+<li>Never report a malicious URL as safe.  That is if the cache says the URL is safe we can trust it 100% and skip the network request</li>
+<li>Small probability of misclassifying a non-malicious website as malicious.  In this case we will make a request to the external service to verify.</li>
+</ul>
+Since most websites are non-malicious (hopefully) the browser will rarely need to make the external service call.
+<br /><br />
+Design a cache which meets these requirements. <small><a href="https://en.wikipedia.org/wiki/Bloom_filter">spoiler</a></small>
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> representing the number of malicious websites</li>
+<li><code>N</code> lines of text containing the URL's of the malicious sites</li>
+<li>An integer <code>M</code> representing the number of sites visited by a user</li>
+<li><code>M</code> lines representing the URL's that the user visited</li>
+</ul>
+<h3>Output Format</h3>
+<ul>
+<li><code>M</code> lines containing "not malicious" if the corresponding URL is definitely not malicious, and "maybe malicious" if there a chance that the corresponding URL is malicious.
+</ul>
+
+<div class="row">
+<div class="col-md-6">
+<h2>Sample Input</h2>
+<pre>
+5
+joesite.com
+davidvalleau.com
+harambe.ca
+joe.com
+facebook.com
+5
+joesite.com
+google.com
+quinnftw.com
+facebook.com
+weebly.co
+</pre>
+</div>
+<div class="col-md-6">
+<h2>Sample Output</h2>
+<pre>
+maybe malicious
+not malicious
+not malicious
+maybe malicious
+maybe malicious
+</pre>
+</div>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;random&gt;
+#include &lt;vector&gt;
+
+namespace {
+
+// A utility class which provides uniformly distributed random numbers seeded
+// with the hash function on a given input.  Useful for generating multiple
+// bloomfilter bit indexes for a key using only a single hash function.
+template &lt;typename T, typename Hash = std::hash&lt;T&gt;&gt;
+struct Mixer {
+  std::minstd_rand rng_;
+  std::size_t max_;
+  Mixer(const T&amp; val, std::size_t m) : rng_(Hash()(val)), max_(m) {}
+  std::size_t operator()() { return rng_() % max_; }
+};
+
+}  // namespace
+
+// A probabilistic space efficient data structure used for testing membership in
+// a set.
+// https://en.wikipedia.org/wiki/Bloom_filter
+template &lt;typename Key, int NumHashes, typename Hash = std::hash&lt;Key&gt;&gt;
+class Bloomfilter {
+ public:
+  Bloomfilter(std::size_t size) : bits_(size, false) {}
+
+  std::size_t size() const { return bits_.size(); }
+
+  void add(const Key&amp; key) {
+    Mixer&lt;Key, Hash&gt; mixer(key, bits_.size());
+    for (int i = 0; i &lt; NumHashes; ++i) {
+      bits_[mixer()] = true;
+    }
+  }
+
+  bool maybe_contains(const Key&amp; key) const {
+    Mixer&lt;Key, Hash&gt; mixer(key, bits_.size());
+    for (int i = 0; i &lt; NumHashes; ++i) {
+      if (!bits_[mixer()]) return false;
+    }
+    return true;
+  }
+
+ private:
+  // In c++, a vector&lt;bool&gt; is actually a bit array.
+  std::vector&lt;bool&gt; bits_;
+};
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+
+  int n;
+  std::cin &gt;&gt; n;
+
+  Bloomfilter&lt;std::string, 10&gt; bf(n * 10);
+
+  std::string url;
+  for (int i = 0; i &lt; n; ++i) {
+    std::cin &gt;&gt; url;
+    bf.add(url);
+  }
+
+  int m;
+  std::cin &gt;&gt; m;
+  for (int i = 0; i &lt; m; ++i) {
+    std::cin &gt;&gt; url;
+    std::cout &lt;&lt; (bf.maybe_contains(url) ? &#34;maybe malicious&#34; : &#34;not malicious&#34;)
+              &lt;&lt; std::endl;
+  }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>// It counts as studying for the 60-140 midterm if I do it in C, right?
+
+// Acceptable false positive rate (currently 0.8%) (1% made quinnftw.com malicious)
+#define FALSEPOSRATE 0.008
+
+#include &lt;math.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+// djb2a hash function - from http://www.cse.yorku.ca/~oz/hash.html
+unsigned long hash(unsigned char *str) {
+  unsigned long hash = 5381;
+  int c;
+
+  while (c = *str++)
+    hash = hash * 33 ^ c;
+  return hash;
+}
+
+// Performs an iteration of hashing
+unsigned long hashIteration(char word[256], int iteration) {
+  // Concatenate the word with the iteration number at the end
+  sprintf(word, &#34;%s%d&#34;, word, iteration);
+  return hash(word);
+}
+
+int main(void) {
+  // Get the number of words we&#39;re dealing with (n)
+  int size;
+  scanf(&#34;%d&#34;, &amp;size);
+
+  // The vector size (m)
+  unsigned long vectorSize = ceil((-1 * size * log(FALSEPOSRATE)) / pow(log(2), 2));
+  // Number of hashing iterations (k)
+  unsigned long iterations = ceil((vectorSize / size) * log(2));
+  // The actual bit array size (m/8)
+  int bitArraySize = ceil(vectorSize / 8);
+  unsigned char bitArray[bitArraySize];
+
+  int i,j;
+  // Set 0 (false) as the default value
+  for(i = 0; i &lt; bitArraySize; i++) {
+    bitArray[i] = 0;
+  }
+
+  // Input the words and add them to the vector
+  char buffer[256];
+  unsigned long vectorPlace, bitArrayPlace, bitPlace;
+  for(i = 0; i &lt; size; i++) {
+    scanf(&#34;%s&#34;, &amp;buffer);
+    // Add vector entries
+    for(j = 0; j &lt; iterations; j++) {
+      // Perform an iteration of hashing
+      vectorPlace = hashIteration(buffer, j) % vectorSize;
+      // Find which bit to modify
+      bitPlace = vectorPlace % 8;
+      // Find where in the whole bit array that is
+      bitArrayPlace = (vectorPlace - bitPlace) / 8;
+      // Set that bit to true
+      bitArray[bitArrayPlace] |= 1 &lt;&lt; bitPlace;
+    }
+  }
+
+  // Searching for words
+  int searchNumber, check;
+  bitPlace = bitArrayPlace = 0;
+  // The number of words to check
+  scanf(&#34;%d&#34;, &amp;searchNumber);
+  // Store the result for each site
+  bool results[searchNumber + 1];
+  for(i = 0; i &lt; searchNumber; i++) {
+    // By default it&#39;s malicious
+    results[i] = 1;
+    scanf(&#34;%s&#34;, &amp;buffer);
+    for(j = 0; j &lt; iterations; j++) {
+      check = hashIteration(buffer, j) % vectorSize;
+      // Find which bit to check
+      bitPlace = check % 8;
+      // Find where in the whole bit array that is
+      bitArrayPlace = (check - bitPlace) / 8;
+      // Check if it&#39;s there
+      if(((bitArray[bitArrayPlace] &gt;&gt; bitPlace) &amp; 1) != 1) {
+        // If not, then it must be safe
+        results[i] = 0;
+        break;
+      }
+    }
+  }
+  // Output the results
+  for(i = 0; i &lt; searchNumber; i++) {
+    if(results[i] == 0) {
+      printf(&#34;not malicious\n&#34;);
+    }
+    else {
+      printf(&#34;maybe malicious\n&#34;);
+    }
+  }
+  return EXIT_SUCCESS;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
+
+// The standard specifies that statically allocated memory should be zeroed.
+// So this should be alright for initializing the bloom filter.
+static uint32_t filter[65536];
+
+// Domain names cannot exceed 253 characters in total.
+// 256 chars should be sufficient to read in the banned URLs.
+static char buf[256];
+
+static const uint32_t bit[32] = { 
+	1, 2, 4, 8, 16, 32, 64, 128, 256, 
+	512, 1024, 2048, 8192, 16384, 32768, 65536,
+	131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 
+	33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648 
+};
+static const uint32_t fnv_prime = 16777619;
+static const uint32_t fnv_offset = 2166136261;
+
+static inline uint32_t fnv_1_hash(char *start) {
+	uint32_t hash = fnv_offset;
+	while (*start) {
+		hash *= fnv_prime;
+		hash ^= *start;
+		++start;
+	}
+	return hash;
+}
+
+static inline uint32_t fnv_1a_hash(char *start) {
+	uint32_t hash = fnv_offset;
+	while (*start) {
+		hash ^= *start;
+		hash *= fnv_prime;
+		++start;
+	}
+	return hash;
+}
+
+static inline void add_hash(uint32_t hash) {
+	filter[hash &gt;&gt; 16] |= bit[hash &amp; 0x001F];
+}
+
+static inline _Bool in_filter(uint32_t hash) {
+	// Note the bitwise, not logical, and.
+	return filter[hash &gt;&gt; 16] &amp; bit[hash &amp; 0x001F];
+}
+
+int main() {
+	uint32_t n;
+	scanf(&#34;%u\n&#34;, &amp;n);
+	while (n &gt; 0) {
+		scanf(&#34;%s\n&#34;, buf);
+		uint32_t hash = fnv_1_hash(buf);
+		add_hash(hash);
+		hash = fnv_1a_hash(buf);
+		add_hash(hash);
+		
+		n--;
+	}
+
+	scanf(&#34;%u\n&#34;, &amp;n);
+	while (n &gt; 0) {
+		scanf(&#34;%s\n&#34;, buf);
+		uint32_t hash = fnv_1_hash(buf);
+		if(!in_filter(hash)) {
+			printf(&#34;not malicious\n&#34;);
+			n--;
+			continue;
+		}
+		hash = fnv_1a_hash(buf);
+
+		if (!in_filter(hash))
+			printf(&#34;not malicious\n&#34;);
+		else
+			printf(&#34;maybe malicious\n&#34;);
+		
+		n--;
+	}
+	
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#!/usr/bin/env python3
+
+# you may have to run pip3 install bitarray
+from bitarray import bitarray
+
+
+class BloomFilter:
+    def __init__(self, size):
+        self.bits = bitarray(size)
+        self.size = size
+
+    def add(self, site):
+        self.bits[hash(site) % self.size] = 1
+
+    def check(self, site):
+        return self.bits[hash(site) % self.size] == 1
+
+
+def main():
+    bfilter = BloomFilter(1000)
+
+    n = int(input())
+    for i in range(n):
+        bfilter.add(input())
+
+    m = int(input())
+    for i in range(m):
+        if bfilter.check(input()):
+            print(&#39;maybe malicious&#39;)
+        else:
+            print(&#39;not malicious&#39;)
+
+
+if __name__ == &#39;__main__&#39;:
+    main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>package problems;
+
+import java.util.BitSet;
+import java.util.Random;
+import java.util.Scanner;
+
+/*
+ * I got the hashSeeds idea from http://stackoverflow.com/questions/4546447/bloom-filter-implementation
+ * and the math equations from a youtuber https://www.youtube.com/watch?v=-SuTGoFYjZs
+ */
+public class bloomFilter {
+	private final BitSet bs;
+	private final int[] hashSeeds;
+	private final int capacity;
+	
+	public bloomFilter(int inputSize){
+		this(inputSize, .10);
+	}
+
+	public bloomFilter(int inputSize, double false_Positive_Percentage){
+		//optimized size for bloomFilter with a false positive of 10% (.10)
+		int size_Of_bs = (int) (Math.abs(inputSize * Math.log(false_Positive_Percentage))/(Math.log(2) * Math.log(2)));
+		this.bs = new BitSet(size_Of_bs);
+		
+		//optimzied number of hashfunctions is relative to size of bloomFiler
+		int hash_Fuctions = (int) ((size_Of_bs/inputSize) * Math.log(2));
+		this.hashSeeds = new int[hash_Fuctions];
+		
+		//Generating hashSeeds
+		Random r = new Random(System.currentTimeMillis());
+		for(int c = 0; c &lt; hash_Fuctions; c++){
+			this.hashSeeds[c] = r.nextInt();
+		}
+		this.capacity = inputSize;
+	}
+	
+	public void add(String input){
+		int value = input.hashCode();
+		
+		byte[] b = 	new byte[]{
+				(byte)(value &gt;&gt;&gt; 24),
+				(byte)(value &gt;&gt;&gt; 16),
+				(byte)(value &gt;&gt;&gt; 8),
+				(byte)(value)};
+	
+		for(int c = 0; c &lt; hashSeeds.length; c++){
+			int h = hash32(b, 4, hashSeeds[c]);
+			bs.set(Math.abs(h) % capacity, true);
+		}
+	}
+	
+	public boolean mightContain(String input){
+		int value = input.hashCode();
+
+		byte[] b = 	new byte[]{
+				(byte)(value &gt;&gt;&gt; 24),
+				(byte)(value &gt;&gt;&gt; 16),
+				(byte)(value &gt;&gt;&gt; 8),
+				(byte)(value)};
+	
+		for(int c = 0; c &lt; hashSeeds.length; c++){
+			int h = hash32(b, 4, hashSeeds[c]);
+			if(!bs.get(Math.abs(h) % capacity))
+				return false;
+		}
+	
+		return true;
+	}
+
+// https://github.com/tnm/murmurhash-java/blob/master/src/main/java/ie/ucd/murmur/MurmurHash.java
+    private int hash32(final byte[] data, int length, int seed) {
+        // &#39;m&#39; and &#39;r&#39; are mixing constants generated offline.
+        // They&#39;re not really &#39;magic&#39;, they just happen to work well.
+        final int m = 0x5bd1e995;
+        final int r = 24;
+
+        // Initialize the hash to a random value
+        int h = seed^length;
+        int length4 = length/4;
+
+        for (int i=0; i&lt;length4; i++) {
+            final int i4 = i*4;
+            int k = (data[i4+0]&amp;0xff) +((data[i4+1]&amp;0xff)&lt;&lt;8)
+                    +((data[i4+2]&amp;0xff)&lt;&lt;16) +((data[i4+3]&amp;0xff)&lt;&lt;24);
+            k *= m;
+            k ^= k &gt;&gt;&gt; r;
+            k *= m;
+            h *= m;
+            h ^= k;
+        }
+        
+        // Handle the last few bytes of the input array
+        switch (length%4) {
+        case 3: h ^= (data[(length&amp;~3) +2]&amp;0xff) &lt;&lt; 16;
+        case 2: h ^= (data[(length&amp;~3) +1]&amp;0xff) &lt;&lt; 8;
+        case 1: h ^= (data[length&amp;~3]&amp;0xff);
+                h *= m;
+        }
+
+        h ^= h &gt;&gt;&gt; 13;
+        h *= m;
+        h ^= h &gt;&gt;&gt; 15;
+
+        return h;
+    }
+    
+	public static void main(String[] args){
+		Scanner scan = new Scanner(System.in);
+		final int N = scan.nextInt();
+		
+		bloomFilter malicious_Websites = new bloomFilter(N);
+		
+		for(int c = 0; c &lt; N; c++)
+			malicious_Websites.add(scan.next());
+		
+
+		int M = scan.nextInt();
+		
+		for(int c = 0; c &lt; M; c++)
+			System.out.println((malicious_Websites.mightContain(scan.next()))? &#34;maybe malicious&#34; : &#34;not malicious&#34;);
+		
+		
+		scan.close();
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;utility&gt;
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+#include &lt;functional&gt;
+#include &lt;vector&gt;
+#include &lt;cstdint&gt;
+
+template&lt;class Key, class Hash = std::hash&lt;Key&gt;&gt;
+class BloomFilter {
+public:
+  BloomFilter(std::uint64_t size, std::uint8_t num_hashes) :
+    bits_(size), num_hashes_(num_hashes), hash_() {}
+
+  // Inserts a key into the bloom filter by setting bits at indexes returned by
+  // all of the different hash functions applied to the key.
+  void add(Key k) {
+    auto p = hash(k);
+    for (std::uint8_t i = 0; i &lt; num_hashes_; ++i) {
+      bits_[nth_hash(i, p.first, p.second)] = true;
+    }
+  }
+
+  // Checks to see if the bit is set for each different hash function applied to
+  // the key. If each bit is set then it is determined that they Key is likely
+  // to be present.
+  bool probably_present(Key k) {
+    auto p = hash(k);
+    for (std::uint8_t i = 0; i &lt; num_hashes_; ++i) {
+      if (!bits_[nth_hash(i, p.first, p.second)]) {
+        return false;
+      }
+    }
+    return true;
+  }
+private:
+  std::uint8_t num_hashes_;
+  std::vector&lt;bool&gt; bits_;
+  Hash hash_;
+
+  // Returns a pair containing the upper and lower halves of the hash of the
+  // Key.
+  std::pair&lt;std::uint32_t, std::uint32_t&gt; hash(Key k) {
+    std::uint64_t h = hash_(k);
+    std::uint32_t a, b;
+    a = h;
+    b = h &gt;&gt; 32;
+
+    return {a, b};
+  }
+
+  // Returns the Nth hash of an input, given the upper and lower halves of the
+  // first hash.
+  //
+  // Nth hash is equivalent to composing the same hash function multiple times.
+  // For example:
+  // The &#34;3rd hash&#34; is hash(hash(hash(input))).
+  std::uint32_t nth_hash(std::uint8_t n, std::uint32_t a, std::uint32_t b) {
+    return (a + n * b) % bits_.size();
+  }
+};
+
+int main() {
+  int n;
+  BloomFilter&lt;std::string&gt; bf(100, 5);
+
+  std::cin &gt;&gt; n;
+  while (n--) {
+    std::string s;
+    std::cin &gt;&gt; s;
+    bf.add(s);
+  }
+
+  std::cin &gt;&gt; n;
+  while (n--) {
+    std::string s;
+    std::cin &gt;&gt; s;
+    std::cout &lt;&lt; (bf.probably_present(s) ? &#34;maybe malicious&#34; : &#34;not malicious&#34;) &lt;&lt; std::endl;
+  }
+  return 0;
+}
+
+
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;bitset&gt;
+#include &lt;functional&gt;
+
+size_t hash_gen(std::string s) {
+    return std::hash&lt;std::string&gt;{}(s);
+}
+
+class BloomFilter {
+
+    std::bitset&lt;32&gt; bitarray;
+    int size;
+public:    
+    BloomFilter(int size) {
+        this-&gt;size = size;
+    }
+    
+    void add(std::string s) {
+        bitarray[hash_gen(s) % size] = 1;
+    }
+
+    bool check(std::string s) {
+        return bitarray[hash_gen(s) % size] == 1;
+    }
+};
+
+int main() {
+    BloomFilter bf{1000};
+
+    int n, m;
+    std::string inputString;
+
+    std::cin &gt;&gt; n;
+    for(int i = 0; i &lt; n; i++) {
+        std::cin &gt;&gt; inputString;
+        bf.add(inputString);
+    }
+    std::cin &gt;&gt; m;
+    for(int i = 0; i &lt; m; i++) {
+        std::cin &gt;&gt; inputString;
+        std::cout &lt;&lt; 
+            (bf.check(inputString) ? &#34;maybe malicious&#34; : &#34;not malicious&#34;) 
+            &lt;&lt; std::endl
+        ; 
+    }
+} 
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

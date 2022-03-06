@@ -1,0 +1,866 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Spreadsheets</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="https://media.makeameme.org/created/If-you-could-5i8p2t.jpg" class="img img-responsive">
+</div>
+<br />
+The company you are interning at this summer <b>loves</b> spreadsheets.  The employees at this company are very old school, and have thus rejected your proposal to update their Nanosoft Mexcel software from version 0.01 (the very first one) to the latest. Nanosoft has finally dropped support for Mexcel 0.01, and invalidated the licenses on all outstanding copies (who uses that piece of garbage anyways?).  In order to keep your job, you must write a program which is able to process Mexcel 0.01 cell expressions and produce an evaluated spreadsheet. 
+<br /><br />
+Luckily version 0.01 is quite limited in terms of features, there are only two different formats for each cell:
+<br /><br />
+<ol>
+<li><b>Value</b> - a cell containing a single integer value</li>
+<li><b>Sum Expression</b> -  A cell containing two or more terms to be summed together.</li>
+</ol>
+For example:
+<table class="table" border="1">
+<tr>
+<td>1</td><td>2</td>
+</tr>
+<tr>
+<td>AA+AB</td><td>BA+AA</td>
+</tr>
+</table>
+<i>Note that all Mexcel files will be square (same number of rows and columns), and can be of maximum size 26x26.</i>
+<br /><br />
+Evaluating the above yields:
+<table class="table" border="1">
+<tr>
+<td>1</td><td>2</td>
+</tr>
+<tr>
+<td>3</td><td>4</td>
+</tr>
+</table>
+Given a Mexcel file in CSV format, evaluate all expressions and output the resulting spreadsheet.
+<h3>Input format</h3>
+<ul>
+<li>An integer <code>N</code> denoting the number of rows and columns in the spreadsheet</li>
+<li><code>N</code> lines of CSV Mexcel expressions (there will not be any whitespace within a line)</li>
+</ul>
+<h3>Output Format</h3>
+<li>The resulting spreadsheet in CSV format</li>
+</h3>
+
+<small><a href="https://en.wikipedia.org/wiki/Topological_sorting">spoiler</a></smal>
+<div class="row">
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+3
+CA+CA+CA,CA+CA+AA,AB+AA
+AA+AC,AB+BA,AB+BB+CA
+-1,AB+BC+CA,AC+BB
+</pre>
+</div>
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+-3,-5,-8
+-11,-16,-22
+-1,-28,-24
+</pre>
+</div>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#38" data-toggle="collapse">
+            ayoub116 - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="38">
+        <pre><code>package week15;
+import java.util.*;
+
+/*
+ * Ali Ayoub [23.01.2017]
+ * POTW 2016 week 15 created by Quinn Perfetto
+ * http://potw.quinnftw.com/problem/2016/15/
+ * 
+ * &#39;Mexcel&#39; Spreadsheets - aka Spreadsheet Horrors!
+ * If we could go ahead and compute cell values based on given input 
+ * cell positions and/or cell values that would be great.
+ */
+
+public class SpreadsheetHorrors {
+	
+	public static void collectCellValues(HashMap&lt;String, String&gt; cellsPreComputation, 
+										 TreeMap&lt;String, Integer&gt; cellsPostComputation, Scanner in, int n) {
+		
+		for(int i = 0; i &lt; n; i++) {
+			StringBuilder cell = new StringBuilder();
+			char row = (char) (&#39;A&#39; + i);
+			cell.append(row);
+			String[] values = in.nextLine().split(&#34;,&#34;);
+			
+			for(int j = 0; j &lt; n; j++) {
+				char col = (char) (&#39;A&#39; + j);
+				cell.append(col);
+				if (requiresComputation(cellsPostComputation, cell.toString(), values[j])) {
+					cellsPreComputation.put(cell.toString(), values[j]);
+
+				}
+				cell.deleteCharAt(cell.length()-1);
+			}
+		}
+		
+	}
+	
+	private static boolean requiresComputation(TreeMap&lt;String, Integer&gt; numbers, String cell, String data) {
+		int sign = 1;
+		String value = &#34;&#34;;
+		boolean num = false;
+		if(data.charAt(0) == &#39;-&#39;) {
+			sign = -1;
+			value = data.substring(1);
+			num = true;
+		} else if (Character.isDigit(data.charAt(0))) {
+			value = data;
+			num = true;
+		}
+		if (num) {
+			numbers.put(cell, sign*(Integer.parseInt(value)));
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public static void computeCellValues(HashMap&lt;String, String&gt; cellsPreComputation, TreeMap&lt;String, Integer&gt; cellsPostComputation) {
+		Queue&lt;String&gt; q = new LinkedList&lt;String&gt;();
+		String withDelimiter = &#34;((?&lt;=[+|-])|(?=[+|-]))&#34;;
+		
+		for (String s : cellsPreComputation.keySet()) {
+			q.add(s);
+		}
+		
+		while (!q.isEmpty()) {
+			String currentCell = q.poll();
+
+			String currentCellValue = cellsPreComputation.get(currentCell);
+			String[] cellComputations = currentCellValue.split(withDelimiter);
+			if (!computeCellValue(cellsPreComputation, currentCell, cellsPostComputation, cellComputations)) {
+				q.add(currentCell);
+			}
+			
+		}
+	}
+	
+	private static boolean computeCellValue(HashMap&lt;String, String&gt; cells, String currentCell, 
+									   TreeMap&lt;String, Integer&gt; numbers, String[] cellComputations) {
+		int result = 0;
+		for (int i = 0; i &lt; cellComputations.length; i++) {
+			if (i%2 != 0) {
+				continue;
+			}
+			if (i%2 == 0) {
+				if (!numbers.containsKey(cellComputations[i])) {
+					return false;
+				}
+				if (i == 0) {
+					result = numbers.get(cellComputations[i]);
+					continue;
+				}
+				int sign = cellComputations[i-1] == &#34;-&#34; ? -1 : 1;
+				if (sign &lt; 0) {
+					result -= numbers.get(cellComputations[i]);
+				} else {
+					result += numbers.get(cellComputations[i]);
+				}
+			}
+		}
+		
+		numbers.put(currentCell, result);
+		return true;
+	}
+	
+	public static void printValues(TreeMap&lt;String, Integer&gt; numbers, int n) {
+		Collection&lt;Integer&gt; getValues = numbers.values();
+		Integer[] values = getValues.toArray(new Integer[getValues.size()]);
+		
+		for (int i = 0; i &lt; n*n; i++) {
+			if (i != 0 &amp;&amp; i%n == 0) {
+				System.out.println(&#34;&#34;);
+			}
+			System.out.printf(&#34;%d&#34;, values[i]);
+			if ((i+1)%n != 0) {
+				System.out.printf(&#34;, &#34;);
+			}
+		}
+	}
+
+	public static void main(String[] args) {
+		
+		Scanner in = new Scanner(System.in);
+		int n = in.nextInt();
+		in.nextLine();
+		
+		HashMap&lt;String, String&gt; cellsPreComputation = new HashMap&lt;String, String&gt;();
+		TreeMap&lt;String, Integer&gt;  cellsPostComputation = new TreeMap&lt;String, Integer&gt;();
+
+		collectCellValues(cellsPreComputation, cellsPostComputation, in, n);
+		computeCellValues(cellsPreComputation, cellsPostComputation);
+		printValues(cellsPostComputation, n);
+		
+		in.close();
+
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>import itertools
+
+# A cell is represented either by a single value, or a summation of its
+# dependancies.
+class Cell:
+    def __init__(self, value = None, deps = []):
+        self.value = value
+        self.deps = deps
+
+    def evaluate(self, spreadsheet):
+        if self.value is None:
+            self.value = sum(spreadsheet[row][col].value for row, col in self.deps)
+        return self.value
+
+def int_or_none(s):
+    try:
+        return int(s)
+    except:
+        return None
+
+def parse_cell(s):
+    v = int_or_none(s)
+    if v is not None:
+        return Cell(value = v)
+
+    return Cell(deps = [(ord(row) - ord(&#39;A&#39;), ord(col) - ord(&#39;A&#39;))\
+            for [row, col] in s.split(&#34;+&#34;)])
+
+# Returns a topological ordering of the cells of the spreadsheet such that
+# all summation dependancies will be satisified.
+def evaluation_order(spreadsheet):
+    seen = set()
+
+    def not_seen(pos):
+        return pos not in seen
+
+    def visit(pos):
+        row, col = pos
+        if not_seen(pos):
+            map(visit, spreadsheet[row][col].deps)
+            seen.add(pos)
+            yield pos
+
+    cells = itertools.product(range(len(spreadsheet)), repeat=2)
+    for i in map(visit, filter(not_seen, cells)):
+        yield from i
+
+def main():
+    n = int(input())
+    cells = [input().strip().split(&#34;,&#34;) for _ in range(n)]
+    spreadsheet = [[parse_cell(cell) for cell in row] for row in cells]
+
+    for row in spreadsheet:
+        print(&#34;,&#34;.join(str(cell.evaluate(spreadsheet)) for cell in row))
+
+main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>import sys
+from collections import defaultdict
+
+def is_literal(term):
+    return any(c.isdigit() for c in term)
+
+def get_char_offset(c):
+    return ord(c) - ord(&#39;A&#39;)
+
+# Receives a cell label and returns an index representing the cell&#39;s
+# corresponding index in a one-dimensional array.
+def label_to_index(label, n):
+    return n * get_char_offset(label[0]) + get_char_offset(label[1])
+
+# Return a dictionary which maps indexes to a set of adjacent indexes in the
+# graph based on the dependencies in cell expressions.
+def build_graph(spreadsheet, n):
+    graph = defaultdict(set)
+    for i, cell in enumerate(spreadsheet):
+        terms = cell.split(&#39;+&#39;)
+        for term in terms:
+            if is_literal(term):
+                continue
+            graph[label_to_index(term, n)].add(i)
+
+    return graph
+
+# Does a post order traversal of the graph, adding visited elements to a stack
+# which is used to find the topological ordering of the graph.
+def visit(u, graph, marked, stack):
+    if (u not in marked):
+        for neighb in graph[u]:
+            marked, stack = visit(neighb, graph, marked, stack)
+        marked.add(u)
+        stack.append(u)
+    return marked, stack
+
+
+# Given a graph, return an array of indexes which represent the topolgoical
+# ordering in which to traverse the graph.
+def topological_ordering(graph):
+    stack = []
+    marked = set()
+
+    for key in list(graph):
+        if key not in marked:
+            marked, stack = visit(key, graph, marked, stack)
+
+    toposorted = []
+    while len(stack) &gt; 0:
+        toposorted.append(stack.pop())
+
+    return toposorted
+
+# Evaluates the expression at a given cell in the spreadsheet. This function
+# assumes that all dependencies in the given cell have already been evaluated.
+def evaluate_cell(cell, spreadsheet, n):
+    total = 0
+    for term in cell.split(&#39;+&#39;):
+        if is_literal(term):
+            total += int(term)
+        else:
+            total += spreadsheet[label_to_index(term, n)]
+
+    return total
+
+n = int(input())
+spreadsheet = []
+for line in sys.stdin:
+    spreadsheet.extend(line.strip().split(&#39;,&#39;))
+
+graph = build_graph(spreadsheet, n)
+
+for i in topological_ordering(graph):
+    spreadsheet[i] = evaluate_cell(spreadsheet[i], spreadsheet, n)
+
+for i in range(len(spreadsheet) // n):
+    print(&#34;,&#34;.join(map(str, spreadsheet[i*n:(i*n)+n])))
+
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#35" data-toggle="collapse">
+            vandolda - MoonScript
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="35">
+        <pre><code>-- POTW 2016 Week 15 - Spreadsheets
+-- Adam Vandolder, 2017-01-25
+
+string.split = (sep) =&gt;
+    -- string.split function from http://lua-users.org/wiki/SplitJoin.
+    -- Works as a method on strings, splitting them into a series of substrings
+    -- seperated by &#39;sep&#39; charcters.
+    sep, fields = sep or &#34;:&#34;, {}
+    pattern = string.format(&#34;([^%s]+)&#34;, sep)
+    @gsub(pattern, ((c) -&gt; fields[#fields+1] = c))
+    return fields
+
+process_cell = (cell) -&gt;
+    -- Takes the string representation of a Mexcel cell and converts it into
+    -- either a numeric cell or a table containing the cells it needs to
+    -- calculate it&#39;s sum.
+    if tonumber(cell)
+        -- If the cell contains a valid number, return it.
+        return tonumber(cell)
+    else
+        cells_added = cell\split(&#39;+&#39;)
+        cells = {}
+        for c in *cells_added
+            -- For each cell the sum needs, make a table containing its
+            -- row and column in the spreadsheet in numeric form.
+             cells[#cells + 1] = {c\byte(1,1) - &#39;A&#39;\byte! + 1,
+                                 c\byte(2,2) - &#39;A&#39;\byte! + 1}
+
+        return cells
+
+n = tonumber(io.read!)
+
+graph = {}  -- graph contains all of the cells that do not rely on another (i.e.
+            -- numeric cells, and sum cells that have been fully processed).
+sums = {}   -- sum contains all of the sums cells that need to be processed.
+
+for row = 1,n
+    -- Read in row of the spreadsheet and seperate it around the commas.
+    row_text = io.read!
+    row_cells = row_text\split(&#39;,&#39;)
+
+    for column = 1,n
+        -- For each cell in row, process it and put it in either the graph
+        -- table or the sums table.
+        cell = process_cell(row_cells[column])
+
+        if type(cell) == &#39;number&#39;
+            graph[#graph + 1] = {pos: {row, column}, val: cell}
+        else
+            sums[#sums + 1] = {pos: {row, column}, depends: cell, val: 0}
+
+-- The following while loop is an implementation of Khan&#39;s algorithm for
+--topological sorting, as given on Wikipedia.
+sorted_graph = {}
+while #graph &gt; 0
+    -- Remove the top element of graph and append it to
+    sorted_graph[#sorted_graph + 1] = graph[#graph]
+    graph[#graph] = nil
+
+    for i = #sums,1,-1
+        for j = #sums[i].depends,1,-1
+            -- d is a cell (in {row, column} form) that d[i] depends on.
+            d = sums[i].depends[j]
+            -- sg is the most recent element placed in the sorted_graph.
+            sg = sorted_graph[#sorted_graph]
+
+            if d[1] == sg.pos[1] and d[2] == sg.pos[2]
+                -- If d depends on sg, add sg to d&#39;s sum, then remove the link
+                -- connecting them.
+                sums[i].val += sg.val
+                table.remove(sums[i].depends, j)
+
+                -- If d has no more dependencies, remove it from dependents and
+                -- put it in graph.
+                if #sums[i].depends == 0
+                    graph[#graph + 1] = sums[i]
+                    table.remove(sums, i)
+
+spreadsheet = {}
+for i = 1,#sorted_graph
+    cell = sorted_graph[i]
+
+    row, column = cell.pos[1], cell.pos[2]
+    if not spreadsheet[row]
+        -- If the row of the spreadsheet doesn&#39;t exist, create it.
+        spreadsheet[row] = {}
+
+    -- Take the numeric value of the cell in the graph and place it in the
+    -- correct position of the spreadsheet.
+    spreadsheet[row][column] = cell.val
+
+for row = 1,n
+    for column = 1,n
+        -- Output the value of each cell of the spreadsheet.
+        io.write spreadsheet[row][column]
+        if column ~= n
+            io.write &#39;,&#39;
+    io.write &#39;\n&#39;
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.*;
+public class w15 {
+    public static class Node {
+        String val;
+        ArrayList&lt;Node&gt; neighbors = new ArrayList&lt;Node&gt;();
+        boolean visited = false;
+        int indexInGraph;
+        public Node(String val) {
+            this.val = val;
+        }
+
+        public void addNeighbor(Node neighbor) {
+            this.neighbors.add(neighbor);
+        }
+
+        public boolean neighborExists(String neighbor) {
+            for(Node aNeighbor : this.neighbors) {
+                if (aNeighbor.val.equals(neighbor)) return true;
+            }
+            return false;
+        }
+    }
+    public static Node find(String s, Node[] g) {
+        for (Node v : g) {
+            if (v.val.equals(s)) return v;
+        }
+        return null;
+    }
+
+    public static void topSortUtil(Stack&lt;Node&gt; result,  Node[] graph, int i) {
+        Node curr = graph[i];
+        curr.visited = true;
+        for (Node aNeighbor : curr.neighbors) {
+            if (!aNeighbor.visited)
+                topSortUtil(result, graph, aNeighbor.indexInGraph);
+        }
+        result.push(curr);
+    }
+
+    public static void topSort(Stack&lt;Node&gt; result,  Node[] graph) {
+        for (int i = 0; i &lt; graph.length; i++) {
+            if (!graph[i].visited)
+                topSortUtil(result, graph, i);
+        }
+    }
+
+    public static boolean isNumeric(String s) {
+        return s.matches(&#34;[-+]?\\d*\\.?\\d+&#34;);
+    }
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        int n = kb.nextInt();
+        kb.nextLine();
+        String[] input = new String[n];
+
+        for (int i = 0; i &lt; n; i++) {
+            input[i] = kb.nextLine();
+        }
+        String[][] csv = new String[n][n];
+        for (int i = 0; i &lt; n; i++) {
+            int j = 0;
+            for (String anExpression : input[i].split(&#34;,&#34;)) {
+                csv[i][j] = anExpression;
+                j++;
+            }
+        }
+
+        String alphabets = &#34;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#34;;
+        HashMap&lt;String, Integer&gt; values = new HashMap&lt;String, Integer&gt;();
+        int numberOfNodes = n * n;
+        Node[] graph = new Node[numberOfNodes];
+        int k = 0;
+        // create nodes and fill in map
+        for (int i = 0; i &lt; n; i++) {
+            for (int j = 0; j &lt; n; j++) {
+                char row = alphabets.charAt(i);
+                char col = alphabets.charAt(j);
+                String node = &#34;&#34;;
+                node += row;
+                node += col;
+                graph[k] = new Node(node);
+                graph[k].indexInGraph = k;
+                k++;
+                if (isNumeric(csv[i][j])) {
+                    values.put(node, Integer.parseInt(csv[i][j]));
+                }
+            }
+        }
+        // build graph neighbors
+        for (int i = 0; i &lt; n; i++) {
+            for (int j = 0; j &lt; n; j++) {
+                // if value is not a number
+                if (!isNumeric(csv[i][j])) {
+                    // split up the equation based on +
+                    String[] s = csv[i][j].split(&#34;\\+&#34;);
+                    // for each value used by equation
+                    // find the parents of this equation defined as a set of all values inside the equation
+                    // if parent already has a pointer to this row/col skip
+                    // otherwise figure out which row/col this is, find the node
+                    // and add it as a neighbor
+                    for (String aVal : s) {
+                        Node parent = find(aVal, graph);
+                        if (parent.neighborExists(aVal)) continue;
+                        else {
+                            char row = alphabets.charAt(i);
+                            char col = alphabets.charAt(j);
+                            String node = &#34;&#34;;
+                            node += row;
+                            node += col;
+                            Node child = find(node, graph);
+                            parent.addNeighbor(child);
+                        }
+                    }
+                }
+            }
+        }
+        Stack&lt;Node&gt; topSortResults = new Stack&lt;Node&gt;();
+        topSort(topSortResults, graph);
+        ArrayList&lt;Node&gt; results = new ArrayList&lt;Node&gt;();
+        while (!topSortResults.empty()) {
+            results.add(topSortResults.pop());
+        }
+        int[][] output = new int[n][n];
+        for (Node a : results) {
+            int i = alphabets.indexOf(a.val.charAt(0));
+            int j = alphabets.indexOf(a.val.charAt(1));
+            // if we have the value for this equation set output array
+            // and skip
+            if (values.containsKey(a.val)) {
+                output[i][j] = values.get(a.val);
+                continue;
+            }
+            // otherwise evaluate next equation in topological sorted order
+            String equation = csv[i][j];
+            int result = 0;
+            for (String nodes : equation.split(&#34;\\+&#34;)) {
+                result += values.get(nodes);
+            }
+            values.put(a.val, result);
+            output[i][j] = result;
+        }
+        System.out.println();
+        for (int i = 0; i &lt; output.length; i++) {
+            for (int j = 0; j &lt; output[i].length; j++) {
+                System.out.print(output[i][j] + &#34;, &#34;);
+            }
+            System.out.println();
+        }
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code># Converts two cell letters into a tuple of integers
+def convertCell(inString):
+    return (int(ord(inString[0]) - 65), int(ord(inString[1]) - 65))
+
+# Turns a tuple of coordinates into two cell letters
+def deConvert(inCoords):
+    return str(chr(inCoords[0] + 65)) + str(chr(inCoords[1] + 65))
+
+# A depth-first search, implemented from Wikipedia&#39;s description
+def visit(place, inList, outList, markers):
+    i = place[0]
+    j = place[1]
+    if place not in markers:
+        markers[place] = 1
+        # If it&#39;s not a single integer...
+        if not (len(inList[i][j]) == 1) or not (type(inList[i][j][0]) == int):
+            for item in inList[i][j]:
+                if type(item) != int:
+                    visit(convertCell(item), inList, outList, markers)
+        sortedCells.insert(0, deConvert((i, j)))
+
+# Calculate the value of a given cell given a tuple of coordinates and a list of cells
+def calcCell(place, inList):
+    i = place[0]
+    j = place[1]
+    cellSum = 0
+    for item in inList[i][j]:
+        if type(item) == int:
+            cellSum += item
+        # If it&#39;s not an integer, get the value of the cell it refers to
+        else:
+            x,y = convertCell(item)
+            cellSum += inList[x][y]
+    # Insert the final sum in place of the original calculation
+    inList[i][j] = cellSum
+
+n = int(input())
+cells = []
+sortedCells = []
+visited = {}
+
+# Process everything
+for i in range(n):
+    cells.append(input().split(&#34;,&#34;))
+    for j in range(n):
+        cells[i][j] = cells[i][j].split(&#34;+&#34;)
+        for k in range(len(cells[i][j])):
+            try:
+                cells[i][j][k] = int(cells[i][j][k])
+            except ValueError:
+                continue
+
+# Do the topological sort
+for i in range(len(cells)):
+    for j in range(len(cells[i])):
+        visit((i,j), cells, sortedCells, visited)
+
+# Calculate the cell values
+for i in range(len(sortedCells)):
+    calcCell(convertCell(sortedCells.pop()), cells)
+
+# Output the results
+for row in cells:
+    outStr = &#34;&#34;
+    for column in row:
+        outStr += str(column) + &#34;,&#34;
+    # Remove the last comma
+    print(outStr[:-1])
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::io::prelude::*;
+use std::{io, mem};
+
+#[derive(Debug, Clone)]
+struct Cell {
+	v: i32,
+	unique: u32,
+	expr: Vec&lt;usize&gt;,
+	dep: Vec&lt;usize&gt;,
+}
+
+impl Default for Cell {
+	fn default() -&gt; Self {
+		Cell { v: 0, unique: 0, expr: Vec::new(), dep: Vec::new() }
+	}
+}
+
+fn main() {
+	let input = {
+		let mut input = String::new();
+		io::stdin().read_to_string(&amp;mut input).unwrap();
+		input
+	};
+
+	let mut lines = input.lines();
+	let n = lines.next()
+		.map(|v| v.parse::&lt;usize&gt;().unwrap())
+		.unwrap();
+
+	let mut cells = vec![Cell::default(); n*n];
+	let mut eval = vec![]; // A stack used to keep up with what cells can be evaluated.
+	
+	for (idx, cell) in lines.take(n).flat_map(|l| l.split(&#39;,&#39;).take(n)).enumerate() {
+		// We will first try and parse a number and if we can&#39;t it must be an expression.
+		if let Ok(val) = cell.parse::&lt;i32&gt;() {
+			cells.get_mut(idx).unwrap().v = val;
+			eval.push(idx);
+		} else {
+			// Convert character coordinates to an array index.
+			let edges = cell.split(&#39;+&#39;).map(|c| {
+					let mut chs = c.chars().map(|c| c as u8 - 65);
+					(chs.next().unwrap() * n as u8 + chs.next().unwrap()) as usize
+				});
+
+			for edge in edges {
+				let mut u = false;
+
+				if let Some(cell) = cells.get_mut(idx) {
+					// We are checking for unique edges.
+					if !cell.expr.contains(&amp;edge) {
+						cell.unique += 1;
+						u = true;
+					}
+
+					cell.expr.push(edge);
+				}
+
+				match cells.get_mut(edge) {
+					Some(ref mut cell) if u =&gt; cell.dep.push(idx),
+					_ =&gt; (),
+				}
+			}
+		}
+	}
+
+	// We then start evaluating cells and filling their values into other cells.
+	while let Some(idx) = eval.pop() {
+		// We move this vec local so we don&#39;t run into multiple bindings.
+		let (dep, v) = {
+			let cell = cells.get_mut(idx).unwrap();
+			(mem::replace(&amp;mut cell.dep, vec![]), cell.v)
+		};
+
+		for &amp;dep_idx in dep.iter() {
+			if let Some(cell) = cells.get_mut(dep_idx) {
+				// The number of times the cell is to be summed and added.
+				let n = cell.expr.iter().cloned().filter(|&amp;i| i == idx).count();
+
+				cell.v += n as i32 * v;
+				cell.unique -= 1;
+
+				if cell.unique == 0 {
+					eval.push(dep_idx);
+				}
+			}
+		}
+
+		// We move the vec back.
+		let _ = mem::replace(&amp;mut cells.get_mut(idx).unwrap().dep, dep);
+	}
+
+	{
+		let stdout = io::stdout();
+		let mut so = stdout.lock();
+		for idx in 0..n*n {
+			let v = cells.get(idx).map(|c| c.v).unwrap_or(0);
+
+			if idx % n == n - 1 {
+				write!(so, &#34;{}\n&#34;, v).unwrap();
+			} else {
+				write!(so, &#34;{},&#34;, v).unwrap();
+			}
+		}
+	}
+}</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

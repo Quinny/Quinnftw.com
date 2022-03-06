@@ -1,0 +1,315 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Trending Language</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="https://indiemusicfilter.com/images/trending3.jpg" class="img img-responsive" />
+</div>
+<br />
+Some programming languages are better suited for certain tasks than others.  In order to further explore this phenomenon, Quinn wishes to implement a <b>trending language</b> feature for POTW.  This feature should determine a single trending language for each week.  In order to capture the true essence of the word trending, the language selected should exhibit a spike in usage for that given week.
+<br /><br />
+For example, assume that Python accounts for 60% of all POTW submissions  (this percentage will be herein be referred to as the <b>global mean</b>).  If for some week Python appears in 62% of submissions (the <b>local mean</b>), then it shouldn't be regarded as trending as this is only a slightly above average turnout.  Conversely if Go's global mean is 10%, but it displays a local mean of 30% for a given week, this implies a spike in the expected number of Go submissions by a factor of 3.  Hence, Go should be considered trending.
+<br /><br />
+More formally, a language's trending score for a certain week can be expressed as the ratio between it's local mean and global mean.  The language which renders the highest trending score for the week is thus crowned the trending language.
+<br /><br />
+A new API endpoint has been added to the POTW website which exposes statistics on the programming languages used to solve the problems each week.  This endpoint is located at: <a href="http://potw.quinnftw.com/api/solution_languages">http://potw.quinnftw.com/api/solution_languages</a>.  Each submission is represented here as a (week, language) pair.
+<br /><br />
+Utilize this new endpoint to dynamically determine the trending language for each week.  The output format is up to you (brownie points will be awarded if you can integrate your solution into the actual website).
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>import http.client
+import json
+
+# Get the data from the API
+def getLanguageData():
+    connection = http.client.HTTPConnection(&#34;potw.quinnftw.com&#34;)
+    connection.request(&#34;GET&#34;, &#34;/api/solution_languages&#34;)
+    return json.loads(connection.getresponse().read().decode(&#34;utf-8&#34;))[&#39;data&#39;]
+
+class Week:
+    def __init__(self):
+        self.count = 0
+        self.languageCounts = {}
+        self.languageRatios = {}
+    def addSubmission(self, language):
+        self.count += 1
+        if language in self.languageCounts:
+            self.languageCounts[language] += 1
+        else:
+            self.languageCounts[language] = 1
+    def getCount(self):
+        return self.count
+    def getLanguageCounts(self):
+        return self.languageCounts
+    def getLanguageRatios(self):
+        for language in self.languageCounts:
+            self.languageRatios[language] = self.languageCounts[language] / self.count
+        return self.languageRatios
+
+# All submissions up to this point
+class Year:
+    def __init__(self):
+        self.count = 0
+        self.languageCounts = {}
+        self.languageRatios = {}
+        self.weeks = {}
+    def addWeek(self, weekNumber):
+        self.weeks[weekNumber] = Week()
+    def addSubmission(self, week, language):
+        if week not in self.weeks:
+            self.addWeek(week)
+        self.weeks[week].addSubmission(language)
+        self.count += 1
+        if language in self.languageCounts:
+            self.languageCounts[language] += 1
+        else:
+            self.languageCounts[language] = 1
+    def getLanguageCounts(self):
+        return self.languageCounts
+    def getLanguageRatios(self):
+        for language in self.languageCounts:
+            self.languageRatios[language] = self.languageCounts[language] / self.count
+        return self.languageRatios
+    def getTrending(self, week):
+        weekRatios = self.weeks[week].getLanguageRatios()
+        globalRatios = self.getLanguageRatios()
+        maxRatio = 0
+        for language in weekRatios:
+            if (weekRatios[language] / globalRatios[language]) &gt; maxRatio:
+                maxRatio = (weekRatios[language] / globalRatios[language])
+                trending = [language]
+            elif (weekRatios[language] / globalRatios[language]) == maxRatio:
+                trending.append(language)
+        trending.sort()
+        outputString = str(trending[0])
+        for lang in trending[1:]:
+            outputString = outputString + &#34;/&#34; + lang
+        return outputString
+    def getCount(self):
+        return self.count
+
+submissions = getLanguageData()
+year = Year()
+for submission in submissions:
+    year.addSubmission(submission[&#39;week&#39;], submission[&#39;language&#39;])
+
+for i in range(16):
+    print(&#34;Week &#34; + str(i+1) + &#34;: &#34; + str(year.getTrending(i+1)))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>import requests
+from collections import Counter, defaultdict
+
+def groupby(seq, key=lambda e: e):
+    groups = defaultdict(list)
+    for e in seq:
+        groups[key(e)].append(e)
+    return groups
+
+def getkey(key): return lambda x: x[key]
+
+def main():
+    solutions = requests\
+            .get(&#34;http://potw.quinnftw.com/api/solution_languages&#34;)\
+            .json()[&#34;data&#34;]
+
+    global_means = {
+        language: count / len(solutions)
+        for language, count in
+        Counter(map(getkey(&#34;language&#34;), solutions)).most_common()
+    }
+
+    solutions_by_week = groupby(solutions, getkey(&#34;week&#34;))
+    for week, solutions in solutions_by_week.items():
+        trending_scores = [
+            (language, (count / len(solutions)) / global_means[language])
+            for language, count in
+            Counter(map(getkey(&#34;language&#34;), solutions)).most_common()
+        ]
+        print(week, max(trending_scores, key=getkey(1))[0])
+
+main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>//
+// Cargo.toml
+// -&gt; src/main.rs
+// 
+// To compile &amp; run: cargo run --release
+// First run will be slow because of compilation and downloading
+// dependencies.
+
+// Cargo.toml
+[package]
+name = &#34;potw19&#34;
+version = &#34;0.1.0&#34;
+
+[dependencies]
+reqwest = &#34;0.4.0&#34;
+serde = &#34;0.9.11&#34;
+serde_derive = &#34;0.9.11&#34;
+serde_json = &#34;0.9.9&#34;
+
+// src/main.rs
+extern crate reqwest;
+#[macro_use] extern crate serde_derive;
+#[macro_use] extern crate serde_json;
+
+use std::collections::{HashMap, BTreeMap};
+
+#[derive(Serialize, Deserialize)]
+struct Data {
+    data: Vec&lt;Entry&gt;,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Entry {
+    week: u32,
+    language: String,
+}
+
+fn main() {
+    println!(&#34;{}&#34;, &amp;serde_json::to_string(
+        &amp;reqwest::get(&#34;http://potw.quinnftw.com/api/solution_languages&#34;)
+            .and_then(|mut resp| resp.json::&lt;Data&gt;())
+            .map(|data| data.data)
+            .map(|entries| {
+                let mut g_avg = HashMap::new();
+                let g_total = entries.len() as f32;
+
+                entries.into_iter()
+                    .fold(BTreeMap::new(), |mut l_avg, entry| {
+                        *g_avg.entry(entry.language.clone())
+                            .or_insert(0.0) += 1.0 / g_total;
+
+                        {
+                            let &amp;mut (ref mut l_total, ref mut l_langs) = l_avg.entry(entry.week)
+                                .or_insert((0.0, HashMap::new()));
+
+                            *l_total += 1.0;
+                            *l_langs.entry(entry.language)
+                                .or_insert(0.0f32) += 1.0;
+                        }
+
+                        l_avg
+                    })
+                    .into_iter()
+                    .map(|(week, (l_total, langs))| {
+                        langs.into_iter()
+                            .max_by(|&amp;(ref l1, ref c1), &amp;(ref l2, ref c2)| {
+                                let avg1 = (c1 / l_total) / g_avg[l1];
+                                let avg2 = (c2 / l_total) / g_avg[l2];
+                                avg1.partial_cmp(&amp;avg2).unwrap()
+                            })
+                            .map(|(lang, _)| Entry { week: week, language: lang })
+                            .unwrap()
+
+                    })
+                    .collect::&lt;Vec&lt;_&gt;&gt;()
+            })
+            .map(|trending| Data { data: trending })
+            .expect(&#34;Error expecting response data.&#34;)
+        )
+        .expect(&#34;Error converting JSON.&#34;));
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>#!/usr/bin/python3
+
+from urllib.request import urlretrieve
+from statistics import mean
+import json
+
+urlretrieve(&#34;http://potw.quinnftw.com/api/solution_languages&#34;, &#34;./...&#34;)
+with open(&#34;./...&#34;) as fresh_api_data:
+    solutions = json.load(fresh_api_data)
+solutions = [(s.get(&#39;week&#39;), s.get(&#39;language&#39;)) for s in solutions[&#39;data&#39;]]
+
+solutions.sort()
+n_weeks = solutions[-1][0]
+weeks = [[sol[1] for sol in solutions if sol[0] == week+1] for week in range(n_weeks)]
+languages = {lang for lang in {s[1] for s in solutions}}
+
+historical_shares = {lang: [week.count(lang)/len(week) for week in weeks] for lang in languages}
+lang_means = {lang: mean(historical_shares[lang]) for lang in languages} 
+
+trendy = list()
+for week in range(n_weeks):
+    trending = &#34;None&#34;
+    uptick = 0.0
+    for lang in languages:
+        lang_share = historical_shares[lang][week]
+        deviance = lang_share - lang_means[lang] 
+        if deviance &gt; uptick:
+            uptick = deviance
+            trending = lang
+    trendy.append(trending)
+
+for week, trend in enumerate(trendy):
+    print(&#34;Week &#34; + str(week) + &#34;: &#34; + trend)
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

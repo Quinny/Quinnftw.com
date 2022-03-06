@@ -1,0 +1,219 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Security Audit</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      Your buddy wrote some code for an authentication system, and sent it to you to check over for him.
+<br />
+<br />
+<script src="https://gist.github.com/Quinny/4c55d2aff21dbf3d01f9a03a636e5689.js"></script>
+<br />
+Can you gain admin access <b>without</b> entering the correct password? <small><small>Yes.</small></small> If so, submit a small description explaining how. <small><small><a href="https://en.wikipedia.org/wiki/Buffer_overflow">spoiler</a></small></small>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Text
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>Username: &#34;To be, or not to be? That is the question.&#34;
+Or any other string with a space after the 20th character,
+since the username entry is not adequately protected.</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - Text
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>tl;dr
+
+    Typing in 21 a&#39;s and a newline for both the username and input will first modify
+    the max_password_len variable to be 3494793310839504916,
+    causing fgets() to basically just read until a newline,
+    so it&#39;ll also overflow its buffer and set authenticated to 3494793310839504896.
+    Then the if statment checking authenticated will evaluate to true and give us admin access.
+
+
+Yes you can.
+
+
+There are a few system dependant things you&#39;d have to worry about,
+such as the size of an int and the way data is arranged.
+
+For our purposes we&#39;ll assume that int&#39;s are 4 char&#39;s long. 
+The exact size of a char is also system dependant but usually 1 byte, which is usually 8 bits.
+
+We&#39;ll also assume that data in the function is laid out in the same order as in the source code,
+and that it is laid out with no extra space between variables or arrays.
+But the data could be laid out to start at word boundaries,
+or perhaps have had its order randomized for security reasons.
+
+
+Now that we&#39;ve assumed all that we can look towards our goal of gaining admin access.
+
+Basically what we want to do is go down a certain branch of execution,
+one which it should only be possible to go down if we knew the password.
+But going down that branch isn&#39;t decided directly by inputing the correct password,
+but by the authenticated variable, which is set to be a truthy value by a branch
+that compares the inputed password and the actual password.
+
+But if we can find some way to modify the authenticated variable other than
+knowing the password we will be able to access our desired branch.
+
+A common way to do such things is to take advantage of input functions 
+that don&#39;t limit the amount of input that they will read in,
+leaving open the possibilty of reading in more data then memory
+that had been reserved to store the input (the buffer).
+A shitty input function will then begin writing input data
+into memory meant for other things, creating a way for malicious users to
+modify memory after a buffer however they&#39;d like.
+
+
+You&#39;ll notice that the authenticated variable is right after the password buffer,
+which could present us an oppurtunity to overflow the buffer and make authenticated a truthy value.
+But buddy was clever enough to use an input function that will only read in a certain number of bytes.
+
+Not clever enough to only use such input functions though.
+Earlier he uses scanf, which will keep reading input until it hits a newline,
+and conveniently reads it into a buffer preceding the rest of his data.
+
+In theory we could craft a username that would perfectly overwrite the data in such
+a way that we&#39;d get admin access, but there&#39;s a lot of data in between 
+the buffer and the authenticated variable we&#39;re interested in,
+so the username would have to be very long and we&#39;d have to be very careful
+to not crash the program at some point.
+
+Instead we&#39;ll just modify the max_password_len variable,
+letting us overflow the password buffer and make authenticated non-zero.
+
+Typing in 21 a&#39;s and a newline for both the username and password will first modify
+the max_password_len variable to be 3494793310839504916,
+as the most signifigant byte of the int will now be the ascii code for a.
+At this point fgets() is basically just reading until a newline,
+so fgets() will also overflow its buffer and set authenticated to 3494793310839504896.
+Then the if statment checking authenticated will evaluate to true and give us admin access.
+
+To be less conspicuous, any username and password between 20 and 24 characters long should work.
+(With inputs that are too long we might risk crashing the program.)
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Text
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>1. Use the scanf on name to change the value of max_password_len to something larger than password.
+2. Use the fgets to set the value of authenticated.</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Text
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>Since scanf will happily read characters until a new line appears, it is possible
+to overflow the &#34;name&#34; buffer.  Fortunately, the &#34;max_password_len&#34; variable appears
+immediately after said &#34;name&#34; buffer in memory. This means that one could increase
+the value of the &#34;max_password_len&#34; variable by overflowing the name buffer.
+
+Now that &#34;max_password_len&#34; has become some arbitrarily large value, the following
+call to fgets (which was supposed to protect against buffer overflow) will read
+a virtually unbounded amount of bytes into the &#34;password&#34; buffer. Overflowing the
+password buffer will modify the value of the &#34;authenticated&#34; flag, thus providing
+access into the system without knowing the password.
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - Text
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>For the name, input a long string of just the null character that is much 
+longer than the allocated space for the size of &#34;name&#34; which is 20 and 
+&#34;password123&#34; in secret. This will overflow into the secret array (they are
+located right next to each other in stack memory) and will change 
+the contents of the &#34;secret&#34; array to just be null characters. When you 
+get to the part where you insert the password, just input nothing (press enter
+in terminal while program is running). 
+
+TL;DR: modify the secret array with buffer overflow to a string of 
+null character and then just press enter for the password
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#35" data-toggle="collapse">
+            vandolda - Text
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="35">
+        <pre><code>Yes, you can gain admin access without entering the correct password.
+This is due to the fact that the &#34;secret&#34; string is stored in memory following the &#34;name&#34; string,
+and since you can enter a string of any length as a name, despite &#34;name&#34; being limited to 20
+characters, you can enter 20 characters as name, and then continues to enter characters to overwrite
+the &#34;secret&#34; string to be any string. This allows you to change the password and thus gain access
+without entering the correct password. 
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#42" data-toggle="collapse">
+            roederw - Text
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="42">
+        <pre><code>Since we&#39;re using scanf we don&#39;t have a protected buffer length. This means we can write a particularlly long string that can actually increase the length of max_password_len. This is caused by memory overflow because of where in the code each variable is declared.
+Now, since we have increased the value stored at max_password_length, we can read in a password that is larger than 20 bytes. This again will overflow into the authenticated value and set it. 
+
+An example input to break this code is: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa :)</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>POTW Generator</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="https://hallabro.nu/images/dailyprogrammer.png" class="img-responsive">
+</div>
+<br />
+
+Most of the time the POTW's are pretty original.  A lot blood sweat and tears go into building up an elaborate story around a useful programming concept that was passed over by the educational system.  But sometimes Quinn gets lazy and heads over to reddit for some inspiration.<br /><br />
+<a href="https://www.reddit.com/r/dailyprogrammer">/r/dailyprogrammer</a> is usually pretty useful, as it contains a slew of frequently updated problems that are marked with a difficulty tag.  Quinn browses the front page, skimming the titles for something that piques his interest.  Help automate this process by utilizing the reddit API.
+<br />
+<hr />
+
+For those of you who are unfamiliar with the reddit API, it follows a very simple format:<br /><br />
+Append <code>.json</code> or <code>.xml</code> (for all you masochists)  to the end of any URL to get the data in the corresponding format. 
+<br /> <br />
+<a href="https://www.reddit.com/r/dailyprogrammer.json">
+https://www.reddit.com/r/dailyprogrammer.json</a>
+<br />
+<a href="https://www.reddit.com/r/dailyprogrammer/controversial.xml">https://www.reddit.com/r/dailyprogrammer/controversial.xml</a><br />
+<a href="https://www.reddit.com/dev/api/#listings">Listing specification</a>
+<br />
+<hr />
+Develop a tool which utilizes the reddit API to generate suggested POTW's. Be creative, don't just pick the top post.
+<br /><br />
+
+Suggested Ideas:<br />
+<ul>
+<li>Develop an ML model trained on previous weeks question texts / topics.</li>
+<li>Allow for a keyword to be entered and rank the problems based on their TF-IDF score</li>
+<li>Develop a custom scoring function based on the difficulty tag, number of upvotes, etc.</li>
+</ul>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

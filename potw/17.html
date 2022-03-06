@@ -1,0 +1,301 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Snakes and Ladders</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="http://www.codewithc.com/wp-content/uploads/2014/05/snakes-and-ladders.jpg" class="img img-responsive" />
+</div>
+<br />
+Snakes and Ladders is the new hit game at the Computer Science Games night.   Intent on being the all time champion, you invest in a rigged die which allows you to roll whatever outcome you please.  You quickly realize that the greedy approach of rolling a 6 each turn may not be the best strategy as you may miss advantageous ladders, or find yourself constantly sliding down those pesky snakes (not to mention rolling the  same number every turn basically broadcasts to everyone that you are cheating).  Given a snakes and ladders game board, determine the tile sequence of the optimal solution.
+<br />
+<hr />
+For those of you unfamiliar with the game, the rules are as follows:
+<br /><br />
+Each turn a player rolls a single die labeled with numbers 1-6, receiving and outcome of <code>N</code>.  Starting at
+tile 1, the player advances  <code>N</code> tiles forward.  If the resulting tile is a ladder tile, the player must fully climb the ladder.  If the resulting tile is a snake, the player slides down.  The player who reaches tile 100 first is the winner.
+<br /><br />
+For example, given the above depicted game board if the player lands on tile 4, they will climb the ladder and end the turn on tile 14.  In contrast, if the player lands on tile 62 they will descend the snake and end the turn on tile 19.
+<hr />
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> denoting the number of special tiles (snakes or ladders)</li>
+<li><code>N</code> pairs of space separated integers denoting the start and end of the special tiles</li>
+</ul>
+<h3>Output Format</h3>
+<ul>
+<li>Space separated integers denoting the sequence of tiles in an optimal solution.  If more than one such sequence exists, just output one of them.</li>
+</ul>
+
+<div class="row">
+
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+10
+32 62
+42 68
+12 98
+95 13
+97 25
+93 37
+79 27
+75 19
+49 47
+67 17
+</pre>
+</div>
+
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+1 7 98 100
+</pre>
+</div>
+
+</div>
+
+
+<div style="background-color: rgba(0, 255, 0, 0.5); padding:10px;">
+3rd and 4th year student solutions must use an informed search algorithm such as <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A*</a>.</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>from heapq import heappush, heappop
+
+# Given the special tiles map and the current state, return all possible
+# neighbour states.  The turn number is included in the state since it may
+# be possible to reach a given tile multiple different ways.
+def move_function(tiles, state):
+    position, turn = state
+    for roll in range(1, 7, 1):
+        if position + roll &lt;= 100:
+            if position + roll in tiles:
+                yield tiles[position + roll], turn + 1
+            else:
+                yield position + roll, turn + 1
+
+# Perform astar search using the provided functions.  This implmentation is
+# intentionally generic, so that it could be used to explore any search space.
+def astar(start, done, expand, transition_cost, heuristic_cost):
+    # Storing the whole path in the queue is really not a great idea,
+    # it uses a lot of memory and is likely slower but is easier to implement.
+    to_explore = [(heuristic_cost(start), (start, [start]))]
+    path_cost = {start: 0}
+
+    while to_explore:
+        _, (state, path) = heappop(to_explore)
+        if done(state):
+            return path
+
+        for successor_state in expand(state):
+            new_cost = path_cost[state] + transition_cost(successor_state)
+            if successor_state not in path_cost or\
+                    new_cost &lt; path_cost[successor_state]:
+                path_cost[successor_state] = new_cost
+                heappush(to_explore, (new_cost + heuristic_cost(successor_state),\
+                        (successor_state, path + [successor_state])))
+
+    # The goal was not reached.
+    return None
+
+def main():
+    n_tiles = int(input())
+    tiles = {}
+    for i in range(n_tiles):
+        start, end = list(map(int, input().strip().split()))
+        tiles[start] = end
+
+    # Partial application of the move function with the tiles bound.
+    def expand(state):
+        yield from move_function(tiles, state)
+
+    def done(state):
+        position, _ = state
+        return position == 100
+
+    # Rolling the dice has a constant cost of 1.
+    def transition_cost(_):
+        return 1
+
+    # The absolute distance to the goal.
+    def heuristic_cost(state):
+        position, _ = state
+        return 100 - position
+
+    def fst(p):
+        return p[0]
+
+    path = map(fst, astar((1, 0), done, expand, transition_cost, heuristic_cost))
+    print(&#34; &#34;.join(map(str, path)))
+
+main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>#include &lt;stdio.h&gt;
+
+unsigned jumps[100];
+unsigned costs[100];
+unsigned path[100];
+
+void find_path(unsigned cur) {
+	for(unsigned i = cur + 1; i &lt; 100 &amp;&amp; i &lt;= cur + 6; ++i) {
+		if(costs[jumps[i]] &gt; costs[cur]) {
+			path[jumps[i]] = cur;
+			costs[jumps[i]] = costs[cur] + 1;
+			find_path(jumps[i]);
+		}
+	}
+}
+
+void print_path(unsigned cur) {
+	if(cur &gt; 0)
+		print_path(path[cur]);
+	printf(&#34;%d &#34;, cur + 1);
+}
+
+int main() {
+	int n;
+	scanf(&#34;%d\n&#34;, &amp;n);
+	
+	for(unsigned i = 0; i &lt; 100; ++i) {
+		jumps[i] = i;
+		costs[i] = 0xffff;
+	}
+	costs[0] = 0;
+
+	while( n-- &gt; 0) {
+		int fro, to;
+		scanf(&#34;%d %d\n&#34;, &amp;fro, &amp;to);
+		jumps[fro - 1] = to - 1;
+	}
+
+	find_path(0);
+	print_path(99);
+	printf(&#34;\n&#34;);
+
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#35" data-toggle="collapse">
+            vandolda - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="35">
+        <pre><code>from random import randrange
+from collections import deque
+
+BOARD_SIZE = 100
+
+
+class Node(object):
+    def __init__(self, tile):
+        self._tile = tile
+        self._siblings = []
+
+    def add_sibling(self, s):
+        self._siblings.append(s)
+
+    def get_siblings(self):
+        return self._siblings
+
+
+class SnakesAndLadders(object):
+    def __init__(self):
+        self._graph = [Node(x) for x in range(BOARD_SIZE)]
+        self._tile = [x for x in range(BOARD_SIZE)]
+
+        for i in range(int(input())):
+            start, end = [int(x)-1 for x in input().split(&#39; &#39;)]
+            self._tile[start] = end
+
+        for i in range(BOARD_SIZE):
+            for j in range(i+1, i+7 if i+7 &lt; BOARD_SIZE else BOARD_SIZE):
+                self._graph[i].add_sibling(self._graph[self._tile[j]])
+
+    def search(self):
+        # Implementation of a breadth-first search.
+        start = self._graph[0]
+        goal = self._graph[BOARD_SIZE-1]
+
+        frontier = deque()
+        frontier.append(start)
+        came_from = {}
+        came_from[start] = None
+
+        while len(frontier) != 0:
+            current = frontier.popleft()
+
+            if current == goal:
+                break
+
+            for next in current.get_siblings():
+                if next not in came_from:
+                    frontier.append(next)
+                    came_from[next] = current
+
+        # Construct the optimal path from the came_from dictionary.
+        optimal_path = []
+        curr_node = goal
+        while curr_node != start:
+            optimal_path.append(curr_node)
+            curr_node = came_from[curr_node]
+        optimal_path.append(start)
+
+        return optimal_path[::-1]
+
+
+snl = SnakesAndLadders()
+for i in snl.search():
+    print(i._tile+1, end=&#39; &#39;)
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

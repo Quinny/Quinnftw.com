@@ -1,0 +1,508 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Gerrymandering</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img class="img img-responsive" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/How_to_Steal_an_Election_-_Gerrymandering.svg/720px-How_to_Steal_an_Election_-_Gerrymandering.svg.png">
+</div>
+
+In preparation for the CSS election next year, Quinn has begun to <a href="https://en.wikipedia.org/wiki/Gerrymandering">Gerrymander</a> the Computer Science electoral districts in favour of his preferred candidate.  In order to verify that his Gerrymandering tactics are working, he has collected some early polling data which represents predicted votes for each district.  The candidate who wins the election is the candidate who takes the <b>majority</b> vote in the most electoral districts.  That is, in order to win an electoral district a single candidate must have over 50% of the votes for that district.  It is safe to assume that each district will have a candidate which takes the majority vote.  Given this data, determine who is predicted to win the CSS election.
+<br />
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> denoting the number of electoral districts</li>
+<li>An integer <code>M</code> denoting the number of votes</li>
+<li><code>M</code> lines of the form <code>candidate district</code> denoting the candidate received a vote in the given district.  Districts will be represented as integers in [0, N), and candidates as strings containing no spaces</li>
+</ul>
+
+<h3>Output format</h3>
+<ul>
+<li>The name of the candidate who won the election</li>
+</ul>
+
+<div class="row">
+
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+3 5
+quinn 0
+rando 1
+quinn 2
+rando 1
+rando 1
+</pre>
+</div>
+
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+quinn
+</pre>
+</div>
+
+</div>
+
+<div style="background-color: rgba(0, 255, 0, 0.5); padding:10px;">
+3rd and 4th years must determine district winners using O(number of votes) time and O(number of districts) additional space. That is, you may only use a constant amount of memory for each district <small><a href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_majority_vote_algorithm">spoiler</a></small>  Determining the final winner may use extra memory.
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>def castBallot(vote, district, inList):
+    if inList[district][1] == 0:
+        inList[district][0] = vote
+        inList[district][1] = 1
+    elif inList[district][0] == vote:
+        inList[district][1] += 1
+    else:
+        inList[district][1] -= 1
+
+
+districts, votes = list(map(int, input().split()))
+districtCounts = []
+
+# Populate the district count
+for i in range(districts):
+    districtCounts.append([&#34;&#34;,0])
+
+# Count individual votes
+for i in range(votes):
+    vote, district = input().split()
+    district = int(district)
+    castBallot(vote, district, districtCounts)
+
+# Count districts
+electoralCollege = [[&#34;&#34;, 0]]
+for win in districtCounts:
+    castBallot(win[0], 0, electoralCollege)
+
+print(electoralCollege[0][0])
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.*;
+public class w16 {
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        int N = kb.nextInt();
+        int M = kb.nextInt();
+        int[] districtVotes = new int[N];
+        String[] districtLeader = new String[N];
+        // take in input and keep track of winners for each district
+        for (int i = 0; i &lt; M; i++) {
+            String candidate = kb.next();
+            int district = kb.nextInt();
+            if (districtVotes[district] == 0) {
+                districtLeader[district] = candidate;
+                districtVotes[district]++;
+            } else if (candidate.equals(districtLeader[district])) {
+                districtVotes[district]++;
+            } else {
+                districtVotes[district]--;
+            }
+        }
+        // calculate candidate who won the most districts
+        int districtsWon = 0;
+        String candidate = &#34;&#34;;
+        for (int i = 0; i &lt; N; i++) {
+            if (districtsWon == 0) {
+                candidate = districtLeader[i];
+                districtsWon++;
+            } else if (candidate.equals(districtLeader[i])) {
+                districtsWon++;
+            } else {
+                districtsWon--;
+            }
+        }
+        System.out.println(candidate);
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>#include &lt;algorithm&gt;
+#include &lt;iostream&gt;
+#include &lt;unordered_map&gt;
+#include &lt;vector&gt;
+
+// Calculates the majority element of a stream in constant time using the boyer-
+// moore majority vote algorithm.
+template &lt;typename T&gt;
+class StreamingMajorityVote {
+ public:
+  StreamingMajorityVote() : candidate_{}, votes_(0) {}
+
+  void consume(const T&amp; v) {
+    if (v == candidate_) {
+      ++votes_;
+    } else {
+      --votes_;
+      if (votes_ &lt;= 0) {
+        candidate_ = v;
+        votes_ = 0;
+      }
+    }
+  }
+
+  const T&amp; candidate() const { return candidate_; }
+
+ private:
+  T candidate_;
+  int votes_;
+};
+
+template &lt;typename T&gt;
+std::unordered_map&lt;T, int&gt; histogram(const std::vector&lt;T&gt;&amp; v) {
+  std::unordered_map&lt;T, int&gt; h;
+  for (const auto&amp; i : v) {
+    ++h[i];
+  }
+  return h;
+}
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+
+  int n_districts, n_votes;
+  std::cin &gt;&gt; n_districts &gt;&gt; n_votes;
+
+  // Calculate the majority vote for each district.
+  std::vector&lt;StreamingMajorityVote&lt;std::string&gt;&gt; districts(n_districts);
+  int district;
+  std::string candidate;
+  while (std::cin &gt;&gt; candidate &gt;&gt; district) {
+    districts[district].consume(candidate);
+  }
+
+  // Grab each candidates name.
+  std::vector&lt;std::string&gt; district_winners(n_districts);
+  std::transform(districts.begin(), districts.end(), district_winners.begin(),
+                 [](const auto&amp; d) { return d.candidate(); });
+
+  // Count how many districts each candidate won and output the one who took
+  // the most.
+  const auto tally = histogram(district_winners);
+  const auto winner = std::max_element(
+      tally.begin(), tally.end(),
+      [](const auto&amp; lhs, const auto&amp; rhs) { return lhs.second &lt; rhs.second; });
+
+  std::cout &lt;&lt; winner-&gt;first &lt;&lt; std::endl;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::io::{self, Read};
+
+fn main() {
+	let input = {
+		let mut input = String::new();
+		io::stdin().read_to_string(&amp;mut input).unwrap();
+		input
+	};
+
+	let mut lines = input.lines();
+
+	let (n, m) = lines.next()
+		.map(|l| {
+			let mut n = l.split_whitespace()
+				.take(2)
+				.map(|v| v.parse::&lt;usize&gt;().unwrap());
+
+			(n.next().unwrap(), n.next().unwrap())
+		})
+		.unwrap();
+	
+	let winner = lines.take(m)
+		.fold(vec![(None, 0); n], |mut districts, l| {
+			let mut parts = l.split_whitespace().take(2);
+
+			let name = parts.next().unwrap();
+			let id = parts.next()
+				.map(|v| v.parse::&lt;usize&gt;().unwrap())
+				.unwrap();
+
+			if let Some(district) = districts.get_mut(id) {
+				match district.0 {
+					Some(n) if name == n =&gt; district.1 += 1,
+					Some(_) =&gt; {
+						district.1 -= 1;
+
+						if district.1 == 0 {
+							*district = (Some(name), 1);
+						}
+					}
+					_ =&gt; *district = (Some(name),  1),
+				}
+			}
+
+			districts
+		})
+		.iter()
+		.fold((None, 0), |(mut candidate, mut counter), &amp;(name, _)| {
+			match name {
+				n if counter == 0 =&gt; {
+					candidate = n;
+					counter += 1;
+				}
+				n if candidate == n =&gt; counter += 1,
+				_ =&gt; counter -= 1,
+			}
+
+			(candidate, counter)
+		});
+
+	if let (Some(name), _) = winner {
+		println!(&#34;{}&#34;, name);
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#35" data-toggle="collapse">
+            vandolda - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="35">
+        <pre><code># POTW 2016 - Week 16 Gerrymandering
+
+import sys
+
+def main(args):
+    # Get the number of districts and votes from the same line of input.
+    num_districts, num_votes = [int(x) for x in input().split(&#39; &#39;)]
+
+    # Make lists for the winner and counter of each district, as well as every
+    # candidate that may have won a district.
+    district_winner = [&#34;&#34; for x in range(num_districts)]
+    district_counter = [0 for x in range(num_districts)]
+    candidates = []
+
+    # The following for loop is essentially an implementation of the Boyer–Moore
+    # majority vote algorithm.
+    for i in range(num_votes):
+        # Loop for the number of votes, getting the candidate the vote was for
+        # and the district it was in.
+        candidate, district = input().split(&#39; &#39;)
+        district = int(district)
+
+        if district_counter[district] == 0:
+            # If the district counter has reached zero, set the new current
+            # winning candidate.
+            district_winner[district] = candidate
+
+            # Add them to the list of candidates that may have won a district
+            # as well.
+            if candidate not in candidates:
+                candidates.append(candidate)
+
+        elif district_winner[district] == candidate:
+            district_counter[district] += 1
+        else:
+            district_counter[district] -= 1
+
+    # Now, determine who the winner of the election was.
+    winner_name = &#34;&#34;
+    winner_districts = 0
+    for c in candidates:
+        # Find the number of districts won by candidate c by counting how many
+        # times c appeared in the district_winner list.
+        districts_won_by_c = district_winner.count(c)
+
+        # If c won more then the current top district winner, make him into
+        # the top district winner.
+        if districts_won_by_c &gt; winner_districts:
+            winner_name = c
+            winner_districts = districts_won_by_c
+
+    print(winner_name)
+
+    return 0
+
+if __name__ == &#34;__main__&#34;:
+    sys.exit(main(sys.argv))
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#38" data-toggle="collapse">
+            ayoub116 - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="38">
+        <pre><code>package week16;
+import java.util.*;
+
+/*
+ * Ali Ayoub [04.02.2017]
+ * POTW 2016 week 16 created by Quinn Perfetto
+ * http://potw.quinnftw.com/problem/2016/16/
+ * 
+ * Determine election winner by district majority
+ */
+
+public class Election {
+	
+	public static void parseVotes(HashMap&lt;Integer, HashMap&lt;String, Integer&gt;&gt; results) {
+		Scanner in = new Scanner(System.in);
+		
+		int d = in.nextInt();
+		int v = in.nextInt();
+		in.nextLine();
+		
+		for (int i = 0; i &lt; v; ++i) {
+			String candidate = in.next();
+			int district = in.nextInt();
+			if (!results.containsKey(district)) {
+				HashMap&lt;String, Integer&gt; newDistrict = new HashMap&lt;String, Integer&gt;();
+				newDistrict.put(candidate, 0);
+				results.put(district, newDistrict);
+				continue;
+			}
+			if (!results.get(district).containsKey(candidate)) {
+				results.get(district).put(candidate, 0);
+				continue;
+			}
+			int count = results.get(district).get(candidate);
+			count++;
+			results.get(district).put(candidate, count);
+		}
+		
+		in.close();
+	}
+	
+	public static void determineWinner(HashMap&lt;Integer, HashMap&lt;String, Integer&gt;&gt; results) {
+		HashMap&lt;String, Integer&gt; districtWinners = new HashMap&lt;String, Integer&gt;();
+		
+		for (int district : results.keySet()) {
+			HashMap&lt;String, Integer&gt; currentDistrictWinner = new HashMap&lt;String, Integer&gt;();
+			determineCurrentDistrictWinner(results, districtWinners, currentDistrictWinner, district);
+		}
+		
+		declareWinner(districtWinners);
+	}
+	
+	private static void determineCurrentDistrictWinner(HashMap&lt;Integer, HashMap&lt;String, Integer&gt;&gt; results,
+			HashMap&lt;String, Integer&gt; districtWinners, HashMap&lt;String, Integer&gt; currentDistrictWinner, int district) {
+		
+		for (String candidate : results.get(district).keySet()) {
+			int count = results.get(district).get(candidate);
+			if (!currentDistrictWinner.containsKey(candidate)) {
+				currentDistrictWinner.put(candidate, count);
+				continue;
+			}
+			if (count &gt; currentDistrictWinner.get(candidate)) {
+				currentDistrictWinner.clear();
+				currentDistrictWinner.put(candidate, count);
+				continue;
+			}
+			if (count == currentDistrictWinner.get(candidate)) {
+				currentDistrictWinner.put(candidate, count);
+			}
+		}
+		for (String candidate : currentDistrictWinner.keySet()) {
+			if (districtWinners.containsKey(candidate)) {
+				int count = districtWinners.get(candidate);
+				count++;
+				districtWinners.put(candidate,  count);
+			} else {
+				districtWinners.put(candidate, 1);
+			}
+		}
+	}
+	
+	private static void declareWinner(HashMap&lt;String, Integer&gt; districtWinners) {
+		HashMap&lt;String, Integer&gt; winner = new HashMap&lt;String, Integer&gt;();
+		
+		for (String candidate : districtWinners.keySet()) {
+			int count = districtWinners.get(candidate);
+			if (winner.isEmpty()) {
+				winner.put(candidate, count);
+				continue;
+			}
+			if (count &gt; winner.entrySet().iterator().next().getValue()) {
+				winner.clear();
+				winner.put(candidate, count);
+			}
+		}
+		
+		System.out.println(winner.entrySet().iterator().next().getKey());
+	}
+
+	public static void main(String[] args) {
+
+		// map district(int) : map candidate(string) : vote count(int)
+		HashMap&lt;Integer, HashMap&lt;String, Integer&gt;&gt; results = 
+				new HashMap&lt;Integer, HashMap&lt;String, Integer&gt;&gt;();
+
+		parseVotes(results);
+		determineWinner(results);
+	}
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

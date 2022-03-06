@@ -1,0 +1,647 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>GEEK Gene</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="https://i.imgur.com/8aX1Ao3.png" class="img img-responsive">
+</div>
+<br /><br />
+
+Studies have shown that most successful programmers have the GEEK gene somewhere in their DNA.  The GEEK gene, like all others, originated as a mutation of some other gene.  When genes mutate, a single character in their sequence changes, for instance the "REKT" gene may mutate into the "RECT" gene.  Genes differing by a single character are known as <b>siblings</b>. 
+<br /><br />
+Given a start gene and a pool of known genes, determine the minimum number of mutations needed to transform the start gene into the GEEK gene.  A gene can only mutate into a sibling gene, and all mutations must result in a gene within the known pool.
+<br /><br />
+<h3>Input Format</h3>
+<ul>
+<li>A four character string <code>start</code> consisting of characters in [A, Z] representing the start gene</li>
+<li>An integer <code>N</code> representing the number of known genes</li>
+<li><code>N</code> four character strings consisting of characters in [A, Z] representing the known genes
+</ul>
+
+<h3>Output Format</h3>
+<ul>
+<li>
+The minimum number of mutations needed to reach the GEEK gene.  If the GEEK gene cannot be reached, output -1
+</li>
+</ul>
+
+<div class="row">
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+GEOD
+5
+GEOD
+GEAD
+GEZD
+GEED
+GEEK
+</pre>
+</div>
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+2
+</pre>
+GEOD -> GEED -> GEEK
+</div>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.*;
+
+public class w14 {
+
+    static boolean isNeighborOf(String a, String b) {
+        if (a.length() != b.length())
+            return false;
+        int numOfMutations = 0;
+        for (int i = 0; i &lt; a.length(); i++) {
+            if (a.charAt(i) != b.charAt(i)) {
+                numOfMutations++;
+            }
+            if (numOfMutations &gt; 1)
+                return false;
+        }
+        if (numOfMutations == 1)
+            return true;
+        else
+            return false;
+    }
+
+    static int findShortestMutation(String start, String end, String[] bank) {
+        Set&lt;String&gt; wordList = new HashSet&lt;String&gt;();
+        Collections.addAll(wordList, bank);
+        Queue&lt;String&gt; queue = new LinkedList&lt;String&gt;();
+        HashSet&lt;String&gt; visited = new HashSet&lt;String&gt;();
+        int dist = 0;
+        queue.add(start);
+
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i &lt; size; i++) {
+                String temp = queue.poll();
+                for (String aMutation : wordList) {
+                    if (isNeighborOf(temp, aMutation) &amp;&amp; !visited.contains(aMutation)) {
+                        queue.add(aMutation);
+                    }
+                }
+                visited.add(temp);
+                if (visited.contains(end)) {
+                    return dist;
+                }
+            }
+            dist++;
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        String start = kb.nextLine();
+        String end = &#34;GEEK&#34;;
+        int n = kb.nextInt();
+        kb.next();
+        String[] wordList = new String[n];
+        for (int i = 0; i &lt; n; i++) {
+            wordList[i] = kb.nextLine();
+        }
+        System.out.println(findShortestMutation(start, end, wordList));
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;queue&gt;
+#include &lt;string&gt;
+#include &lt;unordered_set&gt;
+
+// Use Breadth-First search to determine the minimum number of mutations needed
+// in order to transform the starting gene into &#34;GEEK&#34;.
+int min_mutations(const std::string&amp; start,
+                  const std::unordered_set&lt;std::string&gt;&amp; bank) {
+  if (bank.find(&#34;GEEK&#34;) == bank.end()) {
+    return -1;
+  }
+  if (start == &#34;GEEK&#34;) {
+    return 0;
+  }
+
+  std::unordered_set&lt;std::string&gt; visited;
+  std::queue&lt;std::pair&lt;std::string, int&gt;&gt; q;
+  q.push({start, 0});
+  visited.insert(start);
+
+  while (!q.empty()) {
+    auto top = q.front();
+    q.pop();
+
+    if (top.first == &#34;GEEK&#34;) {
+      return top.second;
+    }
+
+    for (std::uint64_t i = 0; i &lt; top.first.size(); ++i) {
+      std::string tmp = top.first;
+      for (char c = &#39;A&#39;; c &lt;= &#39;Z&#39;; ++c) {
+        tmp[i] = c;
+        if (bank.find(tmp) != bank.end() &amp;&amp;
+            visited.find(tmp) == visited.end()) {
+          q.push({tmp, top.second + 1});
+          visited.insert(tmp);
+        }
+      }
+    }
+  }
+
+  return -1;
+}
+
+int main() {
+  std::string start;
+  int n;
+  std::unordered_set&lt;std::string&gt; bank;
+
+  std::cin &gt;&gt; start &gt;&gt; n;
+  while (n--) {
+    std::string tmp;
+    std::cin &gt;&gt; tmp;
+    bank.insert(tmp);
+  }
+
+  std::cout &lt;&lt; min_mutations(start, bank) &lt;&lt; std::endl;
+
+  return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::io::prelude::*;
+use std::io;
+
+const INF: i32 = 9999;
+
+fn dijsktra(graph: &amp;[i32], n: usize, mut start: usize, end: usize) -&gt; i32 {
+	let mut node = vec![(INF, false); n];
+	node[start] = (0, true);
+
+	while !node[end].1 {
+		let mut min = INF;
+		let mut m = 0;
+
+		for i in 0..n {
+			let d = node[start].0 + graph[start * n + i];
+
+			if !node[i].1 {
+				if d &lt; node[i].0 {
+					node[i].0 = d;
+				}
+
+				if min &gt; node[i].0 {
+					min = node[i].0;
+					m = i;
+				}
+			}
+		}
+
+		start = m;
+		node[start].1 = true;
+	}
+
+	node[end].0
+}
+
+fn main() {
+	let input = {
+		let mut input = String::new();
+		io::stdin().read_to_string(&amp;mut input).unwrap();
+		input
+	};
+
+	let mut lines = input.lines();
+
+	let start_word = lines.next()
+		.unwrap();
+
+	let n = lines.next()
+		.map(|v| v.parse::&lt;usize&gt;().unwrap())
+		.unwrap();
+
+	let mut start = 0;
+	let mut end = 0;
+
+	let mut words = Vec::with_capacity(n);
+	for (i, w) in lines.take(n).enumerate() {
+		if w == start_word { start = i };
+		if w == &#34;GEEK&#34; { end = i };
+
+		words.push(w);
+	}
+
+	let mut graph = vec![0; n * n];
+	for i in 0..n {
+		for j in 0..n {
+			if i == j { continue; }
+
+			let diff = words[i].chars()
+				.zip(words[j].chars())
+				.fold(0, |diff, (c1, c2)| {
+					if c1 != c2 { diff + 1 } else {	diff }
+				});
+
+			graph[i * n + j] = if diff == 1 { 1 } else { INF };
+		}
+	}
+
+	println!(&#34;{}&#34;, dijsktra(&amp;graph, n, start, end))
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#38" data-toggle="collapse">
+            ayoub116 - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="38">
+        <pre><code>package week14;
+import java.util.*;
+
+/*
+ * Ali Ayoub [16.01.2017]
+ * POTW 2016 week 14 created by Quinn Perfetto
+ * http://potw.quinnftw.com/problem/2016/14/
+ * 
+ * GeekGene
+ * count the number of gene &#34;mutations&#34; required to convert initial input to &#34;GEEK&#34;
+ * if not possible return -1
+ */
+
+public class GeekGene {
+	
+	public static int countMutations(HashSet&lt;String&gt; genes, String input, String desiredWord) {
+		if (input.equals(desiredWord)) {
+			return 0;
+		}
+		
+		HashSet&lt;String&gt; visited = new HashSet&lt;String&gt;();
+		Queue&lt;String&gt; q = new LinkedList&lt;String&gt;();
+		q.add(input);
+		visited.add(input);
+		
+		char[] nucleotides = {&#39;G&#39;, &#39;E&#39;, &#39;E&#39;, &#39;K&#39;};
+	    return countMutations(q, genes, visited, nucleotides, desiredWord);
+	}
+	
+	private static int countMutations(Queue&lt;String&gt; q, HashSet&lt;String&gt; genes, HashSet&lt;String&gt; visited, 
+									char[] nucleotides, String desiredWord) {
+		int mutations = 0;
+		while(!q.isEmpty()) {
+			int currentGenes = q.size();
+			for (int i = 0; i &lt; currentGenes; i++) {
+				String current = q.remove();
+				if (current.equals(desiredWord)) {
+					return mutations;
+				}
+				char[] currentChars = current.toCharArray();
+				for (int j = 0; j &lt; currentChars.length; j++) {
+					char currentChar = currentChars[j];
+					for (char nucleotide : nucleotides) {
+						currentChars[j] = nucleotide;
+						String currentString = new String(currentChars);
+						if (genes.contains(currentString) &amp;&amp;
+							!visited.contains(currentString)) {
+							visited.add(currentString);
+							q.add(currentString);
+						}
+					}
+					currentChars[j] = currentChar;
+				}
+			}
+			mutations++;
+		}
+		return -1;	
+	}
+	
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		String s = sc.next();
+		int n = sc.nextInt();		
+		HashSet&lt;String&gt; genes = new HashSet&lt;String&gt;();
+		for (int i = 0; i &lt; n; i++) {
+			genes.add(sc.next());
+		}
+		sc.close();
+
+		int result = countMutations(genes, s, &#34;GEEK&#34;);
+		System.out.println(result);
+	}
+
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code># Determine if gene2 is a mutation of gene1
+def isMutation(gene1, gene2):
+    diffCount = 0
+    for i in range(len(gene1)):
+        if gene1[i] != gene2[i]:
+            diffCount += 1
+    if diffCount == 1:
+        return True
+    else:
+        return False
+
+# Find mutations of a gene, given a list to test
+def findMutations(initGene, geneList):
+    mutations = []
+    for i in range(len(geneList)):
+        if isMutation(initGene, geneList[i]):
+            mutations.append(i)
+    return sorted(mutations, reverse=True)
+
+def main():
+    # Starting gene
+    initString = input()
+    n = int(input())
+    # List of genes
+    genes = []
+    for i in range(n):
+        genes.append(input())
+    # Whether it&#39;s possible to reach the geek gene given the initial gene
+    path = False
+    # Number of hops from start to end
+    hops = 0
+    # Initialize the current &#34;row&#34; as the initial one, next row is it&#39;s mutations,
+    # next row is their mutations, and so on
+    currentRow = [initString]
+    while(len(currentRow) &gt; 0):
+        nextRow = []
+        for item in currentRow:
+            mutations = findMutations(item, genes)
+            for i in mutations:
+                nextRow.append(genes.pop(i))
+        hops += 1
+        # If it&#39;s in the next row, there&#39;s nothing more to do
+        if &#34;GEEK&#34; in nextRow:
+            path = True
+            break
+        # Otherwise, keep looking
+        else:
+            currentRow = nextRow
+    if path == True:
+        print(hops)
+    else:
+        print(&#34;-1&#34;)
+
+if __name__ == &#34;__main__&#34;:
+    main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;iterator&gt;
+#include &lt;numeric&gt;
+#include &lt;queue&gt;
+#include &lt;set&gt;
+#include &lt;unordered_map&gt;
+#include &lt;vector&gt;
+
+using Gene = std::string;
+
+// A simple graph class which uses an adjacency map to represent connections.
+// a =&gt; {b, c} implies that a has an outgoing edge to both b and c.
+template &lt;typename T&gt;
+class Graph {
+ public:
+  void connect(const T&amp; u, const T&amp; v) { adjacency_map_[u].insert(v); }
+
+  void connect_bidirectional(const T&amp; u, const T&amp; v) {
+    connect(u, v);
+    connect(v, u);
+  }
+
+  const std::set&lt;T&gt;&amp; operator[](const T&amp; u) const {
+    const auto maybe_nodeset = adjacency_map_.find(u);
+    return maybe_nodeset == adjacency_map_.end() ? kEmptyNodeSet
+                                                 : maybe_nodeset-&gt;second;
+  }
+
+ private:
+  std::unordered_map&lt;T, std::set&lt;T&gt;&gt; adjacency_map_;
+  static std::set&lt;T&gt; kEmptyNodeSet;
+};
+
+// Static.
+template &lt;typename T&gt;
+std::set&lt;T&gt; Graph&lt;T&gt;::kEmptyNodeSet;
+
+// Two genes are siblings iff their genome strings differ by a single character.
+// In other words, two genes are siblings if the hamming distance between them
+// is 1.
+bool siblings(const Gene&amp; g1, const Gene&amp; g2) {
+  // Sum all the character pairs which are not equal.
+  return std::inner_product(g1.begin(), g1.end(), g2.begin(), 0,
+                            std::plus&lt;int&gt;(), std::not_equal_to&lt;char&gt;()) == 1;
+}
+
+// Check if a container holds a value following c++&#39;s iterator pattern.
+template &lt;typename Container, typename Value&gt;
+bool contains(const Container&amp; c, const Value&amp; v) {
+  return c.find(v) != c.end();
+}
+
+// Determine the degrees of separation between two nodes in a graph.  If they
+// are not connected -1 is returned.
+template &lt;typename T&gt;
+int degrees_of_separation(const T&amp; start, const T&amp; target, const Graph&lt;T&gt;&amp; g) {
+  std::queue&lt;std::pair&lt;T, int&gt;&gt; to_explore;
+  std::set&lt;T&gt; explored;
+
+  to_explore.emplace(start, 0);
+  explored.insert(start);
+
+  while (!to_explore.empty()) {
+    const auto current = to_explore.front();
+    to_explore.pop();
+
+    if (current.first == target) return current.second;
+
+    for (const auto&amp; neighbour : g[current.first]) {
+      if (!contains(explored, neighbour)) {
+        to_explore.emplace(neighbour, current.second + 1);
+        explored.insert(neighbour);
+      }
+    }
+  }
+
+  return -1;
+}
+
+int main() {
+  Gene start_gene;
+  int n_genes;
+  std::cin &gt;&gt; start_gene &gt;&gt; n_genes;
+
+  std::vector&lt;Gene&gt; known_genes(std::istream_iterator&lt;Gene&gt;{std::cin},
+                                std::istream_iterator&lt;Gene&gt;{});
+
+  Graph&lt;Gene&gt; mutation_graph;
+  for (auto i = 0ul; i &lt; known_genes.size(); ++i) {
+    for (auto j = i + 1; j &lt; known_genes.size(); ++j) {
+      if (siblings(known_genes[i], known_genes[j])) {
+        mutation_graph.connect_bidirectional(known_genes[i], known_genes[j]);
+      }
+    }
+  }
+
+  std::cout &lt;&lt; degrees_of_separation&lt;Gene&gt;(start_gene, &#34;GEEK&#34;, mutation_graph)
+            &lt;&lt; std::endl;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#30" data-toggle="collapse">
+            pickup - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="30">
+        <pre><code>/*Eric Pickup
+POTW14
+15/01/2017*/
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+int checkDiff(char startGene[4], char checkGene[4]);
+
+int main(void) {
+
+	char startGene[5];
+	scanf(&#34;%s&#34;,startGene);
+
+	int numGenes;
+	scanf(&#34;%d&#34;,&amp;numGenes);
+
+	char checkGene[5];
+
+	int numChanges = 0;
+
+	for(int i = 0; i &lt; numGenes; i++) {
+		scanf(&#34;%s&#34;,checkGene);
+		if (checkDiff(startGene,checkGene) == 0) {
+
+			if (startGene[0] != &#39;G&#39; &amp;&amp; checkGene[0] == &#39;G&#39;) {
+				startGene[0] = &#39;G&#39;;
+				numChanges++;
+			} else if (startGene[1] != &#39;E&#39; &amp;&amp; checkGene[1] == &#39;E&#39;) {
+				startGene[1] = &#39;E&#39;;
+				numChanges++;
+			} else if (startGene[2] != &#39;E&#39; &amp;&amp; checkGene[2] == &#39;E&#39;) {
+				startGene[2] = &#39;E&#39;;
+				numChanges++;
+			} else if (startGene[3] != &#39;K&#39; &amp;&amp; checkGene[3] == &#39;K&#39;) {
+				startGene[3] = &#39;K&#39;;
+				numChanges++;
+			}
+		}
+	}
+
+	//Checking/printing final result
+	if(strncmp(startGene,&#34;GEEK&#34;,4) == 0) {	//Checks if resulting gene is &#34;GEEK&#34;
+		printf(&#34;%d&#34;,numChanges);
+	} else {
+		printf(&#34;-1&#34;);
+	}
+
+}
+
+//Checks to make sure that the genes differ by only a single character
+int checkDiff(char startGene[5], char checkGene[5]) {
+	int numDiffs = 0;
+	for(int i = 0; i &lt; 4; i++) {
+		if (startGene[i] != checkGene[i]) {
+			numDiffs++;
+		}
+	}
+	if(numDiffs&gt;1) {
+		return 1;
+	} else {
+		return 0;
+	}
+}</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

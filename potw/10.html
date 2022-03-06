@@ -1,0 +1,472 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>DogeNet</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <style>
+.doge_text {
+font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+</style>
+
+<div align="center">
+<img class="img img-responsive" src="http://i.imgur.com/jkUzUju.png">
+<h1 class="doge_text">Much nodes, very speed, wow.</h1>
+</div>
+<br />
+Construction is about to begin on the <b>DogeNet</b>, a disruptive interconnected network of doges that will no doubt change the way we see the world.  Unfortunately, doges are notoriously bad at network design and have come up with network topologies that are not optimal.
+<br /><br />
+An optimal network is defined as one where the total cost (sum of all connection costs) is minimized, while all doges still remain connected by some path.  For example, a possible optimal version of the above network is:
+<div align="center">
+<img class="img img-responsive" src="http://i.imgur.com/DgJr1CZ.png">
+</div>
+The cost of the original network was 243, and the cost of the optimized network is 93.
+<br /><br />
+<i>*Note that all Doge connections are bidirectional.</i>
+<br /><br />
+Given a DogeNet in matrix form, that is <code>M[i][j] = X</code> implies Doge <code>i</code> is connected to Doge <code>j</code> with cost <code>X</code>, determine the cost of the optimal network formed by removing unnecessary edges from the original one.
+<br /><br />
+<h2>Input Format</h2>
+<ul>
+<li>An integer <code>N</code> denoting the number of Doge's in the DogeNet</li>
+<li><code>N</code> lines, each containing <code>N</code> space separated integers representing each row in the DogeNet matrix.  An entry of 0 represents no connection.</li>
+</ul>
+
+<h2>Output Format</h2>
+A single integer representing the cost of the optimal network that can be formed by removing edges from the original network.
+<br /><br />
+<i>*This input corresponds to the DogeNet in the diagram</i>
+<br />
+<small><small>hint: MST</small></small>
+<div class="row">
+<div class="col-md-6">
+<h2>Sample Input</h2>
+<pre>
+7
+0 16 12 21 0 0 0
+16 0 0 17 20 0 0
+12 0 0 28 0 31 0
+21 17 28 0 18 19 23
+0 20 0 18 0 0 11
+0 0 31 19 0 0 27
+0 0 0 23 11 27 0
+</pre>
+</div>
+<div class="col-md-6">
+<h2>Sample Output</h2>
+<pre>
+93
+</pre>
+</div>
+</div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;queue&gt;
+#include &lt;set&gt;
+#include &lt;vector&gt;
+
+// A DogeNet is simply a matrix of connection costs.
+using DogeNet = std::vector&lt;std::vector&lt;int&gt;&gt;;
+
+// A special constant to denote that two Doge&#39;s are not connected.
+const int NOT_CONNECTED = 0;
+
+// A struct to represent the connection between two doges.
+struct DogeConnection {
+  int from, to, cost;
+  DogeConnection(int f, int t, int c) : from(f), to(t), cost(c) {}
+
+  bool operator&lt;(const DogeConnection&amp; rhs) const {
+    return cost != rhs.cost ? cost &lt; rhs.cost
+                            : from != rhs.from ? from &lt; rhs.from : to &lt; rhs.to;
+  }
+
+  bool operator==(const DogeConnection&amp; rhs) const {
+    return from == rhs.from &amp;&amp; to == rhs.to &amp;&amp; cost == rhs.cost;
+  }
+
+  bool operator&gt;(const DogeConnection&amp; rhs) const {
+    return !(*this &lt; rhs) &amp;&amp; !(*this == rhs);
+  }
+};
+
+// A little convenience wrapper for checking if a given value belongs to a
+// container.  Should work for any standard associative container.
+template &lt;typename Container&gt;
+bool contains(const Container&amp; c, const typename Container::value_type&amp; v) {
+  return c.find(v) != c.end();
+}
+
+// Returns an NxN DogeNet with no connections.
+DogeNet empty_dogenet(int n_doges) {
+  return DogeNet(n_doges, std::vector&lt;int&gt;(n_doges, NOT_CONNECTED));
+}
+
+// Computes the cost of a given DogeNet.
+int dogenet_cost(const DogeNet&amp; net) {
+  int cost = 0;
+  // Since all DogeNets are symmetric, only the upper half of connections
+  // need to be considered.
+  for (auto i = 0ul; i &lt; net.size(); ++i) {
+    for (auto j = 0ul; j &lt;= i; ++j) {
+      cost += net[i][j];
+    }
+  }
+  return cost;
+}
+
+// Computes an optimal DogeNet by removing connections from the original
+// DogeNet. Connections are removed according to Prim&#39;s MST algorithm.
+DogeNet optimal_dogenet(const DogeNet&amp; original_network) {
+  DogeNet optimal_network = empty_dogenet(original_network.size());
+  std::priority_queue&lt;DogeConnection, std::vector&lt;DogeConnection&gt;,
+                      std::greater&lt;DogeConnection&gt;&gt;
+      pq;
+  std::set&lt;int&gt; doges_in_optimal_network;
+
+  for (auto i = 0ul; i &lt; original_network.size(); ++i) {
+    if (original_network[0][i] != NOT_CONNECTED) {
+      pq.emplace(0, i, original_network[0][i]);
+    }
+  }
+
+  while (doges_in_optimal_network.size() != original_network.size()) {
+    auto least_cost_connection = pq.top();
+    // Find the least cost connection not already considered in the optimal
+    // dogenet.
+    while (contains(doges_in_optimal_network, least_cost_connection.to)) {
+      pq.pop();
+      least_cost_connection = pq.top();
+    }
+    pq.pop();
+
+    // Add this least cost connection to the optimal dogenet.
+    doges_in_optimal_network.insert(least_cost_connection.to);
+    doges_in_optimal_network.insert(least_cost_connection.from);
+
+    optimal_network[least_cost_connection.from][least_cost_connection.to] =
+        least_cost_connection.cost;
+    optimal_network[least_cost_connection.to][least_cost_connection.from] =
+        least_cost_connection.cost;
+
+    // Add all outgoing connections from the new Doge to the heap of edges to
+    // be considered.
+    for (auto i = 0ul; i &lt; original_network.size(); ++i) {
+      if (original_network[least_cost_connection.to][i] != NOT_CONNECTED &amp;&amp;
+          optimal_network[least_cost_connection.to][i] == NOT_CONNECTED) {
+        pq.emplace(least_cost_connection.to, i,
+                   original_network[least_cost_connection.to][i]);
+      }
+    }
+  }
+
+  return optimal_network;
+}
+
+int main() {
+  int dogenet_size;
+  std::cin &gt;&gt; dogenet_size;
+
+  DogeNet net = empty_dogenet(dogenet_size);
+  for (int i = 0; i &lt; dogenet_size; ++i) {
+    for (int j = 0; j &lt; dogenet_size; ++j) {
+      std::cin &gt;&gt; net[i][j];
+    }
+  }
+
+  const auto optimal_net = optimal_dogenet(net);
+  std::cout &lt;&lt; dogenet_cost(optimal_net) &lt;&lt; std::endl;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::io;
+use std::io::prelude::*;
+
+struct DisjointSet&lt;T&gt;(HashMap&lt;T, (T, usize)&gt;);
+
+impl&lt;T&gt; DisjointSet&lt;T&gt;
+    where T: Eq + Hash + Copy
+{
+    fn new() -&gt; Self {
+        DisjointSet(HashMap::new())
+    }
+
+    fn union(&amp;mut self, u: T, v: T) {
+        if u != v {
+            let (p1, p2) = (self.find(u), self.find(v));
+            let (r1, r2) = (self.0.get(&amp;p1).unwrap().1, self.0.get(&amp;p2).unwrap().1);
+
+            if r1 &gt;= r2 {
+                self.0.get_mut(&amp;p2).unwrap().0 = p1;
+                self.0.get_mut(&amp;p1).unwrap().1 += r2;
+            } else {
+                self.0.get_mut(&amp;p1).unwrap().0 = p2;
+                self.0.get_mut(&amp;p2).unwrap().1 += r1;
+            }
+        }
+    }
+
+    fn find(&amp;mut self, u: T) -&gt; T {
+        let v = self.0.entry(u).or_insert((u, 1)).0;
+
+        if v == u {
+            u
+        } else {
+            let v = self.find(v);
+            self.0.get_mut(&amp;u).unwrap().0 = v;
+            v
+        }
+    }
+
+    fn is_connected(&amp;mut self, u: T, v: T) -&gt; bool {
+        (self.0.contains_key(&amp;u) &amp;&amp; self.0.contains_key(&amp;v)) &amp;&amp; (self.find(u) == self.find(v))
+    }
+}
+
+fn main() {
+    // Get input from stdin
+    let input = {
+        let mut buf = String::new();
+        io::stdin()
+            .read_to_string(&amp;mut buf)
+            .expect(&#34;Couldn&#39;t read from stdin.&#34;);
+        buf
+    };
+
+    let mut lines = input.lines();
+    
+    // Number of rows and cols
+    let n = lines.next()
+        .and_then(|v| v.parse::&lt;usize&gt;().ok())
+        .expect(&#34;Invalid N.&#34;);
+
+    // Converts n lines of n cols to n*n of (x, y, cost) edges
+    let mut edges = lines.take(n)
+        .enumerate()
+        .flat_map(|(j, l)| {
+            l.split_whitespace()
+                .take(n)
+                .map(|c| c.parse::&lt;usize&gt;().expect(&#34;Invalid cost.&#34;))
+                .enumerate()
+                .filter_map(move |(i, c)| {
+                    if c == 0 { None } else { Some((i, j, c)) }
+                })
+        })
+        .collect::&lt;Vec&lt;_&gt;&gt;();
+
+    // Sort edges by cost
+    edges.sort_by(|a, b| a.2.cmp(&amp;b.2));
+
+    let mut set = DisjointSet::new();
+    let mut total_cost = 0;
+
+    for (i, j, cost) in edges {
+        if !set.is_connected(i, j) {
+            total_cost += cost;
+            set.union(i, j);
+        }
+    }
+    
+    println!(&#34;{:?}&#34;, total_cost);
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.Scanner;
+
+public class solution {
+
+    static int minIndex(int[] weights, Boolean visitedSet[]) {
+        int min = Integer.MAX_VALUE;
+        int minIndex = -1;
+
+        for (int i = 0; i &lt; weights.length; i++) {
+            if (visitedSet[i] == false &amp;&amp; weights[i] &lt; min) {
+                min = weights[i];
+                minIndex = i;
+             }
+         }
+
+         return minIndex;
+    }
+
+    static int mst(int[][] graph) {
+        int vertices = graph.length;
+        int[] parent = new int[vertices];
+        int[] weights = new int[vertices];
+        Boolean[] visitedSet = new Boolean[vertices];
+
+        for (int i = 0; i &lt; vertices; i++) {
+            visitedSet[i] = false;
+            weights[i] = Integer.MAX_VALUE;
+        }
+
+        weights[0] = 0;
+        parent[0] = -1;
+
+        for (int i = 0; i &lt; vertices - 1; i++) {
+            int min = minIndex(weights, visitedSet);
+            visitedSet[min] = true;
+            for (int j = 0; j &lt; vertices; j++) {
+                if (graph[min][j] != 0 &amp;&amp; visitedSet[j] == false &amp;&amp;
+                    graph[min][j] &lt; weights[j])
+                {
+                    parent[j] = min;
+                    weights[j] = graph[min][j];
+                }
+            }
+        }
+
+        int result = 0;
+
+        for (int i = 0; i &lt; vertices; i++) {
+            result += weights[i];
+        }
+
+        return result;
+    }
+
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        int n = kb.nextInt();
+        int[][] a = new int[n][n];
+        for (int i = 0; i &lt; n; i++) {
+            for (int j = 0; j &lt; n; j++) {
+                a[i][j] = kb.nextInt();
+            }
+        }
+        System.out.println(mst(a));
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>//https://en.wikipedia.org/wiki/Prim&#39;s_algorithm
+#include &lt;iostream&gt;
+#include &lt;limits&gt;
+
+const int max_int = std::numeric_limits&lt;int&gt;::max();
+
+int minimum_key(int[], int, bool[]);
+void minimum_spanning_tree(int**, int&amp;);
+
+int main() {
+    int V;
+    std::cin &gt;&gt; V;
+
+    int** graph = new int*[V];
+    for(int i = 0; i &lt; V; ++i) {
+        graph[i] = new int[V];
+        for(int j = 0; j &lt; V; ++j) {
+            std::cin &gt;&gt; graph[i][j];
+        }
+    }
+
+    minimum_spanning_tree(graph, V);
+
+    for(int i = 0; i &lt; V; ++i)
+        delete [] graph[i];
+    delete [] graph;
+}
+
+int minimum_key(int key[], int V, bool minimum_spanning_tree_set[]) {
+    int min = max_int, min_index;
+
+    for (int v = 0; v &lt; V; v++)
+        if (!minimum_spanning_tree_set[v] &amp;&amp; key[v] &lt; min)
+            min = key[v], min_index = v;
+    return min_index;
+}
+
+void minimum_spanning_tree(int** graph, int&amp; V) {
+    int sum = 0;
+    int parent[V], key[V];
+    bool minimum_spanning_tree_set[V]; 
+
+    for (int i = 0; i &lt; V; i++)
+        key[i] = max_int, minimum_spanning_tree_set[i] = false;
+
+    key[0] = 0, parent[0] = -1;
+    
+    for (int knt = 0; knt &lt; V-1; knt++) {
+        int u = minimum_key(key, V, minimum_spanning_tree_set);
+
+        minimum_spanning_tree_set[u] = true;
+
+        for (int v = 0; v &lt; V; v++)
+            if (graph[u][v] &amp;&amp; !minimum_spanning_tree_set[v] &amp;&amp; graph[u][v] &lt; key[v])
+                parent[v] = u, key[v] = graph[u][v];
+    }
+    for(int i = 0 ;  i &lt; V; i++) {
+        if(i != 0 || parent[i] != -1) 
+            sum += graph[i][parent[i]]; //add the last one
+    }
+    std::cout &lt;&lt; sum &lt;&lt; std::endl;
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>

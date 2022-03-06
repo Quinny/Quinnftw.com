@@ -1,0 +1,1590 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POTW</title>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+  <link rel="stylesheet" href="https://bootswatch.com/3/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div class="row">
+    <div align="center">
+      <h1>Banning Hax0rz</h1>
+      <small>
+        <a href="index.html">
+          home
+        </a>
+      </small>
+    </div>
+    <hr />
+    <div class="col-md-10 col-md-offset-1 col-xs-12">
+      <div align="center">
+<img src="http://i.imgur.com/uNo4poP.jpg" class="img-responsive">
+</div>
+<br />
+The POTW site has been experiencing heavy DDoS attacks from angry users.  Quinn checked out the site logs and noticed that many of the requests are coming from IPs with a common prefix.  He has designed a system to ban IPs with these prefixes, but it is too slow and is affecting page load times for non-malicious users.  Help Quinn design a faster system for identifying DDoSers while still providing real problem solvers with fast page loads.
+<br />
+<h3>Input Format</h3>
+<ul>
+<li>An integer <code>N</code> representing the number of malicious IP address prefixes</li>
+<li><code>N</code> lines representing the malicious IP address prefixes
+<li>An integer <code>M</code> denoting the number of requests</li>
+<li><code>M</code> lines containing requester IP addresses</code></li>
+</ul>
+<h3>Output Format</h3>
+<ul>
+<li>For each request, output "valid" if the IP address does not match any banned prefix, and "banned" if it matches any of the malicous prefixes</li>
+</ul>
+
+<i>* Note that all IP addresses are 32 bit, and prefixes always end on a full octet.</i>
+
+<div class="row">
+<div class="col-md-6">
+<h3>Sample Input</h3>
+<pre>
+4
+103.1
+93.12
+102.7
+18
+7
+103.238.1.1
+18.255.1.1
+103.1.1.1
+255.255.255.255
+102.7.12.1
+93.1.2.1
+102.72.1.1
+</pre>
+</div>
+<div class="col-md-6">
+<h3>Sample Output</h3>
+<pre>
+valid
+banned
+banned
+valid
+banned
+valid
+valid
+</pre>
+</div>
+</div>
+
+<div style="background-color: rgba(0, 255, 0, 0.5); padding:10px;">
+3rd and 4th year student solutions must be able to determine if an IP address is banned in <b>constant</b> time. <small><a href="https://en.wikipedia.org/wiki/Trie">spoiler</a></small>
+</div>
+
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#27" data-toggle="collapse">
+            perfettq - C
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="27">
+        <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+// https://en.wikipedia.org/wiki/Trie
+
+// A node in a bit trie.  Each node has two children and an end of &#34;word&#34;
+// marker.
+struct bit_trie_node {
+  struct bit_trie_node* children[2];
+  char end;
+};
+
+typedef struct bit_trie_node bit_trie_node;
+
+// A pruned trie is just like a regular trie except that the nodes are pruned
+// such that only leaf nodes are word ends.
+//
+// Consider the case where there are two malicious IP prefixes:
+//
+//  1.1
+//  1.1.234
+//
+// If the first prefix is already present in the trie, the second one is not
+// needed.
+typedef struct { bit_trie_node* root; } pruned_bit_trie;
+
+// Allocate memory for a bit trie node and initilize the members.
+bit_trie_node* btn_ctor() {
+  bit_trie_node* btn = (bit_trie_node*)malloc(sizeof(bit_trie_node));
+  btn-&gt;children[0] = NULL;
+  btn-&gt;children[1] = NULL;
+  btn-&gt;end = 0;
+
+  return btn;
+}
+
+// Free the memory for the given node, and all of its descendants.
+void btn_dtor(bit_trie_node* btn) {
+  if (btn == NULL) return;
+  btn_dtor(btn-&gt;children[0]);
+  btn_dtor(btn-&gt;children[1]);
+  free(btn);
+}
+
+// Initialize a pruned bit trie (essentially just allocating the root node).
+void pbt_init(pruned_bit_trie* pbt) { pbt-&gt;root = btn_ctor(); }
+
+// Free the memory for a pruned bit trie.
+void pbt_deinit(pruned_bit_trie* pbt) { btn_dtor(pbt-&gt;root); }
+
+//  Given a node and a child index, return the corresponding child.  If the
+//  child does not yet exist, it will be allocated.
+bit_trie_node* get_or_allocate_child(bit_trie_node* btn, const unsigned int c) {
+  if (btn-&gt;children[c] == NULL) {
+    btn-&gt;children[c] = btn_ctor();
+  }
+  return btn-&gt;children[c];
+}
+
+// Insert the |bits| least significant bits of |n| into the pruned bit trie.
+void pbt_insert(pruned_bit_trie* pbt, unsigned int n, unsigned int bits) {
+  bit_trie_node* current_node = pbt-&gt;root;
+  for (/* empty */; bits != 0; --bits, n &gt;&gt;= 1) {
+    // If we come across a word end while inserting stop.  This keeps the tree
+    // pruned.
+    if (current_node-&gt;end) return;
+    current_node = get_or_allocate_child(current_node, n &amp; 1);
+  }
+  current_node-&gt;end = 1;
+
+  // Prune everything after this node to keep the trie as shallow and
+  // non-redundant as possible.
+  btn_dtor(current_node-&gt;children[0]);
+  btn_dtor(current_node-&gt;children[1]);
+  current_node-&gt;children[0] = NULL;
+  current_node-&gt;children[1] = NULL;
+}
+
+// Determines if any &#34;words&#34; in the trie are a prefix of the bits of n.  Bit
+// sequences that are equal are treated as being a prefix of one another.
+int pbt_prefix_any(const pruned_bit_trie* pbt, unsigned int n) {
+  const bit_trie_node* current_node = pbt-&gt;root;
+  for (/* empty */; n != 0; n &gt;&gt;= 1) {
+    if (current_node-&gt;end) return 1;
+    current_node = current_node-&gt;children[n &amp; 1];
+    if (current_node == NULL) return 0;
+  }
+  return 1;
+}
+
+// Converts a potentially partial IP address in dotted octet format into its
+// unsigned integer representation.  The number of bits in the partial IP
+// address will be stored in the |bits| variable.
+unsigned int partial_ip_to_integer(const char* buffer, unsigned int* bits) {
+  unsigned int ip = 0;
+  unsigned int offset = 0;
+
+  while (*buffer != 0) {
+    unsigned int mask = 0;
+    // Build an integer representing the current octet.
+    while (*buffer &gt;= &#39;0&#39; &amp;&amp; *buffer &lt;= &#39;9&#39;) {
+      mask = (10 * mask) + (*buffer - &#39;0&#39;);
+      ++buffer;
+    }
+
+    // Mask the octet into the IP address.
+    ip |= mask &lt;&lt; offset;
+    offset += 8;
+
+    if (*buffer == &#39;.&#39;) ++buffer;
+  }
+
+  *bits = offset;
+  return ip;
+}
+
+int main() {
+  pruned_bit_trie pbt;
+  pbt_init(&amp;pbt);
+
+  // 4 octets maximum 3 characters each, 3 dots, 1 null terminator.
+  char ip_buffer[(4 * 3) + 3 + 1];
+  unsigned int bits;
+
+  int n_prefixes;
+  scanf(&#34;%d&#34;, &amp;n_prefixes);
+  for (int i = 0; i &lt; n_prefixes; ++i) {
+    scanf(&#34;%s&#34;, ip_buffer);
+    unsigned int ip = partial_ip_to_integer(ip_buffer, &amp;bits);
+    pbt_insert(&amp;pbt, ip, bits);
+  }
+
+  int n_ips;
+  scanf(&#34;%d&#34;, &amp;n_ips);
+  for (int i = 0; i &lt; n_ips; ++i) {
+    scanf(&#34;%s&#34;, ip_buffer);
+    unsigned int ip = partial_ip_to_integer(ip_buffer, &amp;bits);
+    if (pbt_prefix_any(&amp;pbt, ip)) {
+      printf(&#34;banned\n&#34;);
+    } else {
+      printf(&#34;valid\n&#34;);
+    }
+  }
+
+  pbt_deinit(&amp;pbt);
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#5" data-toggle="collapse">
+            devaneyp - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="5">
+        <pre><code>def getinput():
+    return input()
+
+# Checks a signle IP
+def checkIP(bannedList, ip):
+    if ip[0] in bannedList[0]:
+        i = 1
+        previous = ip[0]
+        for term in ip[1:]:
+            # If we&#39;ve reached the end of the range
+            if &#34;,&#34; in bannedList[i][previous]:
+                return &#34;banned&#34;
+            # Or if we have a whole IP
+            elif (i == 3) and (term in bannedList[i][previous]):
+                return &#34;banned&#34;
+            # Otherwise, it must be valid
+            elif term not in bannedList[i][previous]:
+                break
+            previous += &#34;.&#34; + term
+            i += 1
+    return &#34;valid&#34;
+
+# Checks the whole list
+def banHammer(bannedList, ipList):
+    for ip in ipList:
+        print(checkIP(bannedList, ip))
+
+
+bannedRangeNumber = int(getinput())
+# A list of a list and 3 dictionaries
+bannedRangeList = [[], {}, {}, {}]
+for i in range(bannedRangeNumber):
+    bannedRange = str(getinput()).split(&#34;.&#34;)
+    # If the first term&#39;s not already a key, add it
+    if bannedRange[0] not in bannedRangeList[0]:
+        bannedRangeList[0].append(bannedRange[0])
+    ipTerm = 1
+    previousTerms = bannedRange[0]
+    # Creates a series of dictionaries with the preceding part as the key
+    for term in bannedRange[1:]:
+        if previousTerms not in bannedRangeList[ipTerm]:
+            bannedRangeList[ipTerm][previousTerms] = [term]
+        # Append the term if it&#39;s not there and it&#39;s not already a whole banned range
+        elif (term not in bannedRangeList[ipTerm][previousTerms]):
+            bannedRangeList[ipTerm][previousTerms].append(term)
+        previousTerms += &#34;.&#34; + term
+        ipTerm += 1
+    # Add a &#34;,&#34; to mark the end of a range if it&#39;s not a full IP
+    if ipTerm &lt; 4:
+        bannedRangeList[ipTerm][previousTerms] = [&#34;,&#34;]
+
+testIPNumber = int(getinput())
+# A list of IPs to test, split by &#34;.&#34;
+testIPList = []
+for i in range(testIPNumber):
+    testIPList.append(str(getinput()).split(&#34;.&#34;))
+
+banHammer(bannedRangeList, testIPList)
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#18" data-toggle="collapse">
+            gubaj - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="18">
+        <pre><code>import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Scanner;
+
+public class Trie {
+
+		private Node root = new Node();
+		
+		public void insertPrefix(String prefix) {
+			Node currentNode = root;
+			
+			for (String octet : prefix.split(&#34;\\.&#34;)) {
+				if (currentNode.nodes.get(octet) == null)
+					currentNode.nodes.put(octet, new Node());
+				currentNode = currentNode.nodes.get(octet);
+			}
+			
+			currentNode.markEndPrefix();
+		}
+		
+		public boolean isAddressBanned(String address) {
+			Node currentNode = root;
+			for (String octet : address.split(&#34;\\.&#34;)) {
+				currentNode = currentNode.nodes.get(octet);
+
+				if (currentNode == null) 
+					return false;
+				
+				if (currentNode.isEndPrefix())
+					return true;
+			}
+			
+			return false;
+		}
+	
+
+	class Node {
+		public HashMap&lt;String, Node&gt; nodes = new HashMap&lt;&gt;();
+		private boolean endPrefix;
+		
+		public boolean isEndPrefix() {
+			return endPrefix;
+		}
+		public void markEndPrefix() {
+			this.endPrefix = true;
+		}
+	} 
+	
+	public static void main(String[] args) {
+		Trie prefixTrie = new Trie();
+		Scanner sc = new Scanner(System.in);
+		int n = sc.nextInt();
+		for (int i = 0; i &lt; n ; i++)
+			prefixTrie.insertPrefix(sc.next());
+		int m = sc.nextInt();
+		for (int i = 0; i &lt; m; i++)
+			System.out.println(prefixTrie.isAddressBanned(sc.next()) ? &#34;banned&#34; : &#34;valid&#34;);
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#31" data-toggle="collapse">
+            mishrai - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="31">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+
+#define ARRAY_SZ 11 //0-9 + : (replaces .)
+
+struct TrieNode{
+	struct TrieNode *children[ARRAY_SZ];
+	bool isLeafNode;
+};
+
+struct TrieNode *getNode(){
+	struct TrieNode *tempNode = new struct TrieNode;
+	tempNode-&gt;isLeafNode = false;
+	for(int i = 0; i &lt; ARRAY_SZ; i++)
+		tempNode-&gt;children[i] = NULL;
+	return tempNode;
+}
+
+void insert(struct TrieNode *root, std::string input){
+	struct TrieNode *temp = root;
+	int inputLen = input.length();
+	for(int i = 0; i &lt; inputLen; i++){
+		int c = input[i] - &#39;0&#39;;
+		if(!temp-&gt;children[c])
+			temp-&gt;children[c] = getNode();
+		temp = temp-&gt;children[c];
+	}
+	temp-&gt;isLeafNode = true;
+}
+
+bool search(struct TrieNode *root, std::string searchTerm){
+	struct TrieNode *temp = root;
+	int searchTermLen = searchTerm.length();
+	for(size_t i = 0; i &lt; searchTermLen; i++){
+		bool found = false;
+		int c = searchTerm[i] - &#39;0&#39;;
+		if(!temp-&gt;children[c])
+			return false;
+		temp = temp-&gt;children[c];
+		if(temp-&gt;isLeafNode)
+			return true; //is prefix
+	}
+	return true; //is whole IP
+}
+
+int main(void){
+	int N;
+	std::cin &gt;&gt; N;
+	struct TrieNode *root = getNode();
+	for(size_t i = 0; i &lt; N; i++){
+		std::string temp;
+		std::cin &gt;&gt; temp;
+		std::replace(temp.begin(), temp.end(), &#39;.&#39;, &#39;:&#39;); //replace . with : as : occurs right after 9 in the ASCII table
+		insert(root, temp + &#39;:&#39;); //adding a colon to the input as prefixes end on full octets
+	}
+	int M;
+	std::cin &gt;&gt; M;
+	std::string result = &#34;&#34;;
+	for(size_t i = 0; i &lt; M; i++){
+		std::string temp;
+		std::cin &gt;&gt; temp;
+		std::replace(temp.begin(), temp.end(), &#39;.&#39;, &#39;:&#39;);
+		result += search(root, temp) ? &#34;banned\n&#34; : &#34;valid\n&#34;;
+	}
+	std::cout &lt;&lt; result;
+	return 0;
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#21" data-toggle="collapse">
+            valleaud - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="21">
+        <pre><code>#include &lt;cstdint&gt;
+#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+#include &lt;string&gt;
+#include &lt;unordered_map&gt;
+#include &lt;vector&gt;
+
+class trie_node {
+public:
+  std::unordered_map&lt;uint32_t, trie_node *&gt; children;
+  bool word_end;
+};
+
+class trie {
+public:
+  trie() : root_(new trie_node) {}
+
+  ~trie() { kill_trie(); }
+
+  // Inserts a new banned ip range into the trie, setting a word end for the
+  // octet in the range.
+  void insert(const std::vector&lt;uint32_t&gt; &amp;octets) {
+    trie_node *cur = root_;
+    for (const uint32_t &amp;octet : octets) {
+      auto iter = cur-&gt;children.find(octet);
+      if (iter == cur-&gt;children.end()) {
+        trie_node *new_node = new trie_node();
+        cur-&gt;children.insert({octet, new_node});
+        cur = new_node;
+      } else {
+        cur = iter-&gt;second;
+      }
+    }
+    cur-&gt;word_end = true;
+  }
+
+  // Check to see whether or not a given IP is not within a banned ip range. If
+  // a prefix of the ip is a word end within the trie then the ip is banned.
+  bool valid_ip(const std::vector&lt;uint32_t&gt; &amp;octets) {
+    trie_node *cur = root_;
+    for (const uint32_t &amp;octet : octets) {
+      auto iter = cur-&gt;children.find(octet);
+      if (iter == cur-&gt;children.end()) {
+        return true;
+      }
+      if (iter-&gt;second-&gt;word_end) {
+        return false;
+      }
+      cur = iter-&gt;second;
+    }
+    return true;
+  }
+
+private:
+  trie_node *root_;
+
+  void kill_trie() {
+    for (auto &amp;pair : root_-&gt;children) {
+      kill_trie(pair.second);
+    }
+    delete root_;
+  }
+
+  void kill_trie(trie_node *root) {
+    for (auto &amp;pair : root-&gt;children) {
+      kill_trie(pair.second);
+    }
+    delete root;
+  }
+};
+
+// Splits an ip string into individual octets.
+std::vector&lt;uint32_t&gt; get_octets(const std::string &amp;ip) {
+  std::stringstream ss(ip);
+  std::vector&lt;uint32_t&gt; octets;
+
+  uint32_t octet;
+  char c;
+  while (ss &gt;&gt; octet) {
+    octets.push_back(octet);
+    ss &gt;&gt; c;
+  }
+
+  return octets;
+}
+
+int main() {
+  uint32_t n;
+  std::cin &gt;&gt; n;
+
+  std::string s;
+  trie banned_ips;
+  for (uint32_t i = 0; i &lt; n; ++i) {
+    std::cin &gt;&gt; s;
+    auto octets = get_octets(s);
+    banned_ips.insert(octets);
+  }
+
+  uint32_t m;
+  std::cin &gt;&gt; m;
+  for (uint32_t i = 0; i &lt; m; ++i) {
+    std::cin &gt;&gt; s;
+    auto octets = get_octets(s);
+    std::cout &lt;&lt; (banned_ips.valid_ip(octets) ? &#34;valid&#34; : &#34;banned&#34;)
+              &lt;&lt; std::endl;
+  }
+
+  return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#17" data-toggle="collapse">
+            mccarth7 - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="17">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;unordered_map&gt;
+#include &lt;memory&gt;
+
+// A trie node class that contains an is_prefix_end flag and a list of
+// child nodes
+class Node {
+private:
+	bool is_prefix_end = false;
+	std::unordered_map&lt;char, std::unique_ptr&lt;Node&gt; &gt; children;
+
+public:
+
+	// A function to insert a prefix into the trie. Since every prefix must end
+	// in a &#39;.&#39;, if the inserted prefix does not end in a &#39;.&#39;, create a new &#39;.&#39;
+	// child node if necessary and set its is_prefix_end value to true
+	void insert(const std::string&amp; s) {
+
+		// Case 1:
+		// If string is empty, create a &#39;.&#39; child in the trie if necessary
+		// and set that child to be a prefix end and return
+		if (s.empty()) {
+			char dot = &#39;.&#39;;
+			if (!children.count(dot))
+				children[dot] = std::make_unique&lt;Node&gt;();
+			children[dot]-&gt;is_prefix_end = true;
+			return;
+		}
+
+		if (!children.count(s.front()))
+			children[s.front()] = std::make_unique&lt;Node&gt;();
+
+		// Case 2:
+		// If the string is has one char left and it is a &#39;.&#39;, set
+		// the &#39;.&#39; child to be a prefix end and return
+		if (s.length() == 1 &amp;&amp; s.front() == &#39;.&#39;) {
+			children[s.front()]-&gt;is_prefix_end = true;
+			return;
+		}
+
+		return children[s.front()]-&gt;insert(s.substr(1));
+	}
+
+	// A function to determine if an IP address is valid
+	bool is_valid_ip(const std::string&amp; s) {
+
+		// Case 1:
+		// If the string is empty, return true
+		if (s.empty())
+			return true;
+
+		// Case 2:
+		// If the current node does not have a child
+		// linked to by the front char of the string,
+		// return true
+		if (!children.count(s.front()))
+			return true;
+
+		// Case 3:
+		// If the front of the string is a &#39;.&#39; and the &#39;.&#39; child of
+		// the current node is a prefix end, return false
+		if (s.front() == &#39;.&#39; &amp;&amp; children[s.front()]-&gt;is_prefix_end == true)
+			return false;
+
+		return children[s.front()]-&gt;is_valid_ip(s.substr(1));
+	}
+};
+
+int main() {
+	std::unique_ptr&lt;Node&gt; root = std::make_unique&lt;Node&gt;();
+
+	int n;
+	std::string curr_input;
+
+	std::cin &gt;&gt; n;
+
+	while (n-- &gt; 0) {
+		std::cin &gt;&gt; curr_input;
+		root-&gt;insert(curr_input);
+	}
+
+	std::cin &gt;&gt; n;
+
+	while(n-- &gt; 0) {
+		std::cin &gt;&gt; curr_input;
+		std::cout &lt;&lt; (root-&gt;is_valid_ip(curr_input) ? &#34;valid&#34; : &#34;banned&#34;)
+							&lt;&lt; std::endl;
+	}
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#10" data-toggle="collapse">
+            gheriba - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="10">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;queue&gt;
+#include &lt;map&gt;
+
+struct trie_node {
+    bool word_end = false;
+    std::map&lt;char, trie_node*&gt; children;
+};
+
+struct Trie {
+    trie_node* root;
+    
+    Trie(): root(new trie_node()) {}
+
+    void insert(const std::string&amp; s) {
+        auto cur = root;
+
+        for(auto const&amp; i : s) {
+            auto check = cur-&gt;children.insert({i,nullptr});
+            if(check.second)
+                check.first-&gt;second = new trie_node();
+            cur = cur-&gt;children[i];
+        }
+        cur-&gt;word_end = true;
+    }
+
+    bool ifPrefixFound(std::string s) {
+        auto cur = root;
+
+        for(auto const&amp; i : s) {
+            if(cur-&gt;word_end)
+                break;
+            if(!cur-&gt;children.count(i))
+                return false;
+            cur = cur-&gt;children[i];
+        }
+        return true;
+    } 
+
+    ~Trie() { //bfs deletion
+        std::queue&lt;trie_node*&gt; q;
+        q.push(root);
+
+        while(!q.empty()) {
+            auto cur = q.front();
+            q.pop();
+
+            for(auto const&amp; i : cur-&gt;children)
+                q.push(i.second);
+            delete cur;
+        }
+    }
+};
+
+int main() {
+    Trie t;
+    std::string s;
+    int N;  
+    
+    std::cin &gt;&gt; N;
+    while(N-- &gt; 0) {
+        std::cin &gt;&gt; s;
+        t.insert(s+&#39;.&#39;);
+    }
+    
+    std::cin &gt;&gt; N;
+    while(N-- &gt; 0) {
+        std::cin &gt;&gt; s;
+        std::cout &lt;&lt; (t.ifPrefixFound(s+&#39;.&#39;) ? &#34;banned&#34; : &#34;valid&#34;) &lt;&lt; std::endl; 
+    }
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#14" data-toggle="collapse">
+            albaj - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="14">
+        <pre><code>#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+
+using namespace std;
+//I converted the ipaddress into hexadecimal and stored it in a structure
+struct trieNode{
+    struct trieNode *children[16];
+    bool isLeafNode;
+};
+
+string intToHex(int num){
+    stringstream ss;
+    
+    ss &lt;&lt; hex &lt;&lt; num;
+    string hex = ss.str();
+    
+    return (hex.size() == 1)? &#34;0&#34; + hex : hex;
+}
+
+int hexToInt(char hex){
+    switch(hex){
+        case &#39;a&#39;: return 10;
+        case &#39;b&#39;: return 11;
+        case &#39;c&#39;: return 12;
+        case &#39;d&#39;: return 13;
+        case &#39;e&#39;: return 14;
+        case &#39;f&#39;: return 15;
+        default: return hex - &#39;0&#39;;
+    }
+}
+
+struct trieNode *getNode(){
+    struct trieNode *newNode = new struct trieNode;
+    newNode-&gt;isLeafNode = false;
+    for(int i = 0; i &lt; 16; i++)
+        newNode-&gt;children[i] = NULL;
+    return newNode;
+}
+
+void insert(struct trieNode *root ,string input){
+    struct trieNode *newNode = root;
+    
+    int lastHex = 0;
+    
+    istringstream iss(input);
+    string token;
+    
+    while(getline(iss, token, &#39;.&#39;)){
+        string hexValue = intToHex(stoi(token));
+        lastHex = hexToInt(hexValue.at(0));
+        
+        if(!(newNode-&gt;children[lastHex]))
+            newNode-&gt;children[lastHex] = getNode();
+        newNode = newNode -&gt;children[lastHex];
+        
+        lastHex = hexToInt(hexValue.at(1));
+        
+        if(!(newNode-&gt;children[lastHex]))
+            newNode-&gt;children[lastHex] = getNode();
+        newNode = newNode -&gt;children[lastHex];
+    }
+    
+    newNode -&gt; isLeafNode = true;
+    return;
+}
+
+//returns true if its in trieNode
+bool search(struct trieNode *root, string input){
+    struct trieNode *newNode = root;
+    int lastHex = 0;
+
+    istringstream iss(input);
+    string token;
+    
+    while(getline(iss, token, &#39;.&#39;)){
+        string hexValue = intToHex(stoi(token));
+        lastHex = hexToInt(hexValue.at(0));
+        
+        if(!(newNode-&gt;children[lastHex]))
+            newNode-&gt;children[lastHex] = getNode();
+        newNode = newNode -&gt;children[lastHex];
+        
+        lastHex = hexToInt(hexValue.at(1));
+        
+        if(!(newNode-&gt;children[lastHex]))
+            newNode-&gt;children[lastHex] = getNode();
+        newNode = newNode -&gt;children[lastHex];
+        
+        if(newNode -&gt; isLeafNode)
+            return true;
+    }
+    return false;
+}
+
+int main() {
+    struct trieNode *root = getNode();
+    int N;
+    cin &gt;&gt; N;
+    
+    for(size_t c = 0; c &lt; N; c++){
+        string temp;
+        cin &gt;&gt; temp;
+        insert(root,temp);
+    }
+    
+    int M;
+    cin &gt;&gt; M;
+    
+    for(size_t c = 0; c &lt; M; c++){
+        string temp;
+        cin &gt;&gt; temp;
+        cout &lt;&lt; (search(root,temp)? &#34;banned&#34; : &#34;valid&#34; ) &lt;&lt; endl;
+    }
+    return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#6" data-toggle="collapse">
+            lucie11a - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="6">
+        <pre><code>
+use std::io;
+use std::io::prelude::*;
+
+#[derive(Clone)]
+struct Entry {
+	values: Vec&lt;Node&gt;,
+}
+
+#[derive(Clone)]
+enum Node {
+	Value(bool),
+	Entry(Entry),
+}
+
+impl Node {
+	fn insert&lt;I&gt;(&amp;mut self, mut parts: I, val: bool)
+		where I: Iterator&lt;Item=u8&gt;
+	{
+		if let Some(part) = parts.next() {
+			match *self {
+				Node::Value(v) =&gt; {
+					let mut entry = Entry { values: vec![Node::Value(v); 256] };
+					entry.values.get_mut(part as usize)
+						.unwrap()
+						.insert(parts, val);
+
+					*self = Node::Entry(entry);
+				}
+				Node::Entry(ref mut entry) =&gt; {
+					entry.values.get_mut(part as usize)
+						.unwrap()
+						.insert(parts, val);
+				}
+			}
+		} else {
+			*self = Node::Value(val);
+		}
+	}
+
+	fn get&lt;I&gt;(&amp;self, mut parts: I) -&gt; bool 
+		where I: Iterator&lt;Item=u8&gt;
+	{
+		if let Some(part) = parts.next() {
+			match *self {
+				Node::Value(val) =&gt; val,
+				Node::Entry(ref entry) =&gt; {
+					entry.values.get(part as usize)
+						.unwrap()
+						.get(parts)
+				}
+			}
+		} else {
+			false
+		}
+	}
+}
+
+struct Trie {
+	root: Node,
+}
+
+impl Trie {
+	fn new() -&gt; Trie {
+		Trie {
+			root: Node::Value(false),
+		}
+	}
+
+	fn insert(&amp;mut self, ip: &amp;str, val: bool) {
+		let parts = ip.split(&#34;.&#34;)
+			.take(4)
+			.map(|v| v.parse::&lt;u8&gt;().unwrap());
+		self.root.insert(parts, val);
+	}
+
+	fn get(&amp;self, ip: &amp;str) -&gt; bool {
+		let parts = ip.split(&#34;.&#34;)
+			.take(4)
+			.map(|v| v.parse::&lt;u8&gt;().unwrap());
+		self.root.get(parts)
+	}
+}
+
+
+fn main() {
+	let input = {
+		let mut buf = String::new();
+
+		io::stdin()
+			.read_to_string(&amp;mut buf)
+			.unwrap();
+
+		buf
+	};
+
+	let mut lines = input.lines();
+
+	let n = lines.by_ref()
+		.next()
+		.and_then(|v| v.parse::&lt;usize&gt;().ok())
+		.unwrap();
+
+	let mut trie = Trie::new();
+
+	for line in lines.by_ref().take(n) {
+		trie.insert(&amp;line, true);
+	}
+
+	let m = lines.by_ref()
+		.next()
+		.and_then(|v| v.parse::&lt;usize&gt;().ok())
+		.unwrap();
+
+	for line in lines.by_ref().take(m) {
+		if !trie.get(&amp;line) {
+			println!(&#34;valid&#34;);
+		} else {
+			println!(&#34;banned&#34;);
+		}
+	}
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#20" data-toggle="collapse">
+            cao11d - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="20">
+        <pre><code>//package week5;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class POTW5 {
+
+	private Node rootNode = new Node();
+	
+
+	class Node{
+		public Map &lt;String,Node&gt; map = new HashMap();
+		boolean isLast = false;
+	}
+	
+	private void setRootNode(){
+		rootNode.isLast=true;
+	}
+	
+	private void setIP(String ipAddress){
+		rootNode.isLast=true;
+		Node subNode = rootNode;
+		String string = ipAddress;
+		String query = &#34;&#34;;
+
+		while(string.contains(&#34;.&#34;)){  //The while loop will continue looping until the prefix have not more .in them
+			query = string.substring(0,string.indexOf(&#34;.&#34;)); //Getting the first 8 bytes from ip address 
+
+			if(!rootNode.map.containsKey(query)){ //If the map don&#39;t already contain the query term
+				Node newNode = new Node(); //It will create new node which have a default value of false in is last
+				rootNode.map.put(query, newNode); 
+				rootNode = newNode; //Moveing to the query term in map
+				string = string.substring(string.indexOf(&#34;.&#34;)+1); //
+			}
+			else { //If query term is already in the map, it will simply move to the next term in map
+				rootNode = rootNode.map.get(query);
+				string = string.substring(string.indexOf(&#34;.&#34;)+1);
+			}
+		}
+
+		//For the last term in the string, isLast will be set to true so that the program will recognize the term is one of the ending prefixes
+
+		Node newNode = new Node ();
+		newNode.isLast = true;
+		rootNode.map.put(string, newNode);
+		rootNode = subNode;
+	}
+	
+	public boolean isInteger(String input)
+	{
+	   try
+	   {
+	      Integer.parseInt(input);
+	      return true;
+	   }catch(Exception e)
+	   {
+	      return false;
+	   }
+	}
+
+	//This method will check if the given address is valid or not 	
+	public boolean addressValid(String ipAddress){
+		String string = ipAddress;
+		String query = &#34;&#34;;
+		Node subNode = rootNode;
+
+		while(string.contains(&#34;.&#34;)){
+			query = string.substring(0,string.indexOf(&#34;.&#34;));	
+
+			if(subNode.map.containsKey(query)){
+				subNode = subNode.map.get(query);
+				string = string.substring(string.indexOf(&#34;.&#34;)+1);
+			}
+			else{
+				if(subNode.isLast) return false;
+				else return true;	
+			};
+		}
+		
+		if(subNode.map.containsKey(string)) return false;
+		else if(!this.isInteger(string)) return false;
+		else return true;
+		
+	}
+
+
+
+	public static void main(String [] args){
+
+		Scanner scanner = new Scanner(System.in);
+		int programCounter = Integer.parseInt(scanner.nextLine());
+		POTW5 detector = new POTW5();
+		String string = &#34;&#34;;
+
+		while(programCounter !=0){
+			string = scanner.nextLine();
+			detector.setIP(string);
+			programCounter--;
+		}
+
+		programCounter = Integer.parseInt(scanner.nextLine());
+
+		while(scanner.hasNext()){
+			string = scanner.nextLine();
+			if(detector.addressValid(string)) System.out.println(&#34;valid&#34;);
+			else System.out.println(&#34;banned&#34;);
+		}
+	}
+}
+
+//During the traversal, if it reach a node with its isLast value equal true, the program will check if the next prefix in the ipAddress is valid in the map or not before making a conclusion. If there are no more matching value in the map, the program will pop out of the loop and return true which will conclude the ipaddress is invalid or banned
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#4" data-toggle="collapse">
+            nguyen1v - Java
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="4">
+        <pre><code>import java.util.*;
+
+class TrieNode {
+    char c;
+    HashMap&lt;Character, TrieNode&gt; children = new HashMap&lt;Character, TrieNode&gt;();
+    boolean isLeaf;
+
+    public TrieNode() {}
+
+    public TrieNode(char c){
+        this.c = c;
+    }
+}
+
+class Trie {
+    private TrieNode root;
+
+    public Trie() {
+        root = new TrieNode();
+    }
+
+    /**
+    * Inserts a string into the trie
+    *
+    * @param String str
+    *
+    */
+    public void insert(String str) {
+        HashMap&lt;Character, TrieNode&gt; children = root.children;
+
+        for (int i = 0; i &lt; str.length(); i++) {
+            char c = str.charAt(i);
+
+            TrieNode t;
+            if (children.containsKey(c)) {
+                    t = children.get(c);
+            } else {
+                t = new TrieNode(c);
+                children.put(c, t);
+            }
+
+            children = t.children;
+
+            if (i == str.length() - 1) {
+                t.isLeaf = true;
+            }
+        }
+    }
+
+    /**
+    * Searches trie to see if any paths match
+    * the String str
+    *
+    * @param String str string to be searched
+    * @return true if found false otherwise
+    *
+    */
+    public boolean search(String str) {
+        TrieNode t = searchNode(str);
+        if (t != null)
+            return true;
+        else
+            return false;
+    }
+
+    /**
+    * Helper function that searches the trie for
+    * the string str. If it finds str matching
+    * a path in the trie it returns a TrieNode
+    * else returns null.
+    *
+    * @param String str the string to check
+    * @return TrieNode or null
+    *
+    */
+    public TrieNode searchNode(String str){
+        Map&lt;Character, TrieNode&gt; children = root.children;
+        TrieNode t = null;
+        for (int i = 0; i &lt; str.length(); i++) {
+            char c = str.charAt(i);
+            if (t != null &amp;&amp; t.isLeaf &amp;&amp; str.charAt(i) == &#39;.&#39;) {
+                return t;
+            } else if (children.containsKey(c)) {
+                t = children.get(c);
+                children = t.children;
+            }  else {
+                return null;
+            }
+        }
+        return t;
+    }
+}
+
+public class w5 {
+    public static void main(String[] args) {
+        Scanner kb = new Scanner(System.in);
+        Trie t = new Trie();
+        int n = kb.nextInt();
+        kb.nextLine();
+        for (int i = 0; i &lt; n; i++) {
+            String temp = kb.nextLine();
+            t.insert(temp);
+        }
+        int m = kb.nextInt();
+        kb.nextLine();
+        for (int i = 0; i &lt; m; i++) {
+            String temp = kb.nextLine();
+            if (t.search(temp)) {
+                System.out.println(&#34;banned&#34;);
+            } else {
+                System.out.println(&#34;valid&#34;);
+            }
+        }
+    }
+}</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#22" data-toggle="collapse">
+            malolepp - C++
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="22">
+        <pre><code>/* POTW5 Patrick Malolepszy */
+
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;iterator&gt;
+
+using namespace std;
+
+struct ipNode
+{
+	bool isPrefix;
+	ipNode *numArray[11]; //index 10 will be used for &#39;.&#39;
+};
+
+class ipTrie {
+private:
+	ipNode *head;
+	vector&lt;ipNode*&gt; pointerTracker; //easy way to clean up dynamic mem
+	int longestBannedIpLength;
+	int getCharValue(char);
+	ipNode* allocateIpNode();
+public:
+	ipTrie();
+	~ipTrie();
+	void insertBannedIp(string);
+	bool isBannedIp(string);
+};
+
+ipNode* ipTrie::allocateIpNode() {
+	ipNode *newNode = new ipNode;
+	for (int i = 0; i &lt; 11 ; i++ ) {
+		newNode-&gt;numArray[i] = NULL;
+	}
+	newNode-&gt;isPrefix = false;
+	pointerTracker.push_back(newNode);
+	return newNode;
+}
+
+ipTrie::ipTrie() {
+	head = allocateIpNode();
+	longestBannedIpLength = 0;
+}
+
+// Taking care of dynamic memory
+ipTrie::~ipTrie() {
+	vector&lt;ipNode*&gt;::iterator it;
+	for (it = pointerTracker.begin() ; it != pointerTracker.end() ; it++) {
+		delete (*it);
+	}
+}
+
+int ipTrie::getCharValue (char c) {
+	if (c == &#39;.&#39;) {
+		return 10;
+	}
+	return c - &#39;0&#39;;
+}
+
+
+// Banned Ips always end in full octet. eg. 10, does not ban 101. , but does ban
+void ipTrie::insertBannedIp (string a) {
+	ipNode *current = head;
+	int insertLocation;
+	if (a.length() &gt; longestBannedIpLength) 
+		longestBannedIpLength = a.length();
+	for (int i = 0 ; i &lt; a.length() ; i++ ) {
+		insertLocation = getCharValue(a[i]);
+		if (current-&gt;numArray[insertLocation] == NULL) {
+			current-&gt;numArray[insertLocation] = allocateIpNode();
+		}
+		current = current-&gt;numArray[insertLocation];
+	}
+	current-&gt;isPrefix = true;
+}
+
+bool ipTrie::isBannedIp (string s) {
+	ipNode *current = head;
+	int arrayIndex;
+	// Look no further into trie by looking no further then longest banned ip.
+	for (int i = 0 ; i &lt; longestBannedIpLength &amp;&amp; i &lt; s.length() ; i++) {
+		arrayIndex = getCharValue(s[i]);
+		if (current-&gt;numArray[arrayIndex] == NULL)
+			return false;
+		current = current-&gt;numArray[arrayIndex];
+		if (current-&gt;isPrefix)
+			return true;
+	}
+	return false;
+}
+
+/* Adds a extra dot at the end of all ips
+	So that octets are checked 
+	Ex. 1.1.1.23 doesn&#39;t ban 1.1.1.234
+	because they are stored as 1.1.1.23. and 1.1.1.234. */
+void fixIp(string &amp;s) {
+	if (s[s.length()-1] != &#39;.&#39;) {
+		s += &#39;.&#39;;
+	} 
+}
+
+int main () {
+	int n;
+	cin &gt;&gt; n;
+	ipTrie trie;
+	for (int i = 0 ; i &lt; n ; i++) {
+		string s;
+		cin &gt;&gt; s;
+		fixIp(s);
+		trie.insertBannedIp(s);
+	}
+	cin &gt;&gt; n;
+	for (int i = 0 ; i &lt; n ; i++) {
+		string s;
+		cin &gt;&gt; s;
+		fixIp(s);
+		if (trie.isBannedIp(s)) cout &lt;&lt; &#34;banned&#34; &lt;&lt; endl;
+		else cout &lt;&lt; &#34;valid&#34; &lt;&lt; endl;
+	}
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#11" data-toggle="collapse">
+            mulatti - Python
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="11">
+        <pre><code>#!/usr/bin/env python3
+
+
+class TrieNode:
+	def __init__(self, is_end=False):
+		self.is_end = is_end
+		self.nodes = [None] * 256
+
+
+class Trie:
+	def __init__(self):
+		self.root = TrieNode()
+
+	def insert(self, ip):
+		node = self.root
+		octets = [int(x) for x in ip.split(&#39;.&#39;)]
+		for o in octets:
+			if node.nodes[o] is not None:
+				node = node.nodes[o]
+			else:
+				node.nodes[o] = TrieNode()
+				node = node.nodes[o]
+		node.is_end = True
+
+	def is_banned(self, ip):
+		node = self.root
+		octets = [int(x) for x in ip.split(&#39;.&#39;)]
+		for o in octets:
+			if node.nodes[o] is None:
+				return False
+			elif node.nodes[o].is_end:
+				return True
+			else:
+				node = node.nodes[o]
+		return False
+
+
+def main():
+	trie = Trie()
+
+	num_prefixes = int(input())
+	for i in range(num_prefixes):
+		trie.insert(input())
+
+	num_requests = int(input())
+	for i in range(num_requests):
+		if (trie.is_banned(input())):
+			print(&#39;banned&#39;)
+		else:
+			print(&#39;valid&#39;)
+
+
+if __name__ == &#39;__main__&#39;:
+	main()
+</code></pre>
+      </div>
+      
+      <ul class="text-center nav nav-pills nav-stacked">
+        <li>
+          <a href="#1" data-toggle="collapse">
+            necio - Rust
+          </a>
+        </li>
+      </ul>
+      <div class="collapse" id="1">
+        <pre><code>fn main() {
+    use bespoke_data_structures::IPBanTrie;
+    use std::io::{self, BufRead};
+
+    let sin = io::stdin();
+    let n = {
+        let mut buf = String::new();
+        sin.read_line(&amp;mut buf).unwrap();
+        buf.trim()
+            .parse()
+            .unwrap()
+    };
+
+    let mut banned_trie = IPBanTrie::new();
+    for prefix in sin.lock().lines().take(n) {
+        banned_trie.insert_prefix(&amp;prefix.unwrap());
+    }
+    let banned_trie = banned_trie;
+
+    for ip in sin.lock().lines().skip(1) {
+        if banned_trie.check(&amp;ip.unwrap()) {
+            println!(&#34;banned&#34;);
+        } else {
+            println!(&#34;valid&#34;);
+        }
+    }
+}
+
+mod bespoke_data_structures {
+    use std::collections::HashMap;
+
+    pub struct IPBanTrie {
+        start: HashMap&lt;u8, IPBanTrieNode&gt;,
+    }
+
+    impl IPBanTrie {
+        #[inline]
+        pub fn new() -&gt; IPBanTrie {
+            IPBanTrie { start: HashMap::new() }
+        }
+
+        #[inline]
+        pub fn insert_prefix(&amp;mut self, prefix: &amp;str) {
+            let octets = IPBanTrie::parse_octets(prefix);
+            if octets.len() == 1 {
+                self.start.insert(octets[0], IPBanTrieNode::Banned);
+            } else {
+                let next = self.start
+                    .entry(octets[0])
+                    .or_insert(IPBanTrieNode::Next(HashMap::new()));
+                next.insert_prefix(&amp;octets[1..]);
+            }
+        }
+
+        #[inline]
+        pub fn check(&amp;self, ip: &amp;str) -&gt; bool {
+            let octets = IPBanTrie::parse_octets(ip);
+            match self.start.get(&amp;octets[0]) {
+                None =&gt; false,
+                Some(next) =&gt; next.check(&amp;octets[1..]),
+            }
+        }
+
+        #[inline]
+        fn parse_octets(ip: &amp;str) -&gt; Vec&lt;u8&gt; {
+            ip.splitn(4, &#34;.&#34;)
+                .map(|x| x.parse())
+                .map(|x| x.expect(&#34;Failure parsing octets.&#34;))
+                .collect()
+        }
+    }
+
+    enum IPBanTrieNode {
+        Banned,
+        Next(HashMap&lt;u8, IPBanTrieNode&gt;),
+    }
+
+    impl IPBanTrieNode {
+        #[inline]
+        fn insert_prefix(&amp;mut self, octets: &amp;[u8]) {
+            match self {
+                &amp;mut IPBanTrieNode::Banned =&gt; return,
+                &amp;mut IPBanTrieNode::Next(ref mut next) =&gt; {
+                    if octets.len() == 1 {
+                        next.insert(octets[0], IPBanTrieNode::Banned);
+                    } else {
+                        let next = next.entry(octets[0])
+                            .or_insert(IPBanTrieNode::Next(HashMap::new()));
+                        next.insert_prefix(&amp;octets[1..]);
+                    }
+                }
+            }
+        }
+
+        #[inline]
+        fn check(&amp;self, octets: &amp;[u8]) -&gt; bool {
+            match self {
+                &amp;IPBanTrieNode::Banned =&gt; true,
+                &amp;IPBanTrieNode::Next(ref next) =&gt; {
+                    match next.get(&amp;octets[0]) {
+                        None =&gt; false,
+                        Some(next) =&gt; next.check(&amp;octets[1..]),
+                    }
+                }
+            }
+        }
+    }
+}
+</code></pre>
+      </div>
+      
+    </div>
+  </div>
+
+  <script type="application/javascript">hljs.initHighlightingOnLoad();</script>
+</body>
+
+</html>
