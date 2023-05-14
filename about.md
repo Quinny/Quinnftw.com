@@ -18,5 +18,5 @@ expertise is C++, but I am proficient in most mainstream programming languages
 and listening to and playing rock music.
 
 <div align="center">
-  <img width="40%" src="/images/me.jpg" />
+  <img width="80%" src="/images/me.jpg" />
 </div>
